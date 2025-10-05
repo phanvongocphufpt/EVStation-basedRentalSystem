@@ -593,3 +593,5 @@ obj/
 .vs/EVStation-basedRentalSystem/DesignTimeBuild/.dtbcache.v2
 .vs/EVStation-basedRentalSystem/FileContentIndex/12a32eec-27be-40e8-8b94-0e8c0e5ecdb3.vsidx
 *.v2
+*.vsidx
+/.vs/EVStation-basedRentalSystem/FileContentIndex
