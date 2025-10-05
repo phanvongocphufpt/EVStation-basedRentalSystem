@@ -590,7 +590,7 @@ obj/
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,csharp,dotnetcore
-.vs/EVStation-basedRentalSystem/DesignTimeBuild/.dtbcache.v2
+/.vs/EVStation-basedRentalSystem/DesignTimeBuild/.dtbcache.v2
 *.v2
 *.vsidx
 /.vs/EVStation-basedRentalSystem/FileContentIndex
