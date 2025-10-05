@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Repository.Entities
+{
+    public class User
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string PasswordHash { get; set; }
+        public string FullName { get; set; }
+        public string Role { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public bool IsActive { get; set; }
+        public int? DriverLicenseId { get; set; }
+        public int? CitizenId { get; set; }
+        public int? FeedbackId { get; set; }
+        public DriverLicense? DriverLicense { get; set; }
+        public CitizenId? CitizenIdNavigation { get; set; }
+        public Feedback? Feedback { get; set; }
+        public ICollection<RentalOrder> RentalOrders { get; set; }
+        public ICollection<Payment> Payments { get; set; }
+        public ICollection<CarDeliveryHistory> CarDeliveryHistories { get; set; }
+        public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
+    }
+}
