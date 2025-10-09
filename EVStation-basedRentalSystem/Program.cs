@@ -75,11 +75,17 @@ builder.Services.AddSwaggerGen(option =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
 builder.Services.AddScoped<IRentalContactRepository,RentalContactRepository>();
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<IRentalContactService,RentalContactService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 var app = builder.Build();
+
+// Error Catch
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
