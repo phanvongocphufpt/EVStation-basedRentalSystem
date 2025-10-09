@@ -74,11 +74,11 @@ builder.Services.AddSwaggerGen(option =>
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
-
+builder.Services.AddScoped<IRentalContactRepository,RentalContactRepository>();
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICarService, CarService>();
-
+builder.Services.AddScoped<IRentalContactService,RentalContactService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
