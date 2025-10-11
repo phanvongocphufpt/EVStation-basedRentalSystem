@@ -16,6 +16,8 @@ namespace Repository.Entities
         public string PasswordHash { get; set; }
         public string FullName { get; set; }
         public string Role { get; set; }
+        public string? ConfirmEmailToken { get; set; }
+        public bool IsEmailConfirmed { get; set; } = false;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }

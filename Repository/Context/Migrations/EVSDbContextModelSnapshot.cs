@@ -47,6 +47,9 @@ namespace Repository.Context.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Model")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -300,6 +303,9 @@ namespace Repository.Context.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("RentalOrderId")
                         .HasColumnType("int");
 
@@ -362,6 +368,9 @@ namespace Repository.Context.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("LesseeId")
                         .HasColumnType("int");
 
@@ -410,6 +419,9 @@ namespace Repository.Context.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -488,6 +500,9 @@ namespace Repository.Context.Migrations
                     b.Property<int?>("CitizenId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ConfirmEmailToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -508,6 +523,9 @@ namespace Repository.Context.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -526,6 +544,44 @@ namespace Repository.Context.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "admin@gmail.com",
+                            FullName = "Admin User",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "1",
+                            Role = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "staff@gmail.com",
+                            FullName = "Staff User",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "1",
+                            Role = "Staff"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "customer@gmail.com",
+                            FullName = "Customer User",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "1",
+                            Role = "Customer"
+                        });
                 });
 
             modelBuilder.Entity("Repository.Entities.CarDeliveryHistory", b =>

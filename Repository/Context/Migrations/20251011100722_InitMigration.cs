@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Repository.Context.Migrations
 {
     /// <inheritdoc />
@@ -30,7 +32,8 @@ namespace Repository.Context.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -47,7 +50,8 @@ namespace Repository.Context.Migrations
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -65,6 +69,8 @@ namespace Repository.Context.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConfirmEmailToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsEmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
@@ -195,7 +201,8 @@ namespace Repository.Context.Migrations
                     TerminationClause = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RentalOrderId = table.Column<int>(type: "int", nullable: false),
                     LesseeId = table.Column<int>(type: "int", nullable: false),
-                    LessorId = table.Column<int>(type: "int", nullable: false)
+                    LessorId = table.Column<int>(type: "int", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -354,7 +361,8 @@ namespace Repository.Context.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    RentalOrderId = table.Column<int>(type: "int", nullable: false)
+                    RentalOrderId = table.Column<int>(type: "int", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -371,6 +379,16 @@ namespace Repository.Context.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FeedbackId", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "Role", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { 1, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "admin@gmail.com", null, "Admin User", true, true, "1", "1", "Admin", null },
+                    { 2, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff@gmail.com", null, "Staff User", true, true, "1", "1", "Staff", null },
+                    { 3, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "customer@gmail.com", null, "Customer User", true, true, "1", "1", "Customer", null }
                 });
 
             migrationBuilder.CreateIndex(

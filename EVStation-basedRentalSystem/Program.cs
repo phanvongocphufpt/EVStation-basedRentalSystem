@@ -1,16 +1,19 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Repository.Context;
 using Repository.IRepositories;
 using Repository.Repositories;
+using Service.EmailConfirmation;
 using Service.IServices;
+using Service.Mapper;
 using Service.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var smtpSettings = builder.Configuration.GetSection("SmtpSettings");
 var connectionString = builder.Configuration.GetConnectionString("Database");
 builder.Services.AddDbContext<EVSDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -34,12 +37,14 @@ builder.Services.AddAuthentication(x =>
     };
 });
 // Add services to the container.
+builder.Services.Configure<SmtpSettings>(smtpSettings);
+builder.Services.AddSingleton<EmailService>();
 
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(x =>
         x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve);
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -76,9 +81,15 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
 
 // Services
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICarService, CarService>();
 
+//Others
+builder.Services.Configure<SmtpSettings>(smtpSettings);
+builder.Services.AddTransient<EmailService>();
+builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
