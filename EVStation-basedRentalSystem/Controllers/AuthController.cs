@@ -97,11 +97,46 @@ namespace EVStation_basedRentalSystem.Controllers
             }
 
             user.IsEmailConfirmed = true;
-            user.ConfirmEmailToken = null; // Xóa token sau khi xác nhận
+            user.ConfirmEmailToken = null;
+            user.IsActive = true;
 
             await _userRepository.UpdateAsync(user);
 
             return Ok("Email đã được xác nhận thành công.");
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Email))
+                return BadRequest("Email không được để trống.");
+
+            await _authService.ForgotPasswordAsync(model.Email);
+
+            return Ok("Mã reset đã được gửi. Kiểm tra hộp thư của bạn.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
+        {
+            var success = await _authService.ResetPasswordAsync(model.Email, model.OTP, model.NewPassword);
+
+            if (!success)
+                return BadRequest("Mã OTP không hợp lệ hoặc đã hết hạn.");
+
+            return Ok("Mật khẩu đã được reset thành công. Bạn có thể đăng nhập ngay.");
+        }
+    }
+
+    public class ForgotPasswordModel
+    {
+        public string Email { get; set; } = string.Empty;
+    }
+
+    public class ResetPasswordModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string OTP { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
     }
 }

@@ -18,6 +18,8 @@ namespace Repository.Entities
         public string Role { get; set; }
         public string? ConfirmEmailToken { get; set; }
         public bool IsEmailConfirmed { get; set; } = false;
+        public string? ResetPasswordToken { get; set; }
+        public DateTime? ResetPasswordTokenExpiry { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }

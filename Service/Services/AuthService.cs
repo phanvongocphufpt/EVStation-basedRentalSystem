@@ -138,5 +138,45 @@ namespace Service.Services
                 }
             }
         }
+        public async Task ForgotPasswordAsync(string email)
+        {
+            var user = await _userRepository.GetByEmailAsync(email);
+            if (user == null || !user.IsActive)
+            {
+                return;
+            }
+
+            string otp = GenerateEmailToken();
+            user.ResetPasswordToken = otp;
+            user.ResetPasswordTokenExpiry = DateTime.UtcNow.AddMinutes(15);
+            await _emailService.SendResetPasswordEmailAsync(user.Email, user.FullName, otp);
+
+            await _userRepository.UpdateAsync(user);
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string otp, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+                throw new ArgumentException("Mật khẩu mới phải ít nhất 6 ký tự.");
+
+            var user = await _userRepository.GetByEmailAsync(email);
+            if (user == null || !user.IsActive)
+                return false;
+
+            // Validate OTP và expiry
+            if (user.ResetPasswordToken != otp || user.ResetPasswordTokenExpiry < DateTime.UtcNow)
+                return false;
+
+            // Update password hash
+            user.PasswordHash = HashPassword(newPassword);
+            user.Password = newPassword;
+            user.ResetPasswordToken = null;
+            user.ResetPasswordTokenExpiry = null;
+            user.UpdatedAt = DateTime.UtcNow;
+            user.IsEmailConfirmed = true;
+
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
     }
 }
