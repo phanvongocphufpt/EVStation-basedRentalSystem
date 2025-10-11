@@ -595,6 +595,3 @@ obj/
 *.vsidx
 /.vs/EVStation-basedRentalSystem/FileContentIndex
 /.vs/EVStation-basedRentalSystem/DesignTimeBuild
-
-appsettings*.json
-!appsettings.json
