@@ -74,11 +74,15 @@ builder.Services.AddSwaggerGen(option =>
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRentalOrderRepository, RentalOrderRepository>();
+builder.Services.AddScoped<IDriverLicenseRepository, DriverLicenseRepository>();
+builder.Services.AddScoped<ICitizenIdRepository, CitizenIdRepository>();
 
 
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRentalOrderService, RentalOrderService>();
+builder.Services.AddScoped<IDriverLicenseService, DriverLicenseService>();
+builder.Services.AddScoped<ICitizenIdService, CitizenIdService>();
 
 
 var app = builder.Build();
