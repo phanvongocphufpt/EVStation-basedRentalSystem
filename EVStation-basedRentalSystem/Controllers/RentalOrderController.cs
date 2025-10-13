@@ -1,3 +1,64 @@
+using Microsoft.AspNetCore.Mvc;
+using Repository.Entities;
+using Service.IServices;
+
+namespace EVStation_basedRentalSystem.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class RentalOrderController : ControllerBase
+    {
+        private readonly IRentalOrderService _rentalOrderService;
+
+        public RentalOrderController(IRentalOrderService rentalOrderService)
+        {
+            _rentalOrderService = rentalOrderService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var rentalOrders = await _rentalOrderService.GetAllAsync();
+            return Ok(rentalOrders);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var rentalOrder = await _rentalOrderService.GetByIdAsync(id);
+            if (rentalOrder == null)
+                return NotFound();
+            return Ok(rentalOrder);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] RentalOrder rentalOrder)
+        {
+            var createdRentalOrder = await _rentalOrderService.CreateAsync(rentalOrder);
+            return CreatedAtAction(nameof(GetById), new { id = createdRentalOrder.Id }, createdRentalOrder);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] RentalOrder rentalOrder)
+        {
+            if (id != rentalOrder.Id)
+                return BadRequest();
+            
+            var updatedRentalOrder = await _rentalOrderService.UpdateAsync(rentalOrder);
+            return Ok(updatedRentalOrder);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _rentalOrderService.DeleteAsync(id);
+            if (!result)
+                return NotFound();
+            return NoContent();
+        }
+    }
+}
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
