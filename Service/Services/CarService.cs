@@ -23,9 +23,9 @@ namespace Service.Services
             return _carRepository.GetAllAsync();
         }
 
-        public Task<Car> GetByIdAsync(int id)
+        public Task<Car> SearchByNameAsync(string Name)
         {
-            return _carRepository.GetByIdAsync(id);
+            return _carRepository.SearchByNameAsync(Name);
         }
 
         public Task AddAsync(Car car)

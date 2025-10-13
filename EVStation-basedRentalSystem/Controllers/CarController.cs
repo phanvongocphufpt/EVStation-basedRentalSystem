@@ -25,10 +25,10 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // GET: api/Car/id
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("{Name}")]
+        public async Task<IActionResult> SearchByNameAsync(string Name)
         {
-            var car = await _carService.GetByIdAsync(id);
+            var car = await _carService.SearchByNameAsync(Name);
             if (car == null)
 
                 return NotFound(new { message = "Car Maybe Deleted or Not Existed !!! " }); ;

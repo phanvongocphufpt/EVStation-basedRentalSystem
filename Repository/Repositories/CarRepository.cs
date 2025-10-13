@@ -24,9 +24,9 @@ namespace Repository.Repositories
             return await _context.Cars.ToListAsync();
         }
 
-        public async Task<Car> GetByIdAsync(int id)
+        public async Task<Car> SearchByNameAsync(string Name)
         {
-            return await _context.Cars.FindAsync(id);
+            return await _context.Cars.FindAsync(Name);
         }
 
         public async Task AddAsync(Car car)

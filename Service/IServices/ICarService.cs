@@ -10,7 +10,7 @@ namespace Service.IServices
     public interface ICarService
     {
         Task<IEnumerable<Car>> GetAllAsync();
-        Task<Car> GetByIdAsync(int id);
+        Task<Car> SearchByNameAsync(string Name);
         Task AddAsync(Car car);
         Task UpdateAsync(Car car);
         Task DeleteAsync(int id);
