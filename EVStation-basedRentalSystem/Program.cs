@@ -7,6 +7,8 @@ using Repository.Context;
 using Repository.IRepositories;
 using Repository.Repositories;
 using Service.EmailConfirmation;
+using Service.Implementations;
+using Service.Interfaces;
 using Service.IServices;
 using Service.Mapper;
 using Service.Services;
@@ -82,11 +84,13 @@ builder.Services.AddSwaggerGen(option =>
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICarService, CarService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
 //Others
 builder.Services.Configure<SmtpSettings>(smtpSettings);

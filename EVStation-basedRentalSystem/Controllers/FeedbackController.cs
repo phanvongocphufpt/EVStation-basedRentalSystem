@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
+using Service.Interfaces;
 using Service.IServices;
-using System.Threading.Tasks;
 
-namespace WebAPI.Controllers
+namespace EVStation_basedRentalSystem.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class FeedbackController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;
@@ -23,16 +24,15 @@ namespace WebAPI.Controllers
             return Ok(feedbacks);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        // 🔍 Tìm feedback theo RentalOrderId (gắn với 1 chiếc xe cụ thể)
+        [HttpGet("byCar/{carName}")]
+        public async Task<IActionResult> GetByCarName(string carName)
         {
-            var feedback = await _feedbackService.GetByIdAsync(id);
-            if (feedback == null)
-                return NotFound(new { message = "Feedback not found." });
-
-            return Ok(feedback);
+            var fb = await _feedbackService.GetByCarName(carName);
+            if (fb == null)
+                return NotFound($"Không tìm thấy feedback cho xe có tên chứa: {carName}");
+            return Ok(fb);
         }
-
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Feedback feedback)
         {
@@ -40,27 +40,22 @@ namespace WebAPI.Controllers
             return Ok(new { message = "Feedback created successfully!" });
         }
 
+       
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Feedback feedback)
         {
             if (id != feedback.Id)
-                return BadRequest();
-
-            if (!await _feedbackService.ExistsAsync(id))
-                return NotFound();
-
+                return BadRequest("ID không khớp");
             await _feedbackService.UpdateAsync(feedback);
-            return Ok(new { message = "Feedback updated successfully!" });
+            return NoContent();
         }
 
+        // 🔥 XÓA MỀM THEO ID
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (!await _feedbackService.ExistsAsync(id))
-                return NotFound();
-
             await _feedbackService.DeleteAsync(id);
-            return Ok(new { message = "Feedback deleted successfully!" });
+            return NoContent();
         }
     }
 }
