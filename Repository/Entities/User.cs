@@ -32,6 +32,6 @@ namespace Repository.Entities
         public ICollection<RentalOrder> RentalOrders { get; set; }
         public ICollection<Payment> Payments { get; set; }
         public ICollection<CarDeliveryHistory> CarDeliveryHistories { get; set; }
-        public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
+        public ICollection<RentalContact> RentalContacts { get; set; }
     }
 }
