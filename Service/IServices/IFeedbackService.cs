@@ -1,17 +1,19 @@
 ﻿using Repository.Entities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace Service.Interfaces
+namespace Service.IServices
 {
     public interface IFeedbackService
     {
         Task<IEnumerable<Feedback>> GetAllAsync();
-        Task<Feedback> GetByCarName(string carName); // 🔍 tìm feedback theo xe
-        Task<IEnumerable<Feedback>> GetByUserIdAsync(int userId);
+        Task<Feedback> GetByIdAsync(int id);
         Task AddAsync(Feedback feedback);
         Task UpdateAsync(Feedback feedback);
         Task DeleteAsync(int id);
-      
+        Task<bool> ExistsAsync(int id);
     }
 }

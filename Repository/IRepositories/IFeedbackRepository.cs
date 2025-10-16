@@ -1,17 +1,20 @@
 ﻿using Repository.Entities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace Repository.Repositories
+namespace Repository.IRepositories
 {
     public interface IFeedbackRepository
     {
         Task<IEnumerable<Feedback>> GetAllAsync();
-        Task<Feedback> GetByCarName(string carName); // 🔍 tìm feedback theo xe (RentalOrderId)
-        Task<IEnumerable<Feedback>> GetByUserIdAsync(int userId);
+        Task<Feedback> GetByIdAsync(int id);
         Task AddAsync(Feedback feedback);
         Task UpdateAsync(Feedback feedback);
         Task DeleteAsync(int id);
-       
+        Task<bool> ExistsAsync(int id);
     }
 }
+
