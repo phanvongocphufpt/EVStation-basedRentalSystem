@@ -27,7 +27,7 @@ namespace Repository.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Feedback> GetByCarName(string carName)
+        public async Task<Feedback?> GetByCarName(string carName)
         {
             return await _context.Feedbacks
                 .Include(f => f.RentalOrder)

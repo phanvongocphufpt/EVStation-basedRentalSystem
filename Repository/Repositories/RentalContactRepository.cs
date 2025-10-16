@@ -44,7 +44,7 @@ namespace Repository.Repositories
             await _context.RentalContacts.AddAsync(rentalContact);
             await _context.SaveChangesAsync();
         }
-        public async Task<RentalContact> GetByIdAsync(int id)
+        public async Task<RentalContact?> GetByIdAsync(int id)
         {
             return await _context.RentalContacts
                 .Include(r => r.Lessee)
