@@ -10,7 +10,7 @@ namespace Repository.Entities
     public class Car
     {
         [Key]
-
+         
         public int Id { get; set; }
         public string Model { get; set; }
         public string Name { get; set; }
@@ -31,6 +31,6 @@ namespace Repository.Entities
         public bool IsDeleted { get; set; }
         public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
         public ICollection<RentalOrder> RentalOrders { get; set; }
-
-    }
+        
+    }   
 }

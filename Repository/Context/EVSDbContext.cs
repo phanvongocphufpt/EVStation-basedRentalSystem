@@ -229,6 +229,59 @@ namespace Repository.Context
                     .OnDelete(DeleteBehavior.Restrict);
 
                 // Note: Ignored ICollection<CarRentalLocation> as no corresponding FK in CarRentalLocation
+                entity.HasData(
+            new User
+            {
+                Id = 1,
+                Email = "admin@gmail.com",
+                Password = "1",
+                PasswordHash = "1",
+                FullName = "Admin User",
+                Role = "Admin",
+                ConfirmEmailToken = null,
+                IsEmailConfirmed = true,
+                CreatedAt = new DateTime(2025, 10, 11),
+                UpdatedAt = null,
+                IsActive = true,
+                DriverLicenseId = null,
+                CitizenId = null,
+                FeedbackId = null
+            },
+            new User
+            {
+                Id = 2,
+                Email = "staff@gmail.com",
+                Password = "1",
+                PasswordHash = "1",
+                FullName = "Staff User",
+                Role = "Staff",
+                ConfirmEmailToken = null,
+                IsEmailConfirmed = true,
+                CreatedAt = new DateTime(2025, 10, 11),
+                UpdatedAt = null,
+                IsActive = true,
+                DriverLicenseId = null,
+                CitizenId = null,
+                FeedbackId = null
+            },
+            new User
+            {
+                Id = 3,
+                Email = "customer@gmail.com",
+                Password = "1",
+                PasswordHash = "1",
+                FullName = "Customer User",
+                Role = "Customer",
+                ConfirmEmailToken = null,
+                IsEmailConfirmed = true,
+                CreatedAt = new DateTime(2025, 10, 11),
+                UpdatedAt = null,
+                IsActive = true,
+                DriverLicenseId = null,
+                CitizenId = null,
+                FeedbackId = null
+                    }
+                );
             });
 
             base.OnModelCreating(modelBuilder);
