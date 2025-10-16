@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 using Service.IServices;
-using System.Threading.Tasks;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -24,15 +24,13 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(cars);
         }
 
-        // GET: api/Car/id
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        // GET: api/Car/byName/{name}
+        [HttpGet("byName/{name}")]
+        public async Task<IActionResult> GetByName(string name)
         {
-            var car = await _carService.GetByIdAsync(id);
+            var car = await _carService.GetByNameAsync(name);
             if (car == null)
-
-                return NotFound(new { message = "Car Maybe Deleted or Not Existed !!! " }); ;
-
+                return NotFound($"Không tìm thấy xe có tên: {name}");
             return Ok(car);
         }
 
@@ -44,26 +42,26 @@ namespace EVStation_basedRentalSystem.Controllers
                 return BadRequest(ModelState);
 
             await _carService.AddAsync(car);
-            return Ok(new { message = "Car created successfully !!! " });
+            return CreatedAtAction(nameof(GetByName), new { name = car.Name }, car);
         }
 
-        // PUT: api/Car/id
+        // PUT: api/Car/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Car car)
         {
             if (id != car.Id)
-                return BadRequest("Not Found This ID");
+                return BadRequest("ID không khớp");
 
             await _carService.UpdateAsync(car);
-            return Ok(new { message = "Car updated successfully !!!" });
+            return NoContent();
         }
 
-        // DELETE: api/Car/id
+        // DELETE: api/Car/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             await _carService.DeleteAsync(id);
-            return Ok(new { message = "Car deleted successfully !!!" });
+            return NoContent();
         }
     }
 }

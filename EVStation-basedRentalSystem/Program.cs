@@ -12,6 +12,9 @@ using Service.Mapper;
 using Service.Services;
 using System.Text;
 
+
+
+
 var builder = WebApplication.CreateBuilder(args);
 var smtpSettings = builder.Configuration.GetSection("SmtpSettings");
 var connectionString = builder.Configuration.GetConnectionString("Database");
