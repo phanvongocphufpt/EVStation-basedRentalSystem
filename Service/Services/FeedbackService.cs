@@ -1,53 +1,44 @@
 ﻿using Repository.Entities;
 using Repository.IRepositories;
+using Repository.Repositories;
 using Service.IServices;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Service.Services
 {
     public class FeedbackService : IFeedbackService
     {
-       
-            private readonly IFeedbackRepository _feedbackRepository;
+        private readonly IFeedbackRepository _feedbackRepository;
 
-            public FeedbackService(IFeedbackRepository feedbackRepository)
-            {
-                _feedbackRepository = feedbackRepository;
-            }
+        public FeedbackService(IFeedbackRepository feedbackRepository)
+        {
+            _feedbackRepository = feedbackRepository;
+        }
 
-            public Task<IEnumerable<Feedback>> GetAllAsync()
-            {
-                return _feedbackRepository.GetAllAsync();
-            }
+        public async Task<IEnumerable<Feedback>> GetAllAsync()
+        {
+            return await _feedbackRepository.GetAllAsync();
+        }
 
-            public Task<Feedback> GetByIdAsync(int id)
-            {
-                return _feedbackRepository.GetByIdAsync(id);
-            }
+        public async Task<Feedback> GetByCarName(string carName)
+        {
+            return await _feedbackRepository.GetByCarName(carName);
+        }
 
-            public Task AddAsync(Feedback feedback)
-            {
-                return _feedbackRepository.AddAsync(feedback);
-            }
+        public async Task AddAsync(Feedback feedback)
+        {
+            await _feedbackRepository.AddAsync(feedback);
+        }
 
-            public Task UpdateAsync(Feedback feedback)
-            {
-                return _feedbackRepository.UpdateAsync(feedback);
-            }
+        public async Task UpdateAsync(Feedback feedback)
+        {
+            await _feedbackRepository.UpdateAsync(feedback);
+        }
 
-            public Task DeleteAsync(int id)
-            {
-                return _feedbackRepository.DeleteAsync(id);
-            }
-
-            public Task<bool> ExistsAsync(int id)
-            {
-                return _feedbackRepository.ExistsAsync(id);
-            }
+        public async Task DeleteAsync(int id)
+        {
+            await _feedbackRepository.DeleteAsync(id);
         }
     }
-
+}

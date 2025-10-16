@@ -1,8 +1,5 @@
 ﻿using Repository.Entities;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Service.IServices
@@ -10,10 +7,9 @@ namespace Service.IServices
     public interface IRentalContactService
     {
         Task<IEnumerable<RentalContact>> GetAllAsync();
-        Task<RentalContact> GetByIdAsync(int id);
-        Task AddAsync(RentalContact rentalContact);
-        Task UpdateAsync(RentalContact rentalContact);
+        Task<RentalContact?> GetByRentalOrderIdAsync(int rentalOrderId); // 🔍 get by RentalOrderId
+        Task AddAsync(RentalContact contact);
+        Task UpdateAsync(RentalContact contact);
         Task DeleteAsync(int id);
-        Task<bool> ExistsAsync(int id);
     }
 }

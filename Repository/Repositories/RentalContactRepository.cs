@@ -5,7 +5,6 @@ using Repository.IRepositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Repository.Repositories
@@ -13,51 +12,51 @@ namespace Repository.Repositories
     public class RentalContactRepository : IRentalContactRepository
     {
         private readonly EVSDbContext _context;
+
         public RentalContactRepository(EVSDbContext context)
         {
             _context = context;
         }
+
         public async Task<IEnumerable<RentalContact>> GetAllAsync()
         {
-            return await _context.RentalContacts.Include(r => r.Lessee)
-                .Include(r => r.Lessor)
-                .Include(r => r.RentalOrder)
+            return await _context.RentalContacts
+                .Include(c => c.RentalOrder)
+                .Include(c => c.Lessee)
+                .Include(c => c.Lessor)
+                .Where(c => !c.IsDeleted)
                 .ToListAsync();
+        }
+
+        public async Task<RentalContact?> GetByRentalOrderIdAsync(int rentalOrderId)
+        {
+            return await _context.RentalContacts
+                .Include(c => c.RentalOrder)
+                .Include(c => c.Lessee)
+                .Include(c => c.Lessor)
+                .FirstOrDefaultAsync(c => c.RentalOrderId == rentalOrderId && !c.IsDeleted);
+        }
+
+        public async Task AddAsync(RentalContact contact)
+        {
+            await _context.RentalContacts.AddAsync(contact);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(RentalContact contact)
+        {
+            _context.RentalContacts.Update(contact);
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            var rentalContact = await _context.RentalContacts.FindAsync(id);
-            if (rentalContact != null)
+            var contact = await _context.RentalContacts.FindAsync(id);
+            if (contact != null)
             {
-                _context.RentalContacts.Remove(rentalContact);
+                contact.IsDeleted = true;
                 await _context.SaveChangesAsync();
             }
         }
-        public async Task<bool> ExistsAsync(int id)
-        {
-            return await _context.RentalContacts.AnyAsync(r => r.Id == id);
-        }
-
-        public async Task AddAsync(RentalContact rentalContact)
-        {
-            await _context.RentalContacts.AddAsync(rentalContact);
-            await _context.SaveChangesAsync();
-        }
-        public async Task<RentalContact> GetByIdAsync(int id)
-        {
-            return await _context.RentalContacts
-                .Include(r => r.Lessee)
-                .Include(r => r.Lessor)
-                .Include(r => r.RentalOrder)
-                .FirstOrDefaultAsync(r => r.Id == id);
-        }
-
-        public async Task UpdateAsync(RentalContact rentalContact)
-        {
-            _context.RentalContacts.Update(rentalContact);
-            await _context.SaveChangesAsync();
-        }
-
     }
-    }
+}

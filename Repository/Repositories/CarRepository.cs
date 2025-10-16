@@ -26,7 +26,7 @@ namespace Repository.Repositories
             return await _context.Cars.Where(c => !c.IsDeleted).ToListAsync();
         }
 
-        public async Task<Car> GetByNameAsync(string name)
+        public async Task<Car?> GetByNameAsync(string name)
         {
             return await _context.Cars
                .Where(c => !c.IsDeleted && c.Name.ToLower().Contains(name.ToLower()))

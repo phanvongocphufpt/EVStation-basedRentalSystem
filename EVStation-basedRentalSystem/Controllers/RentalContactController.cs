@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
+
 using Service.IServices;
 using System.Threading.Tasks;
 
@@ -9,55 +10,45 @@ namespace EVStation_basedRentalSystem.Controllers
     [ApiController]
     public class RentalContactController : ControllerBase
     {
-        private readonly IRentalContactService _rentalContactService;
+        private readonly IRentalContactService _service;
 
-        public RentalContactController(IRentalContactService rentalContactService)
+        public RentalContactController(IRentalContactService service)
         {
-            _rentalContactService = rentalContactService;
+            _service = service;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var contacts = await _rentalContactService.GetAllAsync();
-            return Ok(contacts);
-        }
+        public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        // 🔍 Lấy hợp đồng theo RentalOrderId
+        [HttpGet("byRentalOrder/{rentalOrderId}")]
+        public async Task<IActionResult> GetByRentalOrderId(int rentalOrderId)
         {
-            var contact = await _rentalContactService.GetByIdAsync(id);
-            if (contact == null)
-                return NotFound(new { message = "RentalContact not found!" });
-
+            var contact = await _service.GetByRentalOrderIdAsync(rentalOrderId);
+            if (contact == null) return NotFound($"Không tìm thấy hợp đồng với RentalOrderId = {rentalOrderId}");
             return Ok(contact);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] RentalContact contact)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            await _rentalContactService.AddAsync(contact);
-            return Ok(new { message = "RentalContact created successfully!" });
+            await _service.AddAsync(contact);
+            return Ok(contact);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] RentalContact contact)
         {
-            if (id != contact.Id)
-                return BadRequest("RentalContact ID mismatch");
-
-            await _rentalContactService.UpdateAsync(contact);
-            return Ok(new { message = "RentalContact updated successfully!" });
+            if (id != contact.Id) return BadRequest();
+            await _service.UpdateAsync(contact);
+            return Ok(contact);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _rentalContactService.DeleteAsync(id);
-            return Ok(new { message = "RentalContact deleted successfully!" });
+            await _service.DeleteAsync(id);
+            return NoContent();
         }
     }
 }

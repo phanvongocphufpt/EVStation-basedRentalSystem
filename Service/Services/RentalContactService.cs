@@ -1,54 +1,29 @@
 ﻿using Repository.Entities;
 using Repository.IRepositories;
-using Repository.Repositories;
 using Service.IServices;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Service.Services
 {
     public class RentalContactService : IRentalContactService
     {
-        private readonly IRentalContactRepository _rentalContactRepository;
+        private readonly IRentalContactRepository _repository;
 
-        public RentalContactService(IRentalContactRepository rentalContactRepository)
+        public RentalContactService(IRentalContactRepository repository)
         {
-            _rentalContactRepository = rentalContactRepository;
+            _repository = repository;
         }
 
-        public Task<IEnumerable<RentalContact>> GetAllAsync()
-        {
-            return _rentalContactRepository.GetAllAsync();
-        }
+        public Task<IEnumerable<RentalContact>> GetAllAsync() => _repository.GetAllAsync();
 
-        public Task<RentalContact> GetByIdAsync(int id)
-        {
-            return _rentalContactRepository.GetByIdAsync(id);
-        }
+        public Task<RentalContact?> GetByRentalOrderIdAsync(int rentalOrderId)
+            => _repository.GetByRentalOrderIdAsync(rentalOrderId);
 
-        public Task AddAsync(RentalContact rentalContact)
-        {
-            return _rentalContactRepository.AddAsync(rentalContact);
-        }
+        public Task AddAsync(RentalContact contact) => _repository.AddAsync(contact);
 
-        public Task UpdateAsync(RentalContact rentalContact)
-        {
-            return _rentalContactRepository.UpdateAsync(rentalContact);
-        }
+        public Task UpdateAsync(RentalContact contact) => _repository.UpdateAsync(contact);
 
-        public Task DeleteAsync(int id)
-        {
-            return _rentalContactRepository.DeleteAsync(id);
-        }
-        public Task<bool> ExistsAsync(int id)
-        {
-            return _rentalContactRepository.ExistsAsync(id);
-        }
-
+        public Task DeleteAsync(int id) => _repository.DeleteAsync(id);
     }
 }
-
-

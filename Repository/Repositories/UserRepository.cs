@@ -56,7 +56,7 @@ namespace Repository.Repositories
             }
         }
 
-        public async Task<User> GetByConfirmationTokenAsync(string token)
+        public async Task<User?> GetByConfirmationTokenAsync(string token)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.ConfirmEmailToken == token);
         }

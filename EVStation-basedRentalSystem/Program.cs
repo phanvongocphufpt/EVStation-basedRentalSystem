@@ -82,11 +82,15 @@ builder.Services.AddSwaggerGen(option =>
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<IRentalContactRepository, RentalContactRepository>();
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICarService, CarService>();
+builder.Services.AddScoped<IRentalContactService, RentalContactService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
 //Others
 builder.Services.Configure<SmtpSettings>(smtpSettings);
