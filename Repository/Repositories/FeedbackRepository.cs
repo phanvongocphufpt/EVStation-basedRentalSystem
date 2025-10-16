@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Repository.Context;
 using Repository.Entities;
+using Repository.IRepositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,13 +21,13 @@ namespace Repository.Repositories
         public async Task<IEnumerable<Feedback>> GetAllAsync()
         {
             return await _context.Feedbacks
-                .Where(f => !f.IsDeleted)
-                .Include(f => f.User)
                 .Include(f => f.RentalOrder)
-                    .ThenInclude(r => r.Car) // 🔍 lấy luôn thông tin xe
+                .ThenInclude(o => o.Car)
+                .Where(f => !f.IsDeleted)
                 .ToListAsync();
         }
 
+        // 🔍 Tìm feedback theo tên xe
         public async Task<Feedback?> GetByCarName(string carName)
         {
             return await _context.Feedbacks
@@ -35,16 +36,6 @@ namespace Repository.Repositories
                 .Where(f => !f.IsDeleted &&
                             f.RentalOrder.Car.Name.ToLower().Contains(carName.ToLower()))
                 .FirstOrDefaultAsync();
-        }
-
-        public async Task<IEnumerable<Feedback>> GetByUserIdAsync(int userId)
-        {
-            return await _context.Feedbacks
-                .Where(f => f.UserId == userId && !f.IsDeleted)
-                .Include(f => f.User)
-                .Include(f => f.RentalOrder)
-                    .ThenInclude(r => r.Car)
-                .ToListAsync();
         }
 
         public async Task AddAsync(Feedback feedback)
@@ -59,18 +50,14 @@ namespace Repository.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // ✅ XÓA MỀM (IsDeleted = true)
         public async Task DeleteAsync(int id)
         {
-            var feedback = await _context.Feedbacks.FindAsync(id);
-            if (feedback != null && !feedback.IsDeleted)
+            var fb = await _context.Feedbacks.FindAsync(id);
+            if (fb != null)
             {
-                feedback.IsDeleted = true;
+                fb.IsDeleted = true;
                 await _context.SaveChangesAsync();
             }
         }
-
-       
-      
     }
 }

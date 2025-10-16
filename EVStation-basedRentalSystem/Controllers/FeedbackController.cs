@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
-using Service.Interfaces;
 using Service.IServices;
+using System.Threading.Tasks;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -20,11 +19,11 @@ namespace EVStation_basedRentalSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var feedbacks = await _feedbackService.GetAllAsync();
-            return Ok(feedbacks);
+            var list = await _feedbackService.GetAllAsync();
+            return Ok(list);
         }
 
-        // 🔍 Tìm feedback theo RentalOrderId (gắn với 1 chiếc xe cụ thể)
+        // 🔍 Tìm feedback theo tên xe
         [HttpGet("byCar/{carName}")]
         public async Task<IActionResult> GetByCarName(string carName)
         {
@@ -33,24 +32,27 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound($"Không tìm thấy feedback cho xe có tên chứa: {carName}");
             return Ok(fb);
         }
+
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Feedback feedback)
+        public async Task<IActionResult> Create([FromBody] Feedback fb)
         {
-            await _feedbackService.AddAsync(feedback);
-            return Ok(new { message = "Feedback created successfully!" });
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _feedbackService.AddAsync(fb);
+            return Ok(fb);
         }
 
-       
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Feedback feedback)
+        public async Task<IActionResult> Update(int id, [FromBody] Feedback fb)
         {
-            if (id != feedback.Id)
+            if (id != fb.Id)
                 return BadRequest("ID không khớp");
-            await _feedbackService.UpdateAsync(feedback);
+
+            await _feedbackService.UpdateAsync(fb);
             return NoContent();
         }
 
-        // 🔥 XÓA MỀM THEO ID
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

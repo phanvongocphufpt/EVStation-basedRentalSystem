@@ -1,10 +1,11 @@
 ﻿using Repository.Entities;
+using Repository.IRepositories;
 using Repository.Repositories;
-using Service.Interfaces;
+using Service.IServices;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Service.Implementations
+namespace Service.Services
 {
     public class FeedbackService : IFeedbackService
     {
@@ -24,10 +25,6 @@ namespace Service.Implementations
         {
             return await _feedbackRepository.GetByCarName(carName);
         }
-        public async Task<IEnumerable<Feedback>> GetByUserIdAsync(int userId)
-        {
-            return await _feedbackRepository.GetByUserIdAsync(userId);
-        }
 
         public async Task AddAsync(Feedback feedback)
         {
@@ -43,7 +40,5 @@ namespace Service.Implementations
         {
             await _feedbackRepository.DeleteAsync(id);
         }
-
-    
     }
 }
