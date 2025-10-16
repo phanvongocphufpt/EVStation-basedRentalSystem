@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Repository.Context;
 using Repository.Entities;
 using Repository.IRepositories;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace Repository.Repositories
 {
@@ -21,12 +23,14 @@ namespace Repository.Repositories
 
         public async Task<IEnumerable<Car>> GetAllAsync()
         {
-            return await _context.Cars.ToListAsync();
+            return await _context.Cars.Where(c => !c.IsDeleted).ToListAsync();
         }
 
-        public async Task<Car> GetByIdAsync(int id)
+        public async Task<Car> GetByNameAsync(string name)
         {
-            return await _context.Cars.FindAsync(id);
+            return await _context.Cars
+               .Where(c => !c.IsDeleted && c.Name.ToLower().Contains(name.ToLower()))
+                .FirstOrDefaultAsync();
         }
 
         public async Task AddAsync(Car car)
@@ -46,14 +50,9 @@ namespace Repository.Repositories
             var car = await _context.Cars.FindAsync(id);
             if (car != null)
             {
-                _context.Cars.Remove(car);
+                car.IsDeleted = true;
                 await _context.SaveChangesAsync();
             }
-        }
-
-        public async Task<bool> ExistsAsync(int id)
-        {
-            return await _context.Cars.AnyAsync(c => c.Id == id);
         }
     }
 }

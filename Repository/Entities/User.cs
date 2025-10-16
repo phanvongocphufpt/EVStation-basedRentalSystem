@@ -16,6 +16,10 @@ namespace Repository.Entities
         public string PasswordHash { get; set; }
         public string FullName { get; set; }
         public string Role { get; set; }
+        public string? ConfirmEmailToken { get; set; }
+        public bool IsEmailConfirmed { get; set; } = false;
+        public string? ResetPasswordToken { get; set; }
+        public DateTime? ResetPasswordTokenExpiry { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }
@@ -28,6 +32,6 @@ namespace Repository.Entities
         public ICollection<RentalOrder> RentalOrders { get; set; }
         public ICollection<Payment> Payments { get; set; }
         public ICollection<CarDeliveryHistory> CarDeliveryHistories { get; set; }
-        public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
+        public ICollection<RentalContact> RentalContacts { get; set; }
     }
 }

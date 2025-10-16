@@ -1,11 +1,13 @@
 ﻿using Repository.Entities;
 using Repository.IRepositories;
+using Repository.Repositories;
 using Service.IServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace Service.Services
 {
@@ -18,29 +20,29 @@ namespace Service.Services
             _carRepository = carRepository;
         }
 
-        public Task<IEnumerable<Car>> GetAllAsync()
+        public async Task<IEnumerable<Car>> GetAllAsync()
         {
-            return _carRepository.GetAllAsync();
+            return await _carRepository.GetAllAsync();
         }
 
-        public Task<Car> GetByIdAsync(int id)
+        public async Task<Car> GetByNameAsync(string name)
         {
-            return _carRepository.GetByIdAsync(id);
+            return await _carRepository.GetByNameAsync(name);
         }
 
-        public Task AddAsync(Car car)
+        public async Task AddAsync(Car car)
         {
-            return _carRepository.AddAsync(car);
+            await _carRepository.AddAsync(car);
         }
 
-        public Task UpdateAsync(Car car)
+        public async Task UpdateAsync(Car car)
         {
-            return _carRepository.UpdateAsync(car);
+            await _carRepository.UpdateAsync(car);
         }
 
-        public Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
-            return _carRepository.DeleteAsync(id);
+            await _carRepository.DeleteAsync(id);
         }
     }
 }

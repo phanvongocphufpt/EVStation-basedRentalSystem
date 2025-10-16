@@ -18,5 +18,6 @@ namespace Repository.Entities
         public bool IsActive { get; set; }
         public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
         public ICollection<RentalContact> RentalContacts { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
