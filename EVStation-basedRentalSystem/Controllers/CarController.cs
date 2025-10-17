@@ -50,6 +50,7 @@ namespace EVStation_basedRentalSystem.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] Car car)
         {
             if (id != car.Id)
+
                 return BadRequest("ID không khớp");
 
             await _carService.UpdateAsync(car);
