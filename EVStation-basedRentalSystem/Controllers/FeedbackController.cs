@@ -8,7 +8,7 @@ namespace EVStation_basedRentalSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize] // Yêu cầu xác thực cho tất cả các hành động
     public class FeedbackController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;
@@ -25,7 +25,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(list);
         }
         // 🔹 GET: api/Feedback (phân trang + tìm kiếm)
-        [HttpGet]
+        [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 5, [FromQuery] string? keyword = null)
         {
             var pagedFeedbacks = await _feedbackService.GetPagedAsync(pageIndex, pageSize, keyword);

@@ -36,9 +36,9 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound($"Không tìm thấy xe có tên: {name}");
             return Ok(car);
         }
-        //
-        [HttpGet]
-        public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 5, [FromQuery] string? keyword = null)
+       
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 10, [FromQuery] string? keyword = null)
         {
             var result = await _carService.GetPagedAsync(pageIndex, pageSize, keyword);
             return Ok(result);
