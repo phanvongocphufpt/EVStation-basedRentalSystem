@@ -26,7 +26,6 @@ namespace Service.Services
         {
             var allFeedbacks = await _feedbackRepository.GetAllAsync();
 
-            // Bỏ qua những feedback đã bị xóa mềm
             var filtered = allFeedbacks.Where(f => !f.IsDeleted);
 
             // Tìm kiếm theo keyword (nếu có)
