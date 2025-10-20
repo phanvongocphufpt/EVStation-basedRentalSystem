@@ -15,13 +15,21 @@ namespace EVStation_basedRentalSystem.Controllers
         {
             _feedbackService = feedbackService;
         }
-
+        // Không phân trang
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var list = await _feedbackService.GetAllAsync();
             return Ok(list);
         }
+        // 🔹 GET: api/Feedback (phân trang + tìm kiếm)
+        [HttpGet]
+        public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 5, [FromQuery] string? keyword = null)
+        {
+            var pagedFeedbacks = await _feedbackService.GetPagedAsync(pageIndex, pageSize, keyword);
+            return Ok(pagedFeedbacks);
+        }
+
 
         // 🔍 Tìm feedback theo tên xe
         [HttpGet("byCar/{carName}")]

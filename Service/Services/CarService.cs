@@ -1,6 +1,7 @@
 ﻿using Repository.Entities;
 using Repository.IRepositories;
 using Repository.Repositories;
+using Service.Common.Service.Common;
 using Service.IServices;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,36 @@ namespace Service.Services
         {
             return await _carRepository.GetByNameAsync(name);
         }
+
+        public async Task<Pagination<Car>> GetPagedAsync(int pageIndex, int pageSize, string? keyword = null)
+        {
+            var cars = await _carRepository.GetAllAsync();
+            var query = cars.Where(c => !c.IsDeleted);
+
+            // Lọc theo từ khóa nếu có
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                keyword = keyword.ToLower();
+                query = query.Where(c => c.Name.ToLower().Contains(keyword) || c.Model.ToLower().Contains(keyword));
+            }
+
+            var totalCount = query.Count();
+
+            var pagedCars = query
+                .OrderByDescending(c => c.CreatedAt)
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new Pagination<Car>
+            {
+                TotalItemsCount = totalCount,
+                PageIndex = pageIndex,
+                PageSize = pageSize,
+                Items = pagedCars
+            };
+        }
+
 
         public async Task AddAsync(Car car)
         {
