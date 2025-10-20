@@ -8,6 +8,7 @@ namespace EVStation_basedRentalSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FeedbackController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;
@@ -42,32 +43,81 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(fb);
         }
 
-        [HttpPost]
         
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] Feedback fb)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // 🔹 Lấy userId từ token JWT
+            var userIdClaim = User.FindFirst("Id");
+            if (userIdClaim == null)
+                return Unauthorized("Không thể xác định người dùng.");
+
+            int userId = int.Parse(userIdClaim.Value);
+            fb.UserId = userId; // 🔒 Gắn chủ sở hữu feedback
+
+            // 🔹 Gắn ngày tạo
+            fb.CreatedAt = DateTime.UtcNow;
+            fb.IsDeleted = false;
+
             await _feedbackService.AddAsync(fb);
-            return Ok(fb);
+
+            return Ok(new
+            {
+                Message = "Thêm feedback thành công.",
+                fb
+            });
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Feedback fb)
         {
-            if (id != fb.Id)
-                return BadRequest("ID không khớp");
+            var userIdClaim = User.FindFirst("Id");
+            if (userIdClaim == null)
+                return Unauthorized("Không thể xác định người dùng.");
 
-            await _feedbackService.UpdateAsync(fb);
-            return NoContent();
+            int userId = int.Parse(userIdClaim.Value);
+
+            // 🔍 Lấy feedback cũ
+            var existing = await _feedbackService.GetByCarName("carName");
+            if (existing == null || existing.IsDeleted)
+                return NotFound("Feedback không tồn tại.");
+
+            // ❌ Không phải chủ sở hữu
+            if (existing.UserId != userId)
+                return Forbid("Bạn không có quyền chỉnh sửa feedback này.");
+
+            // ✅ Cập nhật thông tin
+            existing.Title = fb.Title;
+            existing.Content = fb.Content;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            await _feedbackService.UpdateAsync(existing);
+
+            return Ok(new { Message = "Cập nhật feedback thành công.", existing });
         }
-
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+         public async Task<IActionResult> Delete(int id)
         {
+            var userIdClaim = User.FindFirst("Id");
+            if (userIdClaim == null)
+                return Unauthorized("Không thể xác định người dùng.");
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            var feedback = await _feedbackService.GetByCarName("carName");
+            if (feedback == null || feedback.IsDeleted)
+                return NotFound("Feedback không tồn tại.");
+
+            if (feedback.UserId != userId)
+                return Forbid("Bạn không có quyền xóa feedback này.");
+
             await _feedbackService.DeleteAsync(id);
-            return NoContent();
+
+            return Ok(new { Message = "Đã xóa mềm feedback thành công." });
         }
     }
 }

@@ -7,6 +7,7 @@ namespace EVStation_basedRentalSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CarController : ControllerBase
     {
         private readonly ICarService _carService;
@@ -17,6 +18,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // GET: api/Car
+        
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
