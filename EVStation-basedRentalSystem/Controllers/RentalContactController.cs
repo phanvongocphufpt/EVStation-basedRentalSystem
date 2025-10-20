@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 
 using Service.IServices;
@@ -30,6 +31,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Staff,Admin")]
         public async Task<IActionResult> Create([FromBody] RentalContact contact)
         {
             await _service.AddAsync(contact);
@@ -37,6 +39,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Staff,Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] RentalContact contact)
         {
             if (id != contact.Id) return BadRequest();
@@ -45,6 +48,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Staff,Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);

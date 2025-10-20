@@ -25,6 +25,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // GET: api/Car/byName/{name}
+
         [HttpGet("byName/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
@@ -41,6 +42,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(result);
         }
         // POST: api/Car
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Car car)
         {
@@ -52,6 +54,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // PUT: api/Car/{id}
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Car car)
         {
@@ -64,6 +67,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // DELETE: api/Car/{id}
+        [Authorize(Roles = "Staff,Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

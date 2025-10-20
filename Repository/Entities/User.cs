@@ -15,7 +15,7 @@ namespace Repository.Entities
         public string Password { get; set; }
         public string PasswordHash { get; set; }
         public string FullName { get; set; }
-        public string Role { get; set; }
+        public string Role { get; set; } // 1. Customer, 2. Staff, 3. Admin
         public string? ConfirmEmailToken { get; set; }
         public bool IsEmailConfirmed { get; set; } = false;
         public string? ResetPasswordToken { get; set; }
