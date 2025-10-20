@@ -78,6 +78,7 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
+
 //CORS
 builder.Services.AddCors(options =>
 {
