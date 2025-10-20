@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Repository.Context;
@@ -13,11 +12,13 @@ using Service.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-var smtpSettings = builder.Configuration.GetSection("SmtpSettings");
+
+// ====== Database ======
 var connectionString = builder.Configuration.GetConnectionString("Database");
 builder.Services.AddDbContext<EVSDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+// ====== JWT Auth ======
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
 builder.Services.AddAuthentication(x =>
 {
@@ -36,10 +37,18 @@ builder.Services.AddAuthentication(x =>
         ValidateAudience = false
     };
 });
-// Add services to the container.
-builder.Services.Configure<SmtpSettings>(smtpSettings);
-builder.Services.AddSingleton<EmailService>();
 
+// ====== CORS (⭐ phải đặt trước Build) ======
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy => policy
+            .WithOrigins("http://localhost:3000") // ✅ React
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+
+// ====== Services & DI ======
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(x =>
@@ -48,7 +57,6 @@ builder.Services.AddControllersWithViews()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
-    ////JWT Config
     option.DescribeAllParametersInCamelCase();
     option.ResolveConflictingActions(conf => conf.First());
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -76,23 +84,25 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-// Repositories
+// ====== Repositories ======
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
 
-// Services
+// ====== Services ======
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICarService, CarService>();
 
-//Others
+// ====== Others ======
+var smtpSettings = builder.Configuration.GetSection("SmtpSettings");
 builder.Services.Configure<SmtpSettings>(smtpSettings);
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
-builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+
+// ====== BUILD APP ======
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ====== Middlewares ======
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
@@ -100,6 +110,9 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 app.UseHttpsRedirection();
+
+// ✅ Kích hoạt CORS tại đây
+app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
