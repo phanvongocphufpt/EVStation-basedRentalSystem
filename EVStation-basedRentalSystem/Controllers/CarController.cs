@@ -18,7 +18,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // GET: api/Car
-        
+        [AllowAnonymous] // Cho phép xem xe không cần login
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -27,7 +27,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // GET: api/Car/byName/{name}
-
+        [AllowAnonymous] // Cho phép xem chi tiết xe không cần login
         [HttpGet("byName/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
@@ -37,6 +37,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(car);
         }
        
+        [AllowAnonymous] // Cho phép tìm kiếm xe không cần login
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 10, [FromQuery] string? keyword = null)
         {
