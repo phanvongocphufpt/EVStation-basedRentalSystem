@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -39,6 +39,7 @@ builder.Services.AddAuthentication(x =>
         ValidateAudience = false
     };
 });
+
 // Add services to the container.
 builder.Services.Configure<SmtpSettings>(smtpSettings);
 builder.Services.AddSingleton<EmailService>();
