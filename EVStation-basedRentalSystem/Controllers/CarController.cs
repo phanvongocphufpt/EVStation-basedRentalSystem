@@ -7,7 +7,7 @@ namespace EVStation_basedRentalSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    [Authorize]
     public class CarController : ControllerBase
     {
         private readonly ICarService _carService;
@@ -44,7 +44,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(result);
         }
         // POST: api/Car
-        //[Authorize(Roles = "Staff,Admin")]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Car car)
         {
