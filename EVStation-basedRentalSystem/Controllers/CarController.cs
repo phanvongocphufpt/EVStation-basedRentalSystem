@@ -7,7 +7,7 @@ namespace EVStation_basedRentalSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+
     public class CarController : ControllerBase
     {
         private readonly ICarService _carService;
@@ -18,7 +18,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // GET: api/Car
-        
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -36,7 +36,7 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound($"Không tìm thấy xe có tên: {name}");
             return Ok(car);
         }
-       
+
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 10, [FromQuery] string? keyword = null)
         {
@@ -44,12 +44,16 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(result);
         }
         // POST: api/Car
-        [Authorize(Roles = "Staff,Admin")]
+        //[Authorize(Roles = "Staff,Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Car car)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            car.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+    TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+            car.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+    TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
 
             await _carService.AddAsync(car);
             return CreatedAtAction(nameof(GetByName), new { name = car.Name }, car);
@@ -63,7 +67,8 @@ namespace EVStation_basedRentalSystem.Controllers
             if (id != car.Id)
 
                 return BadRequest("ID không khớp");
-
+            car.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+    TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
             await _carService.UpdateAsync(car);
             return NoContent();
         }
