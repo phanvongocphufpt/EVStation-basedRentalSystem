@@ -12,7 +12,7 @@ namespace Service.Common
     using System.Text;
     using System.Threading.Tasks;
 
-    namespace EduToyRent.Service.Common
+    namespace Service.Common
     {
         public class Pagination<T>
         {

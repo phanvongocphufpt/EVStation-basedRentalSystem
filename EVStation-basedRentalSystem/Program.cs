@@ -1,16 +1,22 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Repository.Context;
 using Repository.IRepositories;
 using Repository.Repositories;
+using Service.EmailConfirmation;
 using Service.IServices;
+using Service.Mapper;
 using Service.Services;
 using System.Text;
 
-var builder = WebApplication.CreateBuilder(args);
 
+
+
+var builder = WebApplication.CreateBuilder(args);
+var smtpSettings = builder.Configuration.GetSection("SmtpSettings");
 var connectionString = builder.Configuration.GetConnectionString("Database");
 builder.Services.AddDbContext<EVSDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -34,12 +40,14 @@ builder.Services.AddAuthentication(x =>
     };
 });
 // Add services to the container.
+builder.Services.Configure<SmtpSettings>(smtpSettings);
+builder.Services.AddSingleton<EmailService>();
 
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(x =>
         x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve);
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -71,20 +79,36 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
+//CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
+
+
+
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRentalOrderRepository, RentalOrderRepository>();
-builder.Services.AddScoped<IDriverLicenseRepository, DriverLicenseRepository>();
-builder.Services.AddScoped<ICitizenIdRepository, CitizenIdRepository>();
-
+builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<IRentalContactRepository, RentalContactRepository>();
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
 // Services
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IRentalOrderService, RentalOrderService>();
-builder.Services.AddScoped<IDriverLicenseService, DriverLicenseService>();
-builder.Services.AddScoped<ICitizenIdService, CitizenIdService>();
+builder.Services.AddScoped<ICarService, CarService>();
+builder.Services.AddScoped<IRentalContactService, RentalContactService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
-
+//Others
+builder.Services.Configure<SmtpSettings>(smtpSettings);
+builder.Services.AddTransient<EmailService>();
+builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -96,9 +120,12 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowReactApp");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
