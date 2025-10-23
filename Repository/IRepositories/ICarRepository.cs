@@ -1,9 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
-using Repository.Entities;
-using System;
+﻿using Repository.Entities;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Repository.IRepositories
@@ -11,9 +7,12 @@ namespace Repository.IRepositories
     public interface ICarRepository
     {
         Task<IEnumerable<Car>> GetAllAsync();
-        Task<Car> GetByNameAsync(string name);   
+        Task<Car> GetByNameAsync(string name);
         Task AddAsync(Car car);
         Task UpdateAsync(Car car);
         Task DeleteAsync(int id);
+
+        // Lấy top thuê nhiều nhất, chỉ entity
+        Task<IEnumerable<Car>> GetTopRentedAsync(int topCount);
     }
 }

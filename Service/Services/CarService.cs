@@ -1,14 +1,11 @@
 ﻿using Repository.Entities;
 using Repository.IRepositories;
-using Repository.Repositories;
 using Service.Common.Service.Common;
+using Service.DTOs;
 using Service.IServices;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 
 namespace Service.Services
 {
@@ -36,7 +33,6 @@ namespace Service.Services
             var cars = await _carRepository.GetAllAsync();
             var query = cars.Where(c => !c.IsDeleted);
 
-            // Lọc theo từ khóa nếu có
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 keyword = keyword.ToLower();
@@ -60,7 +56,6 @@ namespace Service.Services
             };
         }
 
-
         public async Task AddAsync(Car car)
         {
             await _carRepository.AddAsync(car);
@@ -74,6 +69,25 @@ namespace Service.Services
         public async Task DeleteAsync(int id)
         {
             await _carRepository.DeleteAsync(id);
+        }
+
+        // ✅ mới thêm
+        public async Task<IEnumerable<TopRentCarDto>> GetTopRentedAsync(int topCount)
+        {
+            var cars = await _carRepository.GetTopRentedAsync(topCount);
+
+            // Map entity -> DTO
+            return cars.Select(c => new TopRentCarDto
+            {
+                CarId = c.Id,
+                CarName = c.Name,
+                Model = c.Model,
+                ImageUrl = c.ImageUrl,
+                Seats = c.Seats,
+                SizeType = c.SizeType,
+                IsActive = c.IsActive,
+                RentalCount = c.RentalOrders?.Count ?? 0
+            });
         }
     }
 }

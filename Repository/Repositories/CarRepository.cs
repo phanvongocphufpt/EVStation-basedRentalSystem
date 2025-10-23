@@ -54,5 +54,23 @@ namespace Repository.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        // ✅ Hàm mới: lấy top xe thuê nhiều nhất
+        public async Task<IEnumerable<Car>> GetTopRentedAsync(int topCount)
+        {
+            var query = _context.RentalOrders
+                .Include(r => r.Car)
+                .GroupBy(r => r.CarId)
+                .Select(g => new
+                {
+                    Car = g.First().Car,
+                    RentalCount = g.Count()
+                })
+                .OrderByDescending(x => x.RentalCount)
+                .Take(topCount)
+                .Select(x => x.Car);
+
+            return await query.ToListAsync();
+        }
     }
 }
