@@ -18,7 +18,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // GET: api/Car
-        [AllowAnonymous] // Cho phép xem xe không cần login
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -27,7 +27,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         // GET: api/Car/byName/{name}
-        [AllowAnonymous] // Cho phép xem chi tiết xe không cần login
+
         [HttpGet("byName/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
@@ -36,8 +36,7 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound($"Không tìm thấy xe có tên: {name}");
             return Ok(car);
         }
-       
-        [AllowAnonymous] // Cho phép tìm kiếm xe không cần login
+
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 10, [FromQuery] string? keyword = null)
         {
@@ -51,6 +50,10 @@ namespace EVStation_basedRentalSystem.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            car.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+    TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+            car.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+    TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
 
             await _carService.AddAsync(car);
             return CreatedAtAction(nameof(GetByName), new { name = car.Name }, car);
@@ -64,7 +67,8 @@ namespace EVStation_basedRentalSystem.Controllers
             if (id != car.Id)
 
                 return BadRequest("ID không khớp");
-
+            car.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+    TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
             await _carService.UpdateAsync(car);
             return NoContent();
         }

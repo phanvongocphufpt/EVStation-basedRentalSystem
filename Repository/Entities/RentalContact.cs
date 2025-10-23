@@ -21,6 +21,6 @@ namespace Repository.Entities
         public User Lessee { get; set; }
         public RentalOrder RentalOrder { get; set; }
         public RentalLocation Lessor { get; set; }
-        public bool IsDeleted { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }
