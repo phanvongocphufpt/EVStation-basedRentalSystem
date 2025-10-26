@@ -1,5 +1,8 @@
-﻿using Repository.Entities;
+﻿using AutoMapper;
+using Repository.Entities;
 using Repository.IRepositories;
+using Service.Common;
+using Service.DTOs;
 using Service.IServices;
 using System;
 using System.Collections.Generic;
@@ -12,14 +15,17 @@ namespace Service.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-
-        public UserService(IUserRepository userRepository)
+        private readonly IMapper _mapper;
+        public UserService(IUserRepository userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
+            _mapper = mapper;
         }
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public async Task<Result<IEnumerable<UserDTO>>> GetAllAsync()
         {
-            return await _userRepository.GetAllAsync();
+            var users = await _userRepository.GetAllAsync();
+            var dtos = _mapper.Map<IEnumerable<UserDTO>>(users);
+            return Result<IEnumerable<UserDTO>>.Success(dtos);
         }
 
         public async Task<User?> GetByIdAsync(int id)

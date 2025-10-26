@@ -124,9 +124,9 @@ namespace Repository.Context
             modelBuilder.Entity<Feedback>(entity =>
             {
                 entity.HasOne(e => e.User)
-                    .WithOne(e => e.Feedback)
-                    .HasForeignKey<Feedback>(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .WithMany(e => e.Feedback)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(e => e.RentalOrder)
                     .WithMany()
@@ -208,10 +208,10 @@ namespace Repository.Context
                     .HasForeignKey<CitizenId>(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.Feedback)
+                entity.HasMany(e => e.Feedback)
                     .WithOne(e => e.User)
-                    .HasForeignKey<Feedback>(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(e => e.RentalOrders)
                     .WithOne(e => e.User)
@@ -235,7 +235,7 @@ namespace Repository.Context
                 Id = 1,
                 Email = "admin@gmail.com",
                 Password = "1",
-                PasswordHash = "1",
+                PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
                 FullName = "Admin User",
                 Role = "Admin",
                 ConfirmEmailToken = null,
@@ -244,15 +244,14 @@ namespace Repository.Context
                 UpdatedAt = null,
                 IsActive = true,
                 DriverLicenseId = null,
-                CitizenId = null,
-                FeedbackId = null
+                CitizenId = null
             },
             new User
             {
                 Id = 2,
                 Email = "staff@gmail.com",
                 Password = "1",
-                PasswordHash = "1",
+                PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
                 FullName = "Staff User",
                 Role = "Staff",
                 ConfirmEmailToken = null,
@@ -261,15 +260,14 @@ namespace Repository.Context
                 UpdatedAt = null,
                 IsActive = true,
                 DriverLicenseId = null,
-                CitizenId = null,
-                FeedbackId = null
+                CitizenId = null
             },
             new User
             {
                 Id = 3,
                 Email = "customer@gmail.com",
                 Password = "1",
-                PasswordHash = "1",
+                PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
                 FullName = "Customer User",
                 Role = "Customer",
                 ConfirmEmailToken = null,
@@ -278,8 +276,7 @@ namespace Repository.Context
                 UpdatedAt = null,
                 IsActive = true,
                 DriverLicenseId = null,
-                CitizenId = null,
-                FeedbackId = null
+                CitizenId = null
                     }
                 );
             });
