@@ -1,6 +1,8 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using Repository.Entities;
 using Repository.IRepositories;
+using Service.Common;
+using Service.DTOs;
 using Service.EmailConfirmation;
 using Service.IServices;
 using System;
@@ -93,22 +95,25 @@ namespace Service.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task Register(User user, string password)
+        public async Task<Result<AuthDTO>> Register(User user, string password)
         {
             if (user == null)
             {
-                throw new ArgumentNullException(nameof(user), "Người dùng không được để trống.");
+                var msg = new AuthDTO { Message = "Người dùng không được để trống." };
+                return Result<AuthDTO>.Success(msg);
             }
 
             if (string.IsNullOrWhiteSpace(password))
             {
-                throw new ArgumentException("Mật khẩu không được để trống.", nameof(password));
+                var msg = new AuthDTO { Message = "Mật khẩu không được để trống." };
+                return Result<AuthDTO>.Success(msg);
             }
 
             var existingUser = await _userRepository.GetByEmailAsync(user.Email);
             if (existingUser != null)
             {
-                throw new InvalidOperationException("Email đã được sử dụng.");
+                var msg = new AuthDTO { Message = "Email đã được sử dụng." };
+                return Result<AuthDTO>.Success(msg);
             }
 
             user.Role = string.IsNullOrWhiteSpace(user.Role) ? "Customer" : user.Role;
@@ -137,6 +142,8 @@ namespace Service.Services
                     throw;
                 }
             }
+            var successMsg = new AuthDTO { Message = "Đăng ký thành công! Vui lòng kiểm tra email để xác nhận." };
+            return Result<AuthDTO>.Success(successMsg);
         }
         public async Task ForgotPasswordAsync(string email)
         {
@@ -156,8 +163,8 @@ namespace Service.Services
 
         public async Task<bool> ResetPasswordAsync(string email, string otp, string newPassword)
         {
-            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
-                throw new ArgumentException("Mật khẩu mới phải ít nhất 6 ký tự.");
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
+                throw new ArgumentException("Mật khẩu mới phải ít nhất 8 ký tự.");
 
             var user = await _userRepository.GetByEmailAsync(email);
             if (user == null || !user.IsActive)

@@ -17,4 +17,30 @@ namespace Service.DTOs
             public int? DriverLicenseId { get; set; }
             public int? CitizenId { get; set; }
     }
+
+    public class CreateStaffUserDTO
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string FullName { get; set; } 
+    }
+
+    public class UpdateUserDTO
+    {
+        public int UserId { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string FullName { get; set; }
+    }
+    public class UpdateCustomerNameDTO
+    {
+        public int UserId { get; set; }
+        public string FullName { get; set; }
+    }
+    public class UpdateCustomerPasswordDTO
+    {
+        public int UserId { get; set; }
+        public string oldPassword { get; set; }
+        public string newPassword { get; set; }
+    }
 }

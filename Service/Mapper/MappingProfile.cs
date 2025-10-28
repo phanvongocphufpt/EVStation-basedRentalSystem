@@ -20,6 +20,7 @@ namespace Service.Mapper
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
                 .ForMember(dest => dest.DriverLicenseId, opt => opt.MapFrom(src => src.DriverLicenseId))
                 .ForMember(dest => dest.CitizenId, opt => opt.MapFrom(src => src.CitizenId));
+            CreateMap<CreateStaffUserDTO, User>();
         }
     }
 }

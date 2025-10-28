@@ -13,8 +13,10 @@ namespace Service.IServices
     {
         Task<Result<IEnumerable<UserDTO>>> GetAllAsync();
         Task<User?> GetByIdAsync(int id);
-        Task AddAsync(User user);
-        Task UpdateAsync(User user);
+        Task<Result<CreateStaffUserDTO>> AddAsync(CreateStaffUserDTO staffUserDTO);
+        Task<Result<UpdateUserDTO>> UpdateAsync(UpdateUserDTO updateUserDTO);
+        Task<Result<UpdateCustomerNameDTO>> UpdateCustomerNameAsync(UpdateCustomerNameDTO updateUserDTO);
+        Task<Result<UpdateCustomerPasswordDTO>> UpdateCustomerPasswordAsync(UpdateCustomerPasswordDTO updateUserDTO);
         Task DeleteAsync(int id);
     }
 }
