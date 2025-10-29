@@ -123,10 +123,10 @@ namespace Repository.Context.Migrations
                     CitizenIdNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -169,11 +169,12 @@ namespace Repository.Context.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Amount = table.Column<double>(type: "float", nullable: false),
                     PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    RentalOrderId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -240,7 +241,8 @@ namespace Repository.Context.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     CarId = table.Column<int>(type: "int", nullable: false),
-                    RentalContactId = table.Column<int>(type: "int", nullable: true)
+                    RentalContactId = table.Column<int>(type: "int", nullable: true),
+                    PaymentId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -251,6 +253,12 @@ namespace Repository.Context.Migrations
                         principalTable: "Cars",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RentalOrders_Payments_PaymentId",
+                        column: x => x.PaymentId,
+                        principalTable: "Payments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_RentalOrders_RentalContacts_RentalContactId",
                         column: x => x.RentalContactId,
@@ -385,14 +393,39 @@ namespace Repository.Context.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Cars",
+                columns: new[] { "Id", "BatteryDuration", "BatteryType", "CreatedAt", "ImageUrl", "IsActive", "IsDeleted", "Model", "Name", "RentPricePerDay", "RentPricePerDayWithDriver", "RentPricePerHour", "RentPricePerHourWithDriver", "Seats", "SizeType", "Status", "TrunkCapacity", "UpdatedAt" },
+                values: new object[] { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 1000000.0, 1400000.0, 45000.0, 60000.0, 5, "Sedan", 1, 425, null });
+
+            migrationBuilder.InsertData(
+                table: "RentalLocations",
+                columns: new[] { "Id", "Address", "CreatedAt", "IsActive", "IsDeleted", "Name", "UpdatedAt" },
+                values: new object[] { 1, "123 Tran Hung Dao St, Ho Chi Minh City", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), true, false, "Downtown Rental Location", null });
+
+            migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "ResetPasswordToken", "ResetPasswordTokenExpiry", "Role", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "admin@gmail.com", "Admin User", true, true, "1", "1", null, null, "Admin", null },
-                    { 2, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff@gmail.com", "Staff User", true, true, "1", "1", null, null, "Staff", null },
-                    { 3, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "customer@gmail.com", "Customer User", true, true, "1", "1", null, null, "Customer", null }
+                    { 1, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "admin@gmail.com", "Admin User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", null, null, "Admin", null },
+                    { 2, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", null, null, "Staff", null },
+                    { 3, 1, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, "customer@gmail.com", "Customer User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", null, null, "Customer", null }
                 });
+
+            migrationBuilder.InsertData(
+                table: "CarRentalLocations",
+                columns: new[] { "Id", "CarId", "LocationId", "Quantity" },
+                values: new object[] { 1, 1, 1, 5 });
+
+            migrationBuilder.InsertData(
+                table: "CitizenIds",
+                columns: new[] { "Id", "BirthDate", "CitizenIdNumber", "CreatedAt", "ImageUrl", "Name", "Status", "UpdatedAt", "UserId" },
+                values: new object[] { 1, new DateOnly(1990, 1, 1), "058203123456", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/citizen_id_sample.jpg", "Customer CitizenID Sample", 1, null, 3 });
+
+            migrationBuilder.InsertData(
+                table: "DriverLicenses",
+                columns: new[] { "Id", "CreatedAt", "ImageUrl", "Name", "Status", "UpdatedAt", "UserId" },
+                values: new object[] { 1, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/driver_license_sample.jpg", "Customer DriverLicense Sample", 1, null, 3 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CarDeliveryHistories_CarId",
@@ -448,7 +481,8 @@ namespace Repository.Context.Migrations
                 name: "IX_CitizenIds_UserId",
                 table: "CitizenIds",
                 column: "UserId",
-                unique: true);
+                unique: true,
+                filter: "[UserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DriverLicenses_UserId",
@@ -492,6 +526,13 @@ namespace Repository.Context.Migrations
                 column: "CarId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RentalOrders_PaymentId",
+                table: "RentalOrders",
+                column: "PaymentId",
+                unique: true,
+                filter: "[PaymentId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RentalOrders_RentalContactId",
                 table: "RentalOrders",
                 column: "RentalContactId",
@@ -526,13 +567,13 @@ namespace Repository.Context.Migrations
                 name: "Feedbacks");
 
             migrationBuilder.DropTable(
-                name: "Payments");
-
-            migrationBuilder.DropTable(
                 name: "RentalOrders");
 
             migrationBuilder.DropTable(
                 name: "Cars");
+
+            migrationBuilder.DropTable(
+                name: "Payments");
 
             migrationBuilder.DropTable(
                 name: "RentalContacts");

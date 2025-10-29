@@ -28,9 +28,15 @@ namespace Service.Services
             return Result<IEnumerable<UserDTO>>.Success(dtos);
         }
 
-        public async Task<User?> GetByIdAsync(int id)
+        public async Task<Result<UserDTO>> GetByIdAsync(int id)
         {
-            return await _userRepository.GetByIdAsync(id);
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return Result<UserDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id.");
+            }
+            var dto = _mapper.Map<UserDTO>(user);
+            return Result<UserDTO>.Success(dto);
         }
 
         public async Task<Result<CreateStaffUserDTO>> AddAsync(CreateStaffUserDTO staffUserDTO)

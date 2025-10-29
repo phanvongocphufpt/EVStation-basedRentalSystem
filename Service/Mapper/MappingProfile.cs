@@ -13,6 +13,7 @@ namespace Service.Mapper
     {
         public MappingProfile()
         {
+            //User Mappings
             CreateMap<User, UserDTO>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
@@ -21,6 +22,18 @@ namespace Service.Mapper
                 .ForMember(dest => dest.DriverLicenseId, opt => opt.MapFrom(src => src.DriverLicenseId))
                 .ForMember(dest => dest.CitizenId, opt => opt.MapFrom(src => src.CitizenId));
             CreateMap<CreateStaffUserDTO, User>();
+
+            //Payment Mappings
+            CreateMap<Payment, PaymentDTO>()
+                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.PaymentDate, opt => opt.MapFrom(src => src.PaymentDate))
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.UserFullname, opt => opt.MapFrom(src => src.RentalOrder.User.FullName))
+                .ForMember(dest => dest.Car, opt => opt.MapFrom(src => src.RentalOrder.Car.Name))
+                .ForMember(dest => dest.OrderDate, otp => otp.MapFrom(src => src.RentalOrder.OrderDate));
+            CreateMap<CreatePaymentDTO, Payment>();
         }
     }
 }

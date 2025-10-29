@@ -23,7 +23,7 @@ namespace EVStation_basedRentalSystem.Controllers
             var Users = await _userService.GetAllAsync();
             return Ok(Users);
         }
-        [HttpGet("{id:int}")]
+        [HttpGet("GetById")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -31,7 +31,7 @@ namespace EVStation_basedRentalSystem.Controllers
             if (user == null)
                 return NotFound();
 
-            return Ok(User);
+            return Ok(user);
         }
         [HttpPost("Create")]
         [Authorize(Roles = "Admin")]
