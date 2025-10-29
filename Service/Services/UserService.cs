@@ -122,7 +122,11 @@ namespace Service.Services
         }
         public async Task DeleteAsync(int id)
         {
-            await _userRepository.DeleteAsync(id);
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user != null)
+            {
+                await _userRepository.DeleteAsync(id);
+            }
         }
         private string HashPassword(string password)
         {
