@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
+using Service.DTOs;
 using Service.IServices;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -14,14 +16,14 @@ namespace EVStation_basedRentalSystem.Controllers
         {
             _userService = userService;
         }
-        [HttpGet]
+        [HttpGet("GetAll")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllUser()
         {
             var Users = await _userService.GetAllAsync();
             return Ok(Users);
         }
-        [HttpGet("{id:int}")]
+        [HttpGet("GetById")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -29,28 +31,50 @@ namespace EVStation_basedRentalSystem.Controllers
             if (user == null)
                 return NotFound();
 
-            return Ok(User);
+            return Ok(user);
         }
-        [HttpPost]
+        [HttpPost("Create")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([FromBody] User user)
+        public async Task<IActionResult> CreateStaff([FromBody] CreateStaffUserDTO staffUserDTO)
         {
-            if (user == null)
+            if (staffUserDTO == null)
                 return BadRequest("Invalid data.");
 
-            await _userService.AddAsync(user);
-            return Ok("User created successfully.");
+            var result = await _userService.AddAsync(staffUserDTO);
+            return Ok(result);
         }
 
-        [HttpPut("{id:int}")]
-        [Authorize(Roles = "Admin,Staff,Customer")]
-        public async Task<IActionResult> Update(int id, [FromBody] User user)
+        [HttpPut]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> Update([FromBody] UpdateUserDTO updateUserDTO)
         {
-            if (user == null || id != user.Id)
+            if (updateUserDTO == null)
                 return BadRequest("Invalid data.");
 
-            await _userService.UpdateAsync(user);
-            return Ok("User updated successfully.");
+            var result = await _userService.UpdateAsync(updateUserDTO);
+            return Ok(result);
+        }
+
+        [HttpPut("UpdateCustomerName")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> UpdateCustomerName([FromBody] UpdateCustomerNameDTO updateUserDTO)
+        {
+            if (updateUserDTO == null)
+                return BadRequest("Invalid data.");
+
+            var result = await _userService.UpdateCustomerNameAsync(updateUserDTO);
+            return Ok(result);
+        }
+
+        [HttpPut("UpdateCustomerPassword")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> UpdateCustomerPassword([FromBody] UpdateCustomerPasswordDTO updateUserDTO)
+        {
+            if (updateUserDTO == null)
+                return BadRequest("Invalid data.");
+
+            var result = await _userService.UpdateCustomerPasswordAsync(updateUserDTO);
+            return Ok(result);
         }
 
         [HttpDelete("{id:guid}")]

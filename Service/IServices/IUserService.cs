@@ -1,4 +1,6 @@
 ﻿using Repository.Entities;
+using Service.Common;
+using Service.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +11,12 @@ namespace Service.IServices
 {
     public interface IUserService
     {
-        Task<IEnumerable<User>> GetAllAsync();
-        Task<User?> GetByIdAsync(int id);
-        Task AddAsync(User user);
-        Task UpdateAsync(User user);
+        Task<Result<IEnumerable<UserDTO>>> GetAllAsync();
+        Task<Result<UserDTO>> GetByIdAsync(int id);
+        Task<Result<CreateStaffUserDTO>> AddAsync(CreateStaffUserDTO staffUserDTO);
+        Task<Result<UpdateUserDTO>> UpdateAsync(UpdateUserDTO updateUserDTO);
+        Task<Result<UpdateCustomerNameDTO>> UpdateCustomerNameAsync(UpdateCustomerNameDTO updateUserDTO);
+        Task<Result<UpdateCustomerPasswordDTO>> UpdateCustomerPasswordAsync(UpdateCustomerPasswordDTO updateUserDTO);
         Task DeleteAsync(int id);
     }
 }

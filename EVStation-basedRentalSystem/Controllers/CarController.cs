@@ -44,7 +44,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(result);
         }
         // POST: api/Car
-        //[Authorize(Roles = "Staff,Admin")]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Car car)
         {
@@ -81,5 +81,17 @@ namespace EVStation_basedRentalSystem.Controllers
             await _carService.DeleteAsync(id);
             return NoContent();
         }
+
+        // ✅ GET: api/Car/TopRented
+        [HttpGet("TopRented")]
+     
+        public async Task<IActionResult> GetTopRentedCars([FromQuery] int topCount = 3)
+        {
+            var cars = await _carService.GetTopRentedAsync(topCount);
+            return Ok(cars);
+        }
+
+
+
     }
 }

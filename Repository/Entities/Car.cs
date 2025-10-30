@@ -24,7 +24,7 @@ namespace Repository.Entities
         public double RentPricePerDayWithDriver { get; set; }
         public double RentPricePerHourWithDriver { get; set; }
         public string ImageUrl { get; set; }
-        public int Status { get; set; } // 0: Available, 1: Rented
+        public int Status { get; set; } // 0: Con xe, 1: Hetxe
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }

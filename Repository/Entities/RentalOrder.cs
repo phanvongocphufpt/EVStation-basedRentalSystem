@@ -24,7 +24,9 @@ namespace Repository.Entities
         public User User { get; set; }
         public int CarId { get; set; }
         public Car Car { get; set; }
-        public int RentalContactId { get; set; }
-        public RentalContact RentalContact { get; set; }
+        public int? RentalContactId { get; set; }
+        public RentalContact? RentalContact { get; set; }
+        public int? PaymentId { get; set; }
+        public Payment? Payment { get; set; }
     }
 }

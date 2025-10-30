@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Repository.Entities;
+using Repository.Entities.Enum;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,28 @@ namespace Repository.Context
                     .WithOne(e => e.Car)
                     .HasForeignKey(e => e.CarId)
                     .OnDelete(DeleteBehavior.Restrict);
+                entity.HasData(
+                    new Car
+                    {
+                        Id = 1,
+                        Model = "Tesla Model 3",
+                        Name = "Model 3",
+                        Seats = 5,
+                        SizeType = "Sedan",
+                        TrunkCapacity = 425,
+                        BatteryType = "Lithium-Ion",
+                        BatteryDuration = 350,
+                        RentPricePerDay = 1000000,
+                        RentPricePerHour = 45000,
+                        RentPricePerDayWithDriver = 1400000,
+                        RentPricePerHourWithDriver = 60000,
+                        ImageUrl = "https://example.com/tesla_model_3.jpg",
+                        Status = 1,
+                        CreatedAt = new DateTime(2025, 10, 11),
+                        UpdatedAt = null,
+                        IsActive = true,
+                        IsDeleted = false
+                    });
             });
 
             // Configure CarDeliveryHistory
@@ -76,6 +99,14 @@ namespace Repository.Context
                     .WithMany(e => e.CarRentalLocations)
                     .HasForeignKey(e => e.LocationId)
                     .OnDelete(DeleteBehavior.Cascade);
+                entity.HasData(
+                    new CarRentalLocation
+                    {
+                        Id = 1,
+                        CarId = 1,
+                        LocationId = 1,
+                        Quantity = 5
+                    });
             });
 
             // Configure CarReturnHistory
@@ -109,182 +140,222 @@ namespace Repository.Context
                     .WithOne(e => e.CitizenIdNavigation)
                     .HasForeignKey<CitizenId>(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+                entity.HasData(
+                    new CitizenId
+                    {
+                        Id = 1,
+                        CitizenIdNumber = "058203123456",
+                        Name = "Customer CitizenID Sample",
+                        BirthDate = new DateOnly(1990, 1, 1),
+                        ImageUrl = "https://example.com/citizen_id_sample.jpg",
+                        Status = DocumentStatus.Approved,
+                        CreatedAt = new DateTime(2025, 10, 11),
+                        UpdatedAt = null,
+                        UserId = 3
+                    });
             });
-
             // Configure DriverLicense
             modelBuilder.Entity<DriverLicense>(entity =>
-            {
-                entity.HasOne(e => e.User)
-                    .WithOne(e => e.DriverLicense)
-                    .HasForeignKey<DriverLicense>(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+                {
+                    entity.HasOne(e => e.User)
+                        .WithOne(e => e.DriverLicense)
+                        .HasForeignKey<DriverLicense>(e => e.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasData(
+                        new DriverLicense
+                        {
+                            Id = 1,
+                            Name = "Customer DriverLicense Sample",
+                            ImageUrl = "https://example.com/driver_license_sample.jpg",
+                            Status = DocumentStatus.Approved,
+                            CreatedAt = new DateTime(2025, 10, 11),
+                            UpdatedAt = null,
+                            UserId = 3
+                        });
+                });
 
-            // Configure Feedback
-            modelBuilder.Entity<Feedback>(entity =>
-            {
-                entity.HasOne(e => e.User)
-                    .WithOne(e => e.Feedback)
-                    .HasForeignKey<Feedback>(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                // Configure Feedback
+                modelBuilder.Entity<Feedback>(entity =>
+                {
+                    entity.HasOne(e => e.User)
+                        .WithMany(e => e.Feedback)
+                        .HasForeignKey(e => e.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.RentalOrder)
-                    .WithMany()
-                    .HasForeignKey(e => e.RentalOrderId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+                    entity.HasOne(e => e.RentalOrder)
+                        .WithMany()
+                        .HasForeignKey(e => e.RentalOrderId)
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
 
-            // Configure Payment
-            modelBuilder.Entity<Payment>(entity =>
-            {
-                entity.HasOne(e => e.User)
-                    .WithMany(e => e.Payments)
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+                // Configure Payment
+                modelBuilder.Entity<Payment>(entity =>
+                {
+                    entity.HasOne(e => e.User)
+                        .WithMany(e => e.Payments)
+                        .HasForeignKey(e => e.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasOne(e => e.RentalOrder)
+                        .WithOne(e => e.Payment)
+                        .HasForeignKey<Payment>(e => e.RentalOrderId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
 
-            // Configure RentalContact
-            modelBuilder.Entity<RentalContact>(entity =>
-            {
-                entity.HasOne(e => e.RentalOrder)
-                    .WithOne(e => e.RentalContact)
-                    .HasForeignKey<RentalOrder>(e => e.RentalContactId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                // Configure RentalContact
+                modelBuilder.Entity<RentalContact>(entity =>
+                {
+                    entity.HasOne(e => e.RentalOrder)
+                        .WithOne(e => e.RentalContact)
+                        .HasForeignKey<RentalOrder>(e => e.RentalContactId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.Lessee)
-                    .WithMany()
-                    .HasForeignKey(e => e.LesseeId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    entity.HasOne(e => e.Lessee)
+                        .WithMany()
+                        .HasForeignKey(e => e.LesseeId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(e => e.Lessor)
-                    .WithMany(e => e.RentalContacts)
-                    .HasForeignKey(e => e.LessorId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+                    entity.HasOne(e => e.Lessor)
+                        .WithMany(e => e.RentalContacts)
+                        .HasForeignKey(e => e.LessorId)
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
 
-            // Configure RentalLocation
-            modelBuilder.Entity<RentalLocation>(entity =>
-            {
-                entity.HasMany(e => e.CarRentalLocations)
-                    .WithOne(e => e.Location)
-                    .HasForeignKey(e => e.LocationId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                // Configure RentalLocation
+                modelBuilder.Entity<RentalLocation>(entity =>
+                {
+                    entity.HasMany(e => e.CarRentalLocations)
+                        .WithOne(e => e.Location)
+                        .HasForeignKey(e => e.LocationId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasMany(e => e.RentalContacts)
-                    .WithOne(e => e.Lessor)
-                    .HasForeignKey(e => e.LessorId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
+                    entity.HasMany(e => e.RentalContacts)
+                        .WithOne(e => e.Lessor)
+                        .HasForeignKey(e => e.LessorId)
+                        .OnDelete(DeleteBehavior.Restrict);
+                    entity.HasData(
+                        new RentalLocation
+                        {
+                            Id = 1,
+                            Name = "Downtown Rental Location",
+                            Address = "123 Tran Hung Dao St, Ho Chi Minh City",
+                            CreatedAt = new DateTime(2025, 10, 11),
+                            UpdatedAt = null,
+                            IsActive = true,
+                            IsDeleted = false
+                        });
+                });
 
-            // Configure RentalOrder
-            modelBuilder.Entity<RentalOrder>(entity =>
-            {
-                entity.HasOne(e => e.User)
-                    .WithMany(e => e.RentalOrders)
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                // Configure RentalOrder
+                modelBuilder.Entity<RentalOrder>(entity =>
+                {
+                    entity.HasOne(e => e.User)
+                        .WithMany(e => e.RentalOrders)
+                        .HasForeignKey(e => e.UserId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(e => e.Car)
-                    .WithMany(e => e.RentalOrders)
-                    .HasForeignKey(e => e.CarId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    entity.HasOne(e => e.Car)
+                        .WithMany(e => e.RentalOrders)
+                        .HasForeignKey(e => e.CarId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(e => e.RentalContact)
-                    .WithOne(e => e.RentalOrder)
-                    .HasForeignKey<RentalOrder>(e => e.RentalContactId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+                    entity.HasOne(e => e.RentalContact)
+                        .WithOne(e => e.RentalOrder)
+                        .HasForeignKey<RentalOrder>(e => e.RentalContactId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasOne(e => e.Payment)
+                        .WithOne(e => e.RentalOrder)
+                        .HasForeignKey<RentalOrder>(e => e.PaymentId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
 
-            // Configure User
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.HasOne(e => e.DriverLicense)
-                    .WithOne(e => e.User)
-                    .HasForeignKey<DriverLicense>(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                // Configure User
+                modelBuilder.Entity<User>(entity =>
+                {
+                    entity.HasOne(e => e.DriverLicense)
+                        .WithOne(e => e.User)
+                        .HasForeignKey<DriverLicense>(e => e.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.CitizenIdNavigation)
-                    .WithOne(e => e.User)
-                    .HasForeignKey<CitizenId>(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasOne(e => e.CitizenIdNavigation)
+                        .WithOne(e => e.User)
+                        .HasForeignKey<CitizenId>(e => e.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.Feedback)
-                    .WithOne(e => e.User)
-                    .HasForeignKey<Feedback>(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    entity.HasMany(e => e.Feedback)
+                        .WithOne(e => e.User)
+                        .HasForeignKey(e => e.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasMany(e => e.RentalOrders)
-                    .WithOne(e => e.User)
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    entity.HasMany(e => e.RentalOrders)
+                        .WithOne(e => e.User)
+                        .HasForeignKey(e => e.UserId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasMany(e => e.Payments)
-                    .WithOne(e => e.User)
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasMany(e => e.Payments)
+                        .WithOne(e => e.User)
+                        .HasForeignKey(e => e.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasMany(e => e.CarDeliveryHistories)
-                    .WithOne(e => e.Customer)
-                    .HasForeignKey(e => e.CustomerId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    entity.HasMany(e => e.CarDeliveryHistories)
+                        .WithOne(e => e.Customer)
+                        .HasForeignKey(e => e.CustomerId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                // Note: Ignored ICollection<CarRentalLocation> as no corresponding FK in CarRentalLocation
-                entity.HasData(
-            new User
-            {
-                Id = 1,
-                Email = "admin@gmail.com",
-                Password = "1",
-                PasswordHash = "1",
-                FullName = "Admin User",
-                Role = "Admin",
-                ConfirmEmailToken = null,
-                IsEmailConfirmed = true,
-                CreatedAt = new DateTime(2025, 10, 11),
-                UpdatedAt = null,
-                IsActive = true,
-                DriverLicenseId = null,
-                CitizenId = null,
-                FeedbackId = null
-            },
-            new User
-            {
-                Id = 2,
-                Email = "staff@gmail.com",
-                Password = "1",
-                PasswordHash = "1",
-                FullName = "Staff User",
-                Role = "Staff",
-                ConfirmEmailToken = null,
-                IsEmailConfirmed = true,
-                CreatedAt = new DateTime(2025, 10, 11),
-                UpdatedAt = null,
-                IsActive = true,
-                DriverLicenseId = null,
-                CitizenId = null,
-                FeedbackId = null
-            },
-            new User
-            {
-                Id = 3,
-                Email = "customer@gmail.com",
-                Password = "1",
-                PasswordHash = "1",
-                FullName = "Customer User",
-                Role = "Customer",
-                ConfirmEmailToken = null,
-                IsEmailConfirmed = true,
-                CreatedAt = new DateTime(2025, 10, 11),
-                UpdatedAt = null,
-                IsActive = true,
-                DriverLicenseId = null,
-                CitizenId = null,
-                FeedbackId = null
-                    }
-                );
-            });
+                    // Note: Ignored ICollection<CarRentalLocation> as no corresponding FK in CarRentalLocation
+                    entity.HasData(
+                new User
+                {
+                    Id = 1,
+                    Email = "admin@gmail.com",
+                    Password = "1",
+                    PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
+                    FullName = "Admin User",
+                    Role = "Admin",
+                    ConfirmEmailToken = null,
+                    IsEmailConfirmed = true,
+                    CreatedAt = new DateTime(2025, 10, 11),
+                    UpdatedAt = null,
+                    IsActive = true,
+                    DriverLicenseId = null,
+                    CitizenId = null
+                },
+                new User
+                {
+                    Id = 2,
+                    Email = "staff@gmail.com",
+                    Password = "1",
+                    PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
+                    FullName = "Staff User",
+                    Role = "Staff",
+                    ConfirmEmailToken = null,
+                    IsEmailConfirmed = true,
+                    CreatedAt = new DateTime(2025, 10, 11),
+                    UpdatedAt = null,
+                    IsActive = true,
+                    DriverLicenseId = null,
+                    CitizenId = null
+                },
+                new User
+                {
+                    Id = 3,
+                    Email = "customer@gmail.com",
+                    Password = "1",
+                    PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
+                    FullName = "Customer User",
+                    Role = "Customer",
+                    ConfirmEmailToken = null,
+                    IsEmailConfirmed = true,
+                    CreatedAt = new DateTime(2025, 10, 11),
+                    UpdatedAt = null,
+                    IsActive = true,
+                    DriverLicenseId = 1,
+                    CitizenId = 1
+                }
+                    );
+                });
 
             base.OnModelCreating(modelBuilder);
+         
         }
     }
 }

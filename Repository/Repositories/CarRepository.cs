@@ -29,7 +29,7 @@ namespace Repository.Repositories
         public async Task<Car?> GetByNameAsync(string name)
         {
             return await _context.Cars
-               .Where(c => !c.IsDeleted && c.Name.ToLower().Contains(name.ToLower()))
+                .Where(c => !c.IsDeleted && c.Name.ToLower().Contains(name.ToLower()))
                 .FirstOrDefaultAsync();
         }
 
@@ -53,6 +53,24 @@ namespace Repository.Repositories
                 car.IsDeleted = true;
                 await _context.SaveChangesAsync();
             }
+        }
+
+        // ✅ Hàm mới: lấy top xe thuê nhiều nhất
+        public async Task<IEnumerable<Car>> GetTopRentedAsync(int topCount)
+        {
+            var query = _context.RentalOrders
+                .Include(r => r.Car)
+                .GroupBy(r => r.CarId)
+                .Select(g => new
+                {
+                    Car = g.First().Car,
+                    RentalCount = g.Count()
+                })
+                .OrderByDescending(x => x.RentalCount)
+                .Take(topCount)
+                .Select(x => x.Car);
+
+            return await query.ToListAsync();
         }
     }
 }

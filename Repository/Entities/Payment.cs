@@ -12,11 +12,13 @@ namespace Repository.Entities
     {
         [Key]
         public int Id { get; set; }
-        public DateTime PaymentDate { get; set; }
+        public DateTime? PaymentDate { get; set; }
         public double Amount { get; set; }
         public string PaymentMethod { get; set; }
         public PaymentStatus Status { get; set; }
-        public int UserId { get; set; }
-        public User User { get; set; }
+        public int? UserId { get; set; }
+        public int? RentalOrderId { get; set; }
+        public User? User { get; set; }
+        public RentalOrder? RentalOrder { get; set; }
     }
 }
