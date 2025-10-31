@@ -652,6 +652,9 @@ namespace Repository.Context.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("RentalLocationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ResetPasswordToken")
                         .HasColumnType("nvarchar(max)");
 
@@ -666,6 +669,8 @@ namespace Repository.Context.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RentalLocationId");
 
                     b.ToTable("Users");
 
@@ -692,6 +697,7 @@ namespace Repository.Context.Migrations
                             IsEmailConfirmed = true,
                             Password = "1",
                             PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
+                            RentalLocationId = 1,
                             Role = "Staff"
                         },
                         new
@@ -706,6 +712,7 @@ namespace Repository.Context.Migrations
                             IsEmailConfirmed = true,
                             Password = "1",
                             PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
+                            RentalLocationId = 1,
                             Role = "Customer"
                         });
                 });
@@ -904,6 +911,16 @@ namespace Repository.Context.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Repository.Entities.User", b =>
+                {
+                    b.HasOne("Repository.Entities.RentalLocation", "RentalLocation")
+                        .WithMany("Users")
+                        .HasForeignKey("RentalLocationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("RentalLocation");
+                });
+
             modelBuilder.Entity("Repository.Entities.Car", b =>
                 {
                     b.Navigation("CarRentalLocations");
@@ -926,6 +943,8 @@ namespace Repository.Context.Migrations
                     b.Navigation("CarRentalLocations");
 
                     b.Navigation("RentalContacts");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Repository.Entities.User", b =>

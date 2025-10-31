@@ -253,6 +253,12 @@ namespace Repository.Context
                         .WithOne(e => e.Lessor)
                         .HasForeignKey(e => e.LessorId)
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    entity.HasMany(e => e.Users)
+                        .WithOne(e => e.RentalLocation)
+                        .HasForeignKey(e => e.RentalLocationId)
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     entity.HasData(
                         new RentalLocation
                         {
@@ -314,6 +320,11 @@ namespace Repository.Context
                         .HasForeignKey<CitizenId>(e => e.UserId)
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    entity.HasOne(e => e.RentalLocation)
+                        .WithMany(e => e.Users)
+                        .HasForeignKey(e => e.RentalLocationId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     entity.HasMany(e => e.Feedback)
                         .WithOne(e => e.User)
                         .HasForeignKey(e => e.UserId)
@@ -350,7 +361,8 @@ namespace Repository.Context
                     UpdatedAt = null,
                     IsActive = true,
                     DriverLicenseId = null,
-                    CitizenId = null
+                    CitizenId = null,
+                    RentalLocationId = null
                 },
                 new User
                 {
@@ -366,7 +378,8 @@ namespace Repository.Context
                     UpdatedAt = null,
                     IsActive = true,
                     DriverLicenseId = null,
-                    CitizenId = null
+                    CitizenId = null,
+                    RentalLocationId = 1
                 },
                 new User
                 {
@@ -382,7 +395,8 @@ namespace Repository.Context
                     UpdatedAt = null,
                     IsActive = true,
                     DriverLicenseId = 1,
-                    CitizenId = 1
+                    CitizenId = 1,
+                    RentalLocationId = null
                 }
                     );
                 });

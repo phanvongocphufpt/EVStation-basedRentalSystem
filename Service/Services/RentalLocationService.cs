@@ -53,7 +53,12 @@ namespace Service.Services
             var rentalLocationDTOs = _mapper.Map<IEnumerable<RentalLocationDTO>>(rentalLocations);
             return Result<IEnumerable<RentalLocationDTO>>.Success(rentalLocationDTOs);
         }
-
+        public async Task<Result<IEnumerable<UserDTO>>> GetAllStaffByLocationIdAsync(int id)
+        {
+            var staffMembers = await _rentalLocationRepository.GetAllStaffByLocationAsync(id);
+            var staffDTOs = _mapper.Map<IEnumerable<UserDTO>>(staffMembers);
+            return Result<IEnumerable<UserDTO>>.Success(staffDTOs);
+        }
         public async Task<Result<RentalLocationDTO>> GetByIdAsync(int id)
         {
             var rentalLocation = await _rentalLocationRepository.GetByIdAsync(id);
