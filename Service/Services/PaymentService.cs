@@ -26,14 +26,20 @@ namespace Service.Services
         public async Task<Result<CreatePaymentDTO>> AddAsync(CreatePaymentDTO createPaymentDTO)
         {
             var dto = _mapper.Map<Payment>(createPaymentDTO);
+            var user = await _userRepository.GetByIdAsync(dto.UserId.Value);
+            if (user == null)
+            {
+                return Result<CreatePaymentDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id của người dùng.");
+            }
             var payment = new Payment
             {
                 PaymentDate = dto.PaymentDate,
                 Amount = dto.Amount,
                 PaymentMethod = dto.PaymentMethod,
                 Status = dto.Status,
-                UserId = dto.UserId,
-                RentalOrderId = dto.RentalOrderId
+                UserId = user.Id,
+                RentalOrderId = dto.RentalOrderId,
+                User = user
             };
             await _paymentRepository.AddAsync(payment);
             return Result<CreatePaymentDTO>.Success(createPaymentDTO, "Tạo thanh toán thành công.");

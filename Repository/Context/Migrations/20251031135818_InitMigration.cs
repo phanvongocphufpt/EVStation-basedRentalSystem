@@ -50,6 +50,7 @@ namespace Repository.Context.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Coordinates = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
@@ -94,7 +95,8 @@ namespace Repository.Context.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     CarId = table.Column<int>(type: "int", nullable: false),
-                    LocationId = table.Column<int>(type: "int", nullable: false)
+                    LocationId = table.Column<int>(type: "int", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -395,12 +397,20 @@ namespace Repository.Context.Migrations
             migrationBuilder.InsertData(
                 table: "Cars",
                 columns: new[] { "Id", "BatteryDuration", "BatteryType", "CreatedAt", "ImageUrl", "IsActive", "IsDeleted", "Model", "Name", "RentPricePerDay", "RentPricePerDayWithDriver", "RentPricePerHour", "RentPricePerHourWithDriver", "Seats", "SizeType", "Status", "TrunkCapacity", "UpdatedAt" },
-                values: new object[] { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 1000000.0, 1400000.0, 45000.0, 60000.0, 5, "Sedan", 1, 425, null });
+                values: new object[,]
+                {
+                    { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 1000000.0, 1400000.0, 45000.0, 60000.0, 5, "Sedan", 1, 425, null },
+                    { 2, 240, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/nissan_leaf.jpg", true, false, "Nissan Leaf", "Leaf", 800000.0, 1200000.0, 35000.0, 50000.0, 5, "Hatchback", 1, 435, null }
+                });
 
             migrationBuilder.InsertData(
                 table: "RentalLocations",
-                columns: new[] { "Id", "Address", "CreatedAt", "IsActive", "IsDeleted", "Name", "UpdatedAt" },
-                values: new object[] { 1, "123 Tran Hung Dao St, Ho Chi Minh City", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), true, false, "Downtown Rental Location", null });
+                columns: new[] { "Id", "Address", "Coordinates", "CreatedAt", "IsActive", "IsDeleted", "Name", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { 1, "123 Tran Hung Dao St, Ho Chi Minh City", "10.7769,106.7009", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), true, false, "Downtown Rental Location", null },
+                    { 2, "456 Nguyen Cuu Phuc St, Ho Chi Minh City", "10.7950,106.6540", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), true, false, "Airport Rental Location", null }
+                });
 
             migrationBuilder.InsertData(
                 table: "Users",
@@ -414,8 +424,8 @@ namespace Repository.Context.Migrations
 
             migrationBuilder.InsertData(
                 table: "CarRentalLocations",
-                columns: new[] { "Id", "CarId", "LocationId", "Quantity" },
-                values: new object[] { 1, 1, 1, 5 });
+                columns: new[] { "Id", "CarId", "IsDeleted", "LocationId", "Quantity" },
+                values: new object[] { 1, 1, false, 1, 5 });
 
             migrationBuilder.InsertData(
                 table: "CitizenIds",

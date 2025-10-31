@@ -29,6 +29,7 @@ namespace Service.Services
             {
                 Name = dto.Name,
                 Address = dto.Address,
+                Coordinates = dto.Coordinates,
                 IsActive = dto.IsActive,
                 CreatedAt = DateTime.UtcNow
             };
@@ -73,6 +74,7 @@ namespace Service.Services
             }
             existingRentalLocation.Name = rentalLocationDTO.Name;
             existingRentalLocation.Address = rentalLocationDTO.Address;
+            existingRentalLocation.Coordinates = rentalLocationDTO.Coordinates;
             existingRentalLocation.IsActive = rentalLocationDTO.IsActive;
             existingRentalLocation.UpdatedAt = DateTime.UtcNow;
             await _rentalLocationRepository.UpdateAsync(existingRentalLocation);

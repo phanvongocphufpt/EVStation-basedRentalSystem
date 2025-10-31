@@ -7,6 +7,7 @@ namespace Repository.IRepositories
     public interface ICarRepository
     {
         Task<IEnumerable<Car>> GetAllAsync();
+        Task<Car?> GetByIdAsync(int id);
         Task<Car> GetByNameAsync(string name);
         Task AddAsync(Car car);
         Task UpdateAsync(Car car);

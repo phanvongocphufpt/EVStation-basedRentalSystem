@@ -42,6 +42,14 @@ namespace Service.Mapper
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
             CreateMap<CreateRentalLocationDTO, RentalLocation>();
+
+            //CarRentalLocation Mappings
+            CreateMap<CarRentalLocation, CarRentalLocationDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
+                .ForMember(dest => dest.CarId, opt => opt.MapFrom(src => src.CarId))
+                .ForMember(dest => dest.LocationId, opt => opt.MapFrom(src => src.LocationId));
+            CreateMap<CreateCarRentalLocationDTO, CarRentalLocation>();
         }
     }
 }

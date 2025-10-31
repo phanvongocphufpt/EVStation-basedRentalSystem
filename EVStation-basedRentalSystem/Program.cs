@@ -99,6 +99,7 @@ builder.Services.AddScoped<IRentalContactRepository, RentalContactRepository>();
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IRentalLocationRepository, RentalLocationRepository>();
+builder.Services.AddScoped<ICarRentalLocationRepository, CarRentalLocationRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -108,6 +109,7 @@ builder.Services.AddScoped<IRentalContactService, RentalContactService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IRentalLocationService, RentalLocationService>();
+builder.Services.AddScoped<ICarRentalLocationService, CarRentalLocationService>();
 
 //Others
 builder.Services.Configure<SmtpSettings>(smtpSettings);

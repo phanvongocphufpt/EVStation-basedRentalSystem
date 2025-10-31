@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251029121622_InitMigration")]
+    [Migration("20251031135818_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -113,6 +113,26 @@ namespace Repository.Context.Migrations
                             SizeType = "Sedan",
                             Status = 1,
                             TrunkCapacity = 425
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BatteryDuration = 240,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/nissan_leaf.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "Nissan Leaf",
+                            Name = "Leaf",
+                            RentPricePerDay = 800000.0,
+                            RentPricePerDayWithDriver = 1200000.0,
+                            RentPricePerHour = 35000.0,
+                            RentPricePerHourWithDriver = 50000.0,
+                            Seats = 5,
+                            SizeType = "Hatchback",
+                            Status = 1,
+                            TrunkCapacity = 435
                         });
                 });
 
@@ -173,6 +193,9 @@ namespace Repository.Context.Migrations
                     b.Property<int>("CarId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("LocationId")
                         .HasColumnType("int");
 
@@ -192,6 +215,7 @@ namespace Repository.Context.Migrations
                         {
                             Id = 1,
                             CarId = 1,
+                            IsDeleted = false,
                             LocationId = 1,
                             Quantity = 5
                         });
@@ -481,6 +505,10 @@ namespace Repository.Context.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Coordinates")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -506,10 +534,21 @@ namespace Repository.Context.Migrations
                         {
                             Id = 1,
                             Address = "123 Tran Hung Dao St, Ho Chi Minh City",
+                            Coordinates = "10.7769,106.7009",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsActive = true,
                             IsDeleted = false,
                             Name = "Downtown Rental Location"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Address = "456 Nguyen Cuu Phuc St, Ho Chi Minh City",
+                            Coordinates = "10.7950,106.6540",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "Airport Rental Location"
                         });
                 });
 
