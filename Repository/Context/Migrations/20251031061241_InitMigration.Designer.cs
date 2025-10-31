@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251029121622_InitMigration")]
+    [Migration("20251031061241_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
