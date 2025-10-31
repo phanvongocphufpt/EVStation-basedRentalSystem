@@ -8,11 +8,12 @@ namespace Repository.IRepositories
 {
     public interface ICarDeliveryHistoryRepository
     {
-        Task<IEnumerable<RentalLocation>> GetAllAsync();
-        Task<RentalLocation?> GetByIdAsync(int id);
-        Task AddAsync(RentalLocation rentalLocation);
-        Task UpdateAsync(RentalLocation rentalLocation);
+        Task<IEnumerable<CarDeliveryHistory>> GetAllAsync(int pageIndex, int pageSize);
+        Task<int> CountAsync();
+        Task<CarDeliveryHistory?> GetByIdAsync(int id);
+        Task AddAsync(CarDeliveryHistory entity);
+        Task UpdateAsync(CarDeliveryHistory entity);
         Task DeleteAsync(int id);
-    
+    }
 }
-}   
+

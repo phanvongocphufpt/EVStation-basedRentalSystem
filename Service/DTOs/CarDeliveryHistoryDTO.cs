@@ -30,7 +30,7 @@ namespace Service.DTOs
         public int CarId { get; set; }
         public int LocationId { get; set; }
     
-    }
+}
     public class CarDeliveryHistoryUpdateDTO : CarDeliveryHistoryCreateDTO
     {
         public int Id { get; set; }

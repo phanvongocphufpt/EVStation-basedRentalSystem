@@ -10,5 +10,5 @@ namespace Service.IServices
         Task AddAsync(CarDeliveryHistoryCreateDTO dto);
         Task UpdateAsync(int id, CarDeliveryHistoryCreateDTO dto);
         Task DeleteAsync(int id);
-    }
+    }   
 }
