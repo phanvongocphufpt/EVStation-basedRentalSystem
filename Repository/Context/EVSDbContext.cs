@@ -60,6 +60,27 @@ namespace Repository.Context
                         UpdatedAt = null,
                         IsActive = true,
                         IsDeleted = false
+                    },
+                    new Car
+                    {
+                        Id = 2,
+                        Model = "Nissan Leaf",
+                        Name = "Leaf",
+                        Seats = 5,
+                        SizeType = "Hatchback",
+                        TrunkCapacity = 435,
+                        BatteryType = "Lithium-Ion",
+                        BatteryDuration = 240,
+                        RentPricePerDay = 800000,
+                        RentPricePerHour = 35000,
+                        RentPricePerDayWithDriver = 1200000,
+                        RentPricePerHourWithDriver = 50000,
+                        ImageUrl = "https://example.com/nissan_leaf.jpg",
+                        Status = 1,
+                        CreatedAt = new DateTime(2025, 10, 11),
+                        UpdatedAt = null,
+                        IsActive = true,
+                        IsDeleted = false
                     });
             });
 
@@ -232,12 +253,30 @@ namespace Repository.Context
                         .WithOne(e => e.Lessor)
                         .HasForeignKey(e => e.LessorId)
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    entity.HasMany(e => e.Users)
+                        .WithOne(e => e.RentalLocation)
+                        .HasForeignKey(e => e.RentalLocationId)
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     entity.HasData(
                         new RentalLocation
                         {
                             Id = 1,
                             Name = "Downtown Rental Location",
                             Address = "123 Tran Hung Dao St, Ho Chi Minh City",
+                            Coordinates = "10.7769,106.7009",
+                            CreatedAt = new DateTime(2025, 10, 11),
+                            UpdatedAt = null,
+                            IsActive = true,
+                            IsDeleted = false
+                        },
+                        new RentalLocation
+                        {
+                            Id = 2,
+                            Name = "Airport Rental Location",
+                            Address = "456 Nguyen Cuu Phuc St, Ho Chi Minh City",
+                            Coordinates = "10.7950,106.6540",
                             CreatedAt = new DateTime(2025, 10, 11),
                             UpdatedAt = null,
                             IsActive = true,
@@ -281,6 +320,11 @@ namespace Repository.Context
                         .HasForeignKey<CitizenId>(e => e.UserId)
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    entity.HasOne(e => e.RentalLocation)
+                        .WithMany(e => e.Users)
+                        .HasForeignKey(e => e.RentalLocationId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     entity.HasMany(e => e.Feedback)
                         .WithOne(e => e.User)
                         .HasForeignKey(e => e.UserId)
@@ -317,7 +361,8 @@ namespace Repository.Context
                     UpdatedAt = null,
                     IsActive = true,
                     DriverLicenseId = null,
-                    CitizenId = null
+                    CitizenId = null,
+                    RentalLocationId = null
                 },
                 new User
                 {
@@ -333,7 +378,8 @@ namespace Repository.Context
                     UpdatedAt = null,
                     IsActive = true,
                     DriverLicenseId = null,
-                    CitizenId = null
+                    CitizenId = null,
+                    RentalLocationId = 1
                 },
                 new User
                 {
@@ -349,7 +395,8 @@ namespace Repository.Context
                     UpdatedAt = null,
                     IsActive = true,
                     DriverLicenseId = 1,
-                    CitizenId = 1
+                    CitizenId = 1,
+                    RentalLocationId = null
                 }
                     );
                 });

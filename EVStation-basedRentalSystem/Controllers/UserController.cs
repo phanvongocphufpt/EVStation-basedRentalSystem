@@ -33,7 +33,7 @@ namespace EVStation_basedRentalSystem.Controllers
 
             return Ok(user);
         }
-        [HttpPost("Create")]
+        [HttpPost("CreateStaff")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateStaff([FromBody] CreateStaffUserDTO staffUserDTO)
         {

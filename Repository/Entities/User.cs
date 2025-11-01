@@ -25,8 +25,10 @@ namespace Repository.Entities
         public bool IsActive { get; set; }
         public int? DriverLicenseId { get; set; }
         public int? CitizenId { get; set; }
+        public int? RentalLocationId { get; set; }
         public DriverLicense? DriverLicense { get; set; }
         public CitizenId? CitizenIdNavigation { get; set; }
+        public RentalLocation? RentalLocation { get; set; }
         public ICollection<Feedback> Feedback { get; set; }
         public ICollection<RentalOrder> RentalOrders { get; set; }
         public ICollection<Payment> Payments { get; set; }

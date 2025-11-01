@@ -11,6 +11,7 @@ namespace Repository.IRepositories
     public interface IRentalLocationRepository
     {
         Task<IEnumerable<RentalLocation>> GetAllAsync();
+        Task<IEnumerable<User>> GetAllStaffByLocationAsync(int id);
         Task<RentalLocation?> GetByIdAsync(int id);
         Task AddAsync(RentalLocation rentalLocation);
         Task UpdateAsync(RentalLocation rentalLocation);

@@ -25,7 +25,12 @@ namespace Repository.Repositories
         {
             return await _context.Cars.Where(c => !c.IsDeleted).ToListAsync();
         }
-
+        public async Task<Car?> GetByIdAsync(int id)
+        {
+            return await _context.Cars
+                .Where(c => !c.IsDeleted && c.Id == id)
+                .FirstOrDefaultAsync();
+        }
         public async Task<Car?> GetByNameAsync(string name)
         {
             return await _context.Cars

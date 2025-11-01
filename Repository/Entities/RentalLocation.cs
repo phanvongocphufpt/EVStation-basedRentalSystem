@@ -13,11 +13,13 @@ namespace Repository.Entities
         public int Id { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
+        public string Coordinates { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }
         public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
         public ICollection<RentalContact> RentalContacts { get; set; }
+        public ICollection<User> Users { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

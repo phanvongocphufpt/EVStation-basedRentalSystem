@@ -16,6 +16,7 @@ namespace Repository.Entities
         public int LocationId { get; set; }
         public Car Car { get; set; }
         public RentalLocation Location { get; set; }
+        public bool IsDeleted { get; set; }
 
     }
 }

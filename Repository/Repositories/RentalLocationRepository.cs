@@ -21,6 +21,12 @@ namespace Repository.Repositories
         {
             return await _context.RentalLocations.Where(rl => !rl.IsDeleted).ToListAsync();
         }
+        public async Task<IEnumerable<User>> GetAllStaffByLocationAsync(int id)
+        {
+            return await _context.Users
+                .Where(u => u.RentalLocationId == id && u.IsActive)
+                .ToListAsync();
+        }
         public async Task<RentalLocation?> GetByIdAsync(int id)
         {
             return await _context.RentalLocations.FirstOrDefaultAsync(rl => rl.Id == id && !rl.IsDeleted);
