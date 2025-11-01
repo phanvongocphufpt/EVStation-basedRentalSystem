@@ -19,6 +19,10 @@ namespace Repository.Entities
         public int CustomerId { get; set; }
         public int StaffId { get; set; }
         public int CarId { get; set; }
+        //  Thêm LocationId để xác định chi nhánh trả xe
+        public int LocationId { get; set; }
+        public RentalLocation Location { get; set; }  // Navigation property
+
         public RentalOrder Order { get; set; }
         public User Customer { get; set; }
         public User Staff { get; set; }

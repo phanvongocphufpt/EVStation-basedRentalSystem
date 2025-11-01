@@ -9,12 +9,12 @@ namespace Service.Services
     public class CarDeliveryHistoryService : ICarDeliveryHistoryService
     {
         private readonly ICarDeliveryHistoryRepository _repo;
-        private readonly IRentalLocationRepository _carRentalLocationRepo;
+        private readonly ICarRentalLocationRepository _carRentalLocationRepo;
         private readonly IMapper _mapper;
 
         public CarDeliveryHistoryService(
             ICarDeliveryHistoryRepository repo,
-            IRentalLocationRepository carRentalLocationRepo,
+            ICarRentalLocationRepository carRentalLocationRepo,
             IMapper mapper)
         {
             _repo = repo;
@@ -37,21 +37,47 @@ namespace Service.Services
 
         public async Task AddAsync(CarDeliveryHistoryCreateDTO dto)
         {
-            //// 🔹 Kiểm tra tồn tại xe tại địa điểm
-            //// Sau khi thêm CarDeliveryHistory thành công
-            //var carRentalLocation = await _carRentalLocationRepo
-            //    .GetAllAsync();
+            // 🔹 Kiểm tra xem xe có tồn tại tại chi nhánh này không
+            var carRentalLocation = await _carRentalLocationRepo
+                .GetByCarAndRentalLocationIdAsync(dto.CarId, dto.LocationId);
 
-            //if (carRentalLocation == null)
-            //    throw new Exception("Không tìm thấy mối quan hệ xe và chi nhánh");
+            if (carRentalLocation == null)
+                throw new Exception("Không tìm thấy xe tại chi nhánh này.");
 
-            //if (carRentalLocation.Quantity <= 0)
-            //    throw new Exception("Chi nhánh này không còn xe khả dụng");
+            if (carRentalLocation.Quantity <= 0)
+                throw new Exception("Chi nhánh này không còn xe khả dụng để giao.");
 
-            //carRentalLocation.Quantity -= 1;
-            //await _carRentalLocationRepository.UpdateAsync(carRentalLocation);
+            using var transaction = await _carRentalLocationRepo.BeginTransactionAsync();
+            try
+            {
+                // 🔹 Giảm số lượng xe ở chi nhánh khi giao
+                carRentalLocation.Quantity -= 1;
+                await _carRentalLocationRepo.UpdateAsync(carRentalLocation);
 
-        }   
+                // 🔹 Lưu lịch sử giao xe
+                var history = new CarDeliveryHistory
+                {
+                    DeliveryDate = dto.DeliveryDate,
+                    OdometerStart = dto.OdometerStart,
+                    BatteryLevelStart = dto.BatteryLevelStart,
+                    VehicleConditionStart = dto.VehicleConditionStart,
+                    OrderId = dto.OrderId,
+                    CustomerId = dto.CustomerId,
+                    StaffId = dto.StaffId,
+                    CarId = dto.CarId,
+                    LocationId = dto.LocationId, 
+                };
+
+
+                await _repo.AddAsync(history);
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
 
         public async Task UpdateAsync(int id, CarDeliveryHistoryCreateDTO dto)
         {

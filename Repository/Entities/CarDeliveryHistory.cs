@@ -23,6 +23,7 @@ namespace Repository.Entities
         public User Customer { get; set; }
         public User Staff { get; set; }
         public Car Car { get; set; }
+        public int LocationId { get; set; }
         public RentalLocation Location { get; set; }
     }
 }

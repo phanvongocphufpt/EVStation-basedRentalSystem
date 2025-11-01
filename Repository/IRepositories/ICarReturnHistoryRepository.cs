@@ -5,16 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace Repository.IRepositories
 {
-    public interface IPaymentRepository
+    public interface ICarReturnHistoryRepository
     {
-        Task<IEnumerable<Payment>> GetAllAsync();
-        Task<Payment?> GetByIdAsync(int id);
-        Task<IEnumerable<Payment>> GetAllByUserIdAsync(int id);
-        Task AddAsync(Payment payment);
-        Task UpdateAsync(Payment payment);
+        Task<IEnumerable<CarReturnHistory>> GetAllAsync();
+        Task<CarReturnHistory?> GetByIdAsync(int id);
+        Task AddAsync(CarReturnHistory entity);
+        Task UpdateAsync(CarReturnHistory entity);
+        Task DeleteAsync(int id);
         Task<IDbContextTransaction> BeginTransactionAsync();
     }
 }
+

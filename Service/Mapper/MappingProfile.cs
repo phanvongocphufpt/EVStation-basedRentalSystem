@@ -43,20 +43,22 @@ namespace Service.Mapper
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
             CreateMap<CreateRentalLocationDTO, RentalLocation>();
 
-<<<<<<< HEAD
             //CarDeliveryHistory Mappings
             CreateMap<CarDeliveryHistory, CarDeliveryHistoryDTO>().ReverseMap();
             CreateMap<CarDeliveryHistoryCreateDTO, CarDeliveryHistory>();
             CreateMap<CarDeliveryHistoryUpdateDTO, CarDeliveryHistory>();
-=======
+
             //CarRentalLocation Mappings
             CreateMap<CarRentalLocation, CarRentalLocationDTO>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
                 .ForMember(dest => dest.CarId, opt => opt.MapFrom(src => src.CarId))
                 .ForMember(dest => dest.LocationId, opt => opt.MapFrom(src => src.LocationId));
+            //CarReturnHistory Mappings
             CreateMap<CreateCarRentalLocationDTO, CarRentalLocation>();
->>>>>>> main
+            CreateMap<CarReturnHistory, CarReturnHistoryDTO>().ReverseMap();
+            CreateMap<CarReturnHistory, CarReturnHistoryCreateDTO>().ReverseMap();
+
         }
     }
 }
