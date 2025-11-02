@@ -27,7 +27,14 @@ namespace Repository.Repositories
                 .Where(c => !c.IsDeleted)
                 .ToListAsync();
         }
-
+        public async Task<RentalContact?> GetByIdAsync(int id)
+        {
+            return await _context.RentalContacts
+                .Include(c => c.RentalOrder)
+                .Include(c => c.Lessee)
+                .Include(c => c.Lessor)
+                .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
+        }
         public async Task<RentalContact?> GetByRentalOrderIdAsync(int rentalOrderId)
         {
             return await _context.RentalContacts

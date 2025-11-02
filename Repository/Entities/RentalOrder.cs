@@ -32,6 +32,10 @@ namespace Repository.Entities
         public Car Car { get; set; }
         public int? RentalContactId { get; set; }
         public RentalContact? RentalContact { get; set; }
+        public int? CitizenId { get; set; }
+        public CitizenId? CitizenIdNavigation { get; set; }
+        public int? DriverLicenseId { get; set; }
+        public DriverLicense? DriverLicense { get; set; }
         public int? PaymentId { get; set; }
         public Payment? Payment { get; set; }
     }

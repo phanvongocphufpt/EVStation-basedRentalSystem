@@ -16,13 +16,13 @@ namespace Service.Services
     public class CitizenIdService : ICitizenIdService
     {
         private readonly ICitizenIdRepository _citizenIdRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IRentalOrderRepository _rentalOrderRepository;
         private readonly IMapper _mapper;
-        public CitizenIdService(ICitizenIdRepository citizenIdRepository, IMapper mapper, IUserRepository userRepository)
+        public CitizenIdService(ICitizenIdRepository citizenIdRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository)
         {
             _citizenIdRepository = citizenIdRepository;
             _mapper = mapper;
-            _userRepository = userRepository;
+            _rentalOrderRepository = rentalOrderRepository; 
         }
         public async Task<Result<IEnumerable<CitizenIdDTO>>> GetAllCitizenIdsAsync()
         {
@@ -40,12 +40,12 @@ namespace Service.Services
             var dto = _mapper.Map<CitizenIdDTO>(citizenId);
             return Result<CitizenIdDTO>.Success(dto);
         }
-        public async Task<Result<CitizenIdDTO>> GetCitizenIdByUserIdAsync(int userId)
+        public async Task<Result<CitizenIdDTO>> GetCitizenIdByOrderIdAsync(int id)
         {
-            var citizenId = await _citizenIdRepository.GetCitizenIdsByUserIdAsync(userId);
+            var citizenId = await _citizenIdRepository.GetCitizenIdsByOrderIdAsync(id);
             if (citizenId == null)
             {
-                return Result<CitizenIdDTO>.Failure("Chứng minh nhân dân không tồn tại cho người dùng này! Kiểm tra lại UserId.");
+                return Result<CitizenIdDTO>.Failure("Chứng minh nhân dân không tồn tại cho Order này! Kiểm tra lại OrderId.");
             }
             var dto = _mapper.Map<CitizenIdDTO>(citizenId);
             return Result<CitizenIdDTO>.Success(dto);
@@ -53,14 +53,14 @@ namespace Service.Services
         public async Task<Result<CreateCitizenIdDTO>> CreateCitizenIdAsync(CreateCitizenIdDTO createCitizenIdDTO)
         {
             var dto = _mapper.Map<CitizenId>(createCitizenIdDTO);
-            var user = await _userRepository.GetByIdAsync(dto.UserId);
-            if (user == null)
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.RentalOrderId);
+            if (order == null)
             {
-                return Result<CreateCitizenIdDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id của người dùng.");
+                return Result<CreateCitizenIdDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của order.");
             }
-            if (user.CitizenIdNavigation != null)
+            if (order.CitizenIdNavigation != null)
             {
-                return Result<CreateCitizenIdDTO>.Failure("Người dùng đã có chứng minh nhân dân rồi! Không thể tạo thêm.");
+                return Result<CreateCitizenIdDTO>.Failure("Order đã có chứng minh nhân dân rồi! Không thể tạo thêm.");
             }
             var citizenId = new CitizenId
             {
@@ -70,8 +70,8 @@ namespace Service.Services
                 ImageUrl = dto.ImageUrl,
                 Status = DocumentStatus.Pending,
                 CreatedAt = DateTime.Now,
-                UserId = user.Id,
-                User = user
+                RentalOrderId = order.Id,
+                RentalOrder = order
             };
             await _citizenIdRepository.AddCitizenIdAsync(citizenId);
             return Result<CreateCitizenIdDTO>.Success(createCitizenIdDTO, "Tạo chứng minh nhân dân thành công.");

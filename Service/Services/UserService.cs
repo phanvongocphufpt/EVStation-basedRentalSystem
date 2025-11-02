@@ -62,8 +62,7 @@ namespace Service.Services
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 IsActive = true,
-                DriverLicenseId = null,
-                CitizenId = null
+                RentalLocationId = dto.RentalLocationId
             };
             await _userRepository.AddAsync(user);
             return Result<CreateStaffUserDTO>.Success(staffUserDTO, "Tạo tài khoản Staff thành công.");

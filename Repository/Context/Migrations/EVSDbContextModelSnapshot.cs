@@ -300,34 +300,18 @@ namespace Repository.Context.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("RentalOrderId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
                     b.ToTable("CitizenIds");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BirthDate = new DateOnly(1990, 1, 1),
-                            CitizenIdNumber = "058203123456",
-                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/citizen_id_sample.jpg",
-                            Name = "Customer CitizenID Sample",
-                            Status = 1,
-                            UserId = 3
-                        });
                 });
 
             modelBuilder.Entity("Repository.Entities.DriverLicense", b =>
@@ -349,32 +333,18 @@ namespace Repository.Context.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("RentalOrderId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
                     b.ToTable("DriverLicenses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/driver_license_sample.jpg",
-                            Name = "Customer DriverLicense Sample",
-                            Status = 1,
-                            UserId = 3
-                        });
                 });
 
             modelBuilder.Entity("Repository.Entities.Feedback", b =>
@@ -577,6 +547,9 @@ namespace Repository.Context.Migrations
                     b.Property<int>("CarId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CitizenId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -587,6 +560,9 @@ namespace Repository.Context.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Discount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DriverLicenseId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ExpectedReturnTime")
@@ -629,6 +605,14 @@ namespace Repository.Context.Migrations
 
                     b.HasIndex("CarId");
 
+                    b.HasIndex("CitizenId")
+                        .IsUnique()
+                        .HasFilter("[CitizenId] IS NOT NULL");
+
+                    b.HasIndex("DriverLicenseId")
+                        .IsUnique()
+                        .HasFilter("[DriverLicenseId] IS NOT NULL");
+
                     b.HasIndex("PaymentId")
                         .IsUnique()
                         .HasFilter("[PaymentId] IS NOT NULL");
@@ -650,17 +634,11 @@ namespace Repository.Context.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CitizenId")
-                        .HasColumnType("int");
-
                     b.Property<string>("ConfirmEmailToken")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<int?>("DriverLicenseId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -735,9 +713,7 @@ namespace Repository.Context.Migrations
                         new
                         {
                             Id = 3,
-                            CitizenId = 1,
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DriverLicenseId = 1,
                             Email = "customer@gmail.com",
                             FullName = "Customer User",
                             IsActive = true,
@@ -853,28 +829,6 @@ namespace Repository.Context.Migrations
                     b.Navigation("Staff");
                 });
 
-            modelBuilder.Entity("Repository.Entities.CitizenId", b =>
-                {
-                    b.HasOne("Repository.Entities.User", "User")
-                        .WithOne("CitizenIdNavigation")
-                        .HasForeignKey("Repository.Entities.CitizenId", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Repository.Entities.DriverLicense", b =>
-                {
-                    b.HasOne("Repository.Entities.User", "User")
-                        .WithOne("DriverLicense")
-                        .HasForeignKey("Repository.Entities.DriverLicense", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Repository.Entities.Feedback", b =>
                 {
                     b.HasOne("Repository.Entities.RentalOrder", "RentalOrder")
@@ -934,6 +888,16 @@ namespace Repository.Context.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Repository.Entities.CitizenId", "CitizenIdNavigation")
+                        .WithOne("RentalOrder")
+                        .HasForeignKey("Repository.Entities.RentalOrder", "CitizenId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Repository.Entities.DriverLicense", "DriverLicense")
+                        .WithOne("RentalOrder")
+                        .HasForeignKey("Repository.Entities.RentalOrder", "DriverLicenseId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("Repository.Entities.Payment", "Payment")
                         .WithOne("RentalOrder")
                         .HasForeignKey("Repository.Entities.RentalOrder", "PaymentId")
@@ -951,6 +915,10 @@ namespace Repository.Context.Migrations
                         .IsRequired();
 
                     b.Navigation("Car");
+
+                    b.Navigation("CitizenIdNavigation");
+
+                    b.Navigation("DriverLicense");
 
                     b.Navigation("Payment");
 
@@ -976,6 +944,18 @@ namespace Repository.Context.Migrations
                     b.Navigation("RentalOrders");
                 });
 
+            modelBuilder.Entity("Repository.Entities.CitizenId", b =>
+                {
+                    b.Navigation("RentalOrder")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Repository.Entities.DriverLicense", b =>
+                {
+                    b.Navigation("RentalOrder")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Repository.Entities.Payment", b =>
                 {
                     b.Navigation("RentalOrder");
@@ -998,10 +978,6 @@ namespace Repository.Context.Migrations
             modelBuilder.Entity("Repository.Entities.User", b =>
                 {
                     b.Navigation("CarDeliveryHistories");
-
-                    b.Navigation("CitizenIdNavigation");
-
-                    b.Navigation("DriverLicense");
 
                     b.Navigation("Feedback");
 

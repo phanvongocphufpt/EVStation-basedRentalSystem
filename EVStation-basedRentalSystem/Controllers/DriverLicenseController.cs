@@ -31,11 +31,11 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound();
             return Ok(driverLicense);
         }
-        [HttpGet("GetByUserId")]
+        [HttpGet("GetByOrderId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
-        public async Task<IActionResult> GetByUserId(int userId)
+        public async Task<IActionResult> GetByOrderId(int orderId)
         {
-            var driverLicense = await _driverLicenseService.GetByUserIdAsync(userId);
+            var driverLicense = await _driverLicenseService.GetByOrderIdAsync(orderId);
             if (driverLicense == null)
                 return NotFound();
             return Ok(driverLicense);

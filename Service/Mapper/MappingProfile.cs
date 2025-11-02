@@ -16,11 +16,10 @@ namespace Service.Mapper
             //User Mappings
             CreateMap<User, UserDTO>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
-                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
-                .ForMember(dest => dest.DriverLicenseId, opt => opt.MapFrom(src => src.DriverLicenseId))
-                .ForMember(dest => dest.CitizenId, opt => opt.MapFrom(src => src.CitizenId));
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
             CreateMap<CreateStaffUserDTO, User>();
 
             //Payment Mappings
@@ -69,7 +68,7 @@ namespace Service.Mapper
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId));
+                .ForMember(dest => dest.RentalOrderId, opt => opt.MapFrom(src => src.RentalOrderId));
             CreateMap<CreateCitizenIdDTO, CitizenId>();
 
             //DriverLicense Mappings
@@ -80,8 +79,33 @@ namespace Service.Mapper
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId));
+                .ForMember(dest => dest.RentalOrderId, opt => opt.MapFrom(src => src.RentalOrderId));
             CreateMap<CreateDriverLicenseDTO, DriverLicense>();
+
+            //RentalOrder Mappings
+            CreateMap<RentalOrder, RentalOrderDTO>().ReverseMap()
+                .ForMember(dest => dest.Id, otp => otp.MapFrom(src => src))
+                .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(src => src.OrderDate))
+                .ForMember(dest => dest.PickupTime, opt => opt.MapFrom(src => src.PickupTime))
+                .ForMember(dest => dest.ExpectedReturnTime, opt => opt.MapFrom(src => src.ExpectedReturnTime))
+                .ForMember(dest => dest.ActualReturnTime, opt => opt.MapFrom(src => src.ActualReturnTime))
+                .ForMember(dest => dest.SubTotal, opt => opt.MapFrom(src => src.SubTotal))
+                .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Total))
+                .ForMember(dest => dest.Discount, opt => opt.MapFrom(src => src.Discount))
+                .ForMember(dest => dest.ExtraFee, opt => opt.MapFrom(src => src.ExtraFee))
+                .ForMember(dest => dest.DamageFee, opt => opt.MapFrom(src => src.DamageFee))
+                .ForMember(dest => dest.DamageNotes, opt => opt.MapFrom(src => src.DamageNotes))
+                .ForMember(dest => dest.WithDriver, opt => opt.MapFrom(src => src.WithDriver))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.CarId, opt => opt.MapFrom(src => src.CarId))
+                .ForMember(dest => dest.CitizenId, opt => opt.MapFrom(src => src.CitizenId))
+                .ForMember(dest => dest.DriverLicenseId, opt => opt.MapFrom(src => src.DriverLicenseId))
+                .ForMember(dest => dest.RentalContactId, opt => opt.MapFrom(src => src.RentalContactId))
+                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId));
+            CreateMap<CreateRentalOrderDTO, RentalOrder>();
         }
     }
 }

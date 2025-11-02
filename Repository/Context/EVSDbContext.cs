@@ -157,42 +157,18 @@ namespace Repository.Context
             // Configure CitizenId
             modelBuilder.Entity<CitizenId>(entity =>
             {
-                entity.HasOne(e => e.User)
+                entity.HasOne(e => e.RentalOrder)
                     .WithOne(e => e.CitizenIdNavigation)
-                    .HasForeignKey<CitizenId>(e => e.UserId)
+                    .HasForeignKey<CitizenId>(e => e.RentalOrderId)
                     .OnDelete(DeleteBehavior.Cascade);
-                entity.HasData(
-                    new CitizenId
-                    {
-                        Id = 1,
-                        CitizenIdNumber = "058203123456",
-                        Name = "Customer CitizenID Sample",
-                        BirthDate = new DateOnly(1990, 1, 1),
-                        ImageUrl = "https://example.com/citizen_id_sample.jpg",
-                        Status = DocumentStatus.Approved,
-                        CreatedAt = new DateTime(2025, 10, 11),
-                        UpdatedAt = null,
-                        UserId = 3
-                    });
             });
             // Configure DriverLicense
             modelBuilder.Entity<DriverLicense>(entity =>
                 {
-                    entity.HasOne(e => e.User)
+                    entity.HasOne(e => e.RentalOrder)
                         .WithOne(e => e.DriverLicense)
-                        .HasForeignKey<DriverLicense>(e => e.UserId)
+                        .HasForeignKey<DriverLicense>(e => e.RentalOrderId)
                         .OnDelete(DeleteBehavior.Cascade);
-                    entity.HasData(
-                        new DriverLicense
-                        {
-                            Id = 1,
-                            Name = "Customer DriverLicense Sample",
-                            ImageUrl = "https://example.com/driver_license_sample.jpg",
-                            Status = DocumentStatus.Approved,
-                            CreatedAt = new DateTime(2025, 10, 11),
-                            UpdatedAt = null,
-                            UserId = 3
-                        });
                 });
 
                 // Configure Feedback
@@ -301,25 +277,26 @@ namespace Repository.Context
                         .WithOne(e => e.RentalOrder)
                         .HasForeignKey<RentalOrder>(e => e.RentalContactId)
                         .OnDelete(DeleteBehavior.Cascade);
+
                     entity.HasOne(e => e.Payment)
                         .WithOne(e => e.RentalOrder)
                         .HasForeignKey<RentalOrder>(e => e.PaymentId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    entity.HasOne(e => e.CitizenIdNavigation)
+                        .WithOne(e => e.RentalOrder)
+                        .HasForeignKey<RentalOrder>(e => e.CitizenId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    entity.HasOne(e => e.DriverLicense)
+                        .WithOne(e => e.RentalOrder)
+                        .HasForeignKey<RentalOrder>(e => e.DriverLicenseId)
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
                 // Configure User
                 modelBuilder.Entity<User>(entity =>
                 {
-                    entity.HasOne(e => e.DriverLicense)
-                        .WithOne(e => e.User)
-                        .HasForeignKey<DriverLicense>(e => e.UserId)
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    entity.HasOne(e => e.CitizenIdNavigation)
-                        .WithOne(e => e.User)
-                        .HasForeignKey<CitizenId>(e => e.UserId)
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     entity.HasOne(e => e.RentalLocation)
                         .WithMany(e => e.Users)
                         .HasForeignKey(e => e.RentalLocationId)
@@ -360,8 +337,6 @@ namespace Repository.Context
                     CreatedAt = new DateTime(2025, 10, 11),
                     UpdatedAt = null,
                     IsActive = true,
-                    DriverLicenseId = null,
-                    CitizenId = null,
                     RentalLocationId = null
                 },
                 new User
@@ -377,8 +352,6 @@ namespace Repository.Context
                     CreatedAt = new DateTime(2025, 10, 11),
                     UpdatedAt = null,
                     IsActive = true,
-                    DriverLicenseId = null,
-                    CitizenId = null,
                     RentalLocationId = 1
                 },
                 new User
@@ -394,8 +367,6 @@ namespace Repository.Context
                     CreatedAt = new DateTime(2025, 10, 11),
                     UpdatedAt = null,
                     IsActive = true,
-                    DriverLicenseId = 1,
-                    CitizenId = 1,
                     RentalLocationId = null
                 }
                     );

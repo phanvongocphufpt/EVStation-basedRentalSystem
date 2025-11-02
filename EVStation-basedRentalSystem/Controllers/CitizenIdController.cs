@@ -31,11 +31,11 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound();
             return Ok(citizenId);
         }
-        [HttpGet("GetByUserId")]
+        [HttpGet("GetByOrderId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
-        public async Task<IActionResult> GetByUserId(int userId)
+        public async Task<IActionResult> GetByOrderId(int orderId)
         {
-            var citizenId = await _citizenIdService.GetCitizenIdByUserIdAsync(userId);
+            var citizenId = await _citizenIdService.GetCitizenIdByOrderIdAsync(orderId);
             if (citizenId == null)
                 return NotFound();
             return Ok(citizenId);

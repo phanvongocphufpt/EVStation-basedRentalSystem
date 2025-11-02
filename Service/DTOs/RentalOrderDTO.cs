@@ -12,19 +12,24 @@ namespace Service.DTOs
     {
         public int Id { get; set; }
         public DateTime OrderDate { get; set; }
+        public DateTime PickupTime { get; set; }
+        public DateTime ExpectedReturnTime { get; set; }
         public DateTime? ActualReturnTime { get; set; }
         public double? SubTotal { get; set; }
         public double? Total { get; set; }
         public int? Discount { get; set; }
         public double? ExtraFee { get; set; }
         public double? DamageFee { get; set; }
+        public string? DamageNotes { get; set; }
         public bool WithDriver { get; set; }
-        public RentalOrderStatus Status { get; set; }
+        public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public int UserId { get; set; }
         public int CarId { get; set; }
         public int? RentalContactId { get; set; }
+        public int? CitizenId { get; set; }
+        public int? DriverLicenseId { get; set; }
         public int? PaymentId { get; set; }
     }
     public class CreateRentalOrderDTO
@@ -41,5 +46,10 @@ namespace Service.DTOs
         public double ExtraFee { get; set; }
         public double DamageFee { get; set; }
         public string DamageNotes { get; set; }
+    }
+    public class UpdateRentalOrderStatusDTO
+    {
+        public int OrderId { get; set; }
+        public RentalOrderStatus Status { get; set; }
     }
 }

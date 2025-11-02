@@ -17,13 +17,13 @@ namespace Service.Services
     public class DriverLicenseService : IDriverLicenseService
     {
         private readonly IDriverLicenseRepository _driverLicenseRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IRentalOrderRepository _rentalOrderRepository;
         private readonly IMapper _mapper;
-        public DriverLicenseService(IDriverLicenseRepository driverLicenseRepository, IMapper mapper, IUserRepository userRepository)
+        public DriverLicenseService(IDriverLicenseRepository driverLicenseRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository)
         {
             _driverLicenseRepository = driverLicenseRepository;
             _mapper = mapper;
-            _userRepository = userRepository;
+            _rentalOrderRepository = rentalOrderRepository;
         }
         public async Task<Result<IEnumerable<DriverLicenseDTO>>> GetAllAsync()
         {
@@ -41,12 +41,12 @@ namespace Service.Services
             var dto = _mapper.Map<DriverLicenseDTO>(driverLicense);
             return Result<DriverLicenseDTO>.Success(dto);
         }
-        public async Task<Result<DriverLicenseDTO>> GetByUserIdAsync(int userId)
+        public async Task<Result<DriverLicenseDTO>> GetByOrderIdAsync(int id)
         {
-            var driverLicense = await _driverLicenseRepository.GetByUserIdAsync(userId);
+            var driverLicense = await _driverLicenseRepository.GetByOrderIdAsync(id);
             if (driverLicense == null)
             {
-                return Result<DriverLicenseDTO>.Failure("Giấy phép lái xe không tồn tại cho người dùng này! Kiểm tra lại UserId.");
+                return Result<DriverLicenseDTO>.Failure("Giấy phép lái xe không tồn tại cho Order này! Kiểm tra lại OrderId.");
             }
             var dto = _mapper.Map<DriverLicenseDTO>(driverLicense);
             return Result<DriverLicenseDTO>.Success(dto);
@@ -54,14 +54,14 @@ namespace Service.Services
         public async Task<Result<CreateDriverLicenseDTO>> CreateAsync(CreateDriverLicenseDTO createDriverLicenseDTO)
         {
             var dto = _mapper.Map<DriverLicense>(createDriverLicenseDTO);
-            var user = await _userRepository.GetByIdAsync(dto.UserId);
-            if (user == null)
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.RentalOrderId);
+            if (order == null)
             {
-                return Result<CreateDriverLicenseDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id của người dùng.");
+                return Result<CreateDriverLicenseDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của Order.");
             }
-            if (user.DriverLicense != null)
+            if (order.DriverLicense != null)
             {
-                return Result<CreateDriverLicenseDTO>.Failure("Người dùng đã có giấy phép lái xe rồi!");
+                return Result<CreateDriverLicenseDTO>.Failure("Order đã có giấy phép lái xe rồi!");
             }
             var driverLicense = new DriverLicense
             {
@@ -69,8 +69,8 @@ namespace Service.Services
                 ImageUrl = dto.ImageUrl,
                 Status = DocumentStatus.Pending,
                 CreatedAt = DateTime.Now,
-                UserId = user.Id,
-                User = user
+                RentalOrderId = order.Id,
+                RentalOrder = order
             };
             await _driverLicenseRepository.AddAsync(driverLicense);
             return Result<CreateDriverLicenseDTO>.Success(createDriverLicenseDTO, "Tạo giấy phép lái xe thành công.");

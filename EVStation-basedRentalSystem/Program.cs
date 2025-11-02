@@ -102,6 +102,7 @@ builder.Services.AddScoped<IRentalLocationRepository, RentalLocationRepository>(
 builder.Services.AddScoped<ICarRentalLocationRepository, CarRentalLocationRepository>();
 builder.Services.AddScoped<ICitizenIdRepository, CitizenIdRepository>();
 builder.Services.AddScoped<IDriverLicenseRepository, DriverLicenseRepository>();
+builder.Services.AddScoped<IRentalOrderRepository, RentalOrderRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -114,6 +115,7 @@ builder.Services.AddScoped<IRentalLocationService, RentalLocationService>();
 builder.Services.AddScoped<ICarRentalLocationService, CarRentalLocationService>();
 builder.Services.AddScoped<ICitizenIdService, CitizenIdService>();
 builder.Services.AddScoped<IDriverLicenseService, DriverLicenseService>();
+builder.Services.AddScoped<IRentalOrderService, RentalOrderService>();
 
 //Others
 builder.Services.Configure<SmtpSettings>(smtpSettings);

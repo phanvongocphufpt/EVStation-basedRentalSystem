@@ -13,7 +13,7 @@ namespace Service.IServices
     {
         Task<Result<IEnumerable<DriverLicenseDTO>>> GetAllAsync();
         Task<Result<DriverLicenseDTO>> GetByIdAsync(int id);
-        Task<Result<DriverLicenseDTO>> GetByUserIdAsync(int userId);
+        Task<Result<DriverLicenseDTO>> GetByOrderIdAsync(int id);
         Task<Result<CreateDriverLicenseDTO>> CreateAsync(CreateDriverLicenseDTO createDriverLicenseDTO);
         Task<Result<UpdateDriverLicenseStatusDTO>> UpdateStatusAsync(UpdateDriverLicenseStatusDTO driverLicenseDTO);
         Task<Result<UpdateDriverLicenseInfoDTO>> UpdateInfoAsync(UpdateDriverLicenseInfoDTO driverLicenseDTO);
