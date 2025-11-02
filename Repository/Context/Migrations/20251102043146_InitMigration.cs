@@ -136,7 +136,7 @@ namespace Repository.Context.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UserId = table.Column<int>(type: "int", nullable: true)
+                    UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -242,10 +242,16 @@ namespace Repository.Context.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PickupTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpectedReturnTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ActualReturnTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     SubTotal = table.Column<double>(type: "float", nullable: true),
                     Total = table.Column<double>(type: "float", nullable: true),
                     Discount = table.Column<int>(type: "int", nullable: true),
                     ExtraFee = table.Column<double>(type: "float", nullable: true),
+                    DamageFee = table.Column<double>(type: "float", nullable: true),
+                    DamageNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    WithDriver = table.Column<bool>(type: "bit", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -527,8 +533,7 @@ namespace Repository.Context.Migrations
                 name: "IX_CitizenIds_UserId",
                 table: "CitizenIds",
                 column: "UserId",
-                unique: true,
-                filter: "[UserId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_DriverLicenses_UserId",

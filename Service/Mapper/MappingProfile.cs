@@ -59,6 +59,29 @@ namespace Service.Mapper
             CreateMap<CarReturnHistory, CarReturnHistoryDTO>().ReverseMap();
             CreateMap<CarReturnHistory, CarReturnHistoryCreateDTO>().ReverseMap();
 
+            //CitizenId Mappings
+            CreateMap<CitizenId, CitizenIdDTO>().ReverseMap()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.CitizenIdNumber, opt => opt.MapFrom(src => src.CitizenIdNumber))
+                .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId));
+            CreateMap<CreateCitizenIdDTO, CitizenId>();
+
+            //DriverLicense Mappings
+            CreateMap<DriverLicense, DriverLicenseDTO>().ReverseMap()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId));
+            CreateMap<CreateDriverLicenseDTO, DriverLicense>();
         }
     }
 }

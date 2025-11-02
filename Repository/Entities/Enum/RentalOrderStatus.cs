@@ -10,6 +10,8 @@ namespace Repository.Entities.Enum
     {
         Pending,
         Confirmed,
+        Renting,
+        PaymentPending,
         Cancelled,
         Completed
     }

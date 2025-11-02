@@ -25,7 +25,7 @@ namespace Repository.Repositories
 
         public async Task<User?> GetByIdAsync(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _context.Users.Where(u => u.Id == id).Include(u => u.CitizenIdNavigation).Include(u => u.DriverLicense).FirstOrDefaultAsync();
         }
 
         public async Task<User?> GetByEmailAsync(string email)

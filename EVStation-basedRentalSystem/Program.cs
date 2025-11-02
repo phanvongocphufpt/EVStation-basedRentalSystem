@@ -11,7 +11,7 @@ using Service.IServices;
 using Service.Mapper;
 using Service.Services;
 using System.Text;
-
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 
 
@@ -100,6 +100,8 @@ builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IRentalLocationRepository, RentalLocationRepository>();
 builder.Services.AddScoped<ICarRentalLocationRepository, CarRentalLocationRepository>();
+builder.Services.AddScoped<ICitizenIdRepository, CitizenIdRepository>();
+builder.Services.AddScoped<IDriverLicenseRepository, DriverLicenseRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -110,6 +112,8 @@ builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IRentalLocationService, RentalLocationService>();
 builder.Services.AddScoped<ICarRentalLocationService, CarRentalLocationService>();
+builder.Services.AddScoped<ICitizenIdService, CitizenIdService>();
+builder.Services.AddScoped<IDriverLicenseService, DriverLicenseService>();
 
 //Others
 builder.Services.Configure<SmtpSettings>(smtpSettings);

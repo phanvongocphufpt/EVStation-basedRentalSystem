@@ -306,14 +306,13 @@ namespace Repository.Context.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("CitizenIds");
 
@@ -572,14 +571,26 @@ namespace Repository.Context.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ActualReturnTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("CarId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<double?>("DamageFee")
+                        .HasColumnType("float");
+
+                    b.Property<string>("DamageNotes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("Discount")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("ExpectedReturnTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<double?>("ExtraFee")
                         .HasColumnType("float");
@@ -589,6 +600,9 @@ namespace Repository.Context.Migrations
 
                     b.Property<int?>("PaymentId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("PickupTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("RentalContactId")
                         .HasColumnType("int");
@@ -607,6 +621,9 @@ namespace Repository.Context.Migrations
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("WithDriver")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -841,7 +858,8 @@ namespace Repository.Context.Migrations
                     b.HasOne("Repository.Entities.User", "User")
                         .WithOne("CitizenIdNavigation")
                         .HasForeignKey("Repository.Entities.CitizenId", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
