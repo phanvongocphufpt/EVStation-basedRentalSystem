@@ -67,6 +67,7 @@ namespace Service.Services
             {
                 Name = dto.Name,
                 ImageUrl = dto.ImageUrl,
+                ImageUrl2 = dto.ImageUrl2,
                 Status = DocumentStatus.Pending,
                 CreatedAt = DateTime.Now,
                 RentalOrderId = order.Id,
@@ -96,6 +97,7 @@ namespace Service.Services
             }
             existingDriverLicense.Name = driverLicenseDTO.Name;
             existingDriverLicense.ImageUrl = driverLicenseDTO.ImageUrl;
+            existingDriverLicense.ImageUrl2 = driverLicenseDTO.ImageUrl2;
             existingDriverLicense.UpdatedAt = DateTime.Now;
             await _driverLicenseRepository.UpdateAsync(existingDriverLicense);
             return Result<UpdateDriverLicenseInfoDTO>.Success(driverLicenseDTO, "Cập nhật thông tin giấy phép lái xe thành công.");

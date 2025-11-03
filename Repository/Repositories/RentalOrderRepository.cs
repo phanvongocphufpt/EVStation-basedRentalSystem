@@ -23,7 +23,14 @@ namespace Repository.Repositories
         }
         public async Task<RentalOrder?> GetByIdAsync(int id)
         {
-            return await _context.RentalOrders.Where(ro => ro.Id == id).Include(ro => ro.CitizenIdNavigation).Include(ro => ro.DriverLicense).FirstOrDefaultAsync();
+            return await _context.RentalOrders.Where(ro => ro.Id == id)
+                .Include(ro => ro.CitizenIdNavigation)
+                .Include(ro => ro.DriverLicense)
+                .Include(ro => ro.User)
+                .Include(ro => ro.Car)
+                .Include(ro => ro.RentalContact)
+                .Include(ro => ro.RentalLocation)
+                .FirstOrDefaultAsync();
         }
         public async Task<IEnumerable<RentalOrder>> GetByUserIdAsync(int id)
         {

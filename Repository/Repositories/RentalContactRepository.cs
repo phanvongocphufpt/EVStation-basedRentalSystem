@@ -22,8 +22,6 @@ namespace Repository.Repositories
         {
             return await _context.RentalContacts
                 .Include(c => c.RentalOrder)
-                .Include(c => c.Lessee)
-                .Include(c => c.Lessor)
                 .Where(c => !c.IsDeleted)
                 .ToListAsync();
         }
@@ -31,16 +29,12 @@ namespace Repository.Repositories
         {
             return await _context.RentalContacts
                 .Include(c => c.RentalOrder)
-                .Include(c => c.Lessee)
-                .Include(c => c.Lessor)
                 .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
         }
         public async Task<RentalContact?> GetByRentalOrderIdAsync(int rentalOrderId)
         {
             return await _context.RentalContacts
                 .Include(c => c.RentalOrder)
-                .Include(c => c.Lessee)
-                .Include(c => c.Lessor)
                 .FirstOrDefaultAsync(c => c.RentalOrderId == rentalOrderId && !c.IsDeleted);
         }
 

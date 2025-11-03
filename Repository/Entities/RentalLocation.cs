@@ -18,8 +18,8 @@ namespace Repository.Entities
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }
         public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
-        public ICollection<RentalContact> RentalContacts { get; set; }
         public ICollection<User> Users { get; set; }
+        public ICollection<RentalOrder> RentalOrders { get; set; }
         public int LocationId { get; set; } 
         public bool IsDeleted { get; set; }
     }

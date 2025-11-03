@@ -31,6 +31,8 @@ namespace Repository.Context.Migrations
                     RentPricePerDayWithDriver = table.Column<double>(type: "float", nullable: false),
                     RentPricePerHourWithDriver = table.Column<double>(type: "float", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageUrl2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageUrl3 = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -52,6 +54,7 @@ namespace Repository.Context.Migrations
                     CitizenIdNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageUrl2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -70,6 +73,7 @@ namespace Repository.Context.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageUrl2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -193,6 +197,7 @@ namespace Repository.Context.Migrations
                     RentalPeriod = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TerminationClause = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     RentalOrderId = table.Column<int>(type: "int", nullable: true),
                     LesseeId = table.Column<int>(type: "int", nullable: false),
                     LessorId = table.Column<int>(type: "int", nullable: true),
@@ -202,18 +207,6 @@ namespace Repository.Context.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RentalContacts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RentalContacts_RentalLocations_LessorId",
-                        column: x => x.LessorId,
-                        principalTable: "RentalLocations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_RentalContacts_Users_LesseeId",
-                        column: x => x.LesseeId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_RentalContacts_Users_UserId",
                         column: x => x.UserId,
@@ -227,6 +220,7 @@ namespace Repository.Context.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PickupTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpectedReturnTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -242,6 +236,7 @@ namespace Repository.Context.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false),
+                    RentalLocationId = table.Column<int>(type: "int", nullable: false),
                     CarId = table.Column<int>(type: "int", nullable: false),
                     RentalContactId = table.Column<int>(type: "int", nullable: true),
                     CitizenId = table.Column<int>(type: "int", nullable: true),
@@ -281,6 +276,12 @@ namespace Repository.Context.Migrations
                         principalTable: "RentalContacts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RentalOrders_RentalLocations_RentalLocationId",
+                        column: x => x.RentalLocationId,
+                        principalTable: "RentalLocations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_RentalOrders_Users_UserId",
                         column: x => x.UserId,
@@ -424,11 +425,12 @@ namespace Repository.Context.Migrations
 
             migrationBuilder.InsertData(
                 table: "Cars",
-                columns: new[] { "Id", "BatteryDuration", "BatteryType", "CreatedAt", "ImageUrl", "IsActive", "IsDeleted", "Model", "Name", "RentPricePerDay", "RentPricePerDayWithDriver", "RentPricePerHour", "RentPricePerHourWithDriver", "Seats", "SizeType", "Status", "TrunkCapacity", "UpdatedAt" },
+                columns: new[] { "Id", "BatteryDuration", "BatteryType", "CreatedAt", "ImageUrl", "ImageUrl2", "ImageUrl3", "IsActive", "IsDeleted", "Model", "Name", "RentPricePerDay", "RentPricePerDayWithDriver", "RentPricePerHour", "RentPricePerHourWithDriver", "Seats", "SizeType", "Status", "TrunkCapacity", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 1000000.0, 1400000.0, 45000.0, 60000.0, 5, "Sedan", 1, 425, null },
-                    { 2, 240, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/nissan_leaf.jpg", true, false, "Nissan Leaf", "Leaf", 800000.0, 1200000.0, 35000.0, 50000.0, 5, "Hatchback", 1, 435, null }
+                    { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 1000000.0, 1400000.0, 45000.0, 60000.0, 5, "Sedan", 1, 425, null },
+                    { 2, 240, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", true, false, "Nissan Leaf", "Leaf", 800000.0, 1200000.0, 35000.0, 50000.0, 5, "Hatchback", 1, 435, null },
+                    { 3, 259, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", true, false, "Chevrolet Bolt EV", "Bolt EV", 900000.0, 1300000.0, 40000.0, 55000.0, 5, "Hatchback", 1, 478, null }
                 });
 
             migrationBuilder.InsertData(
@@ -535,16 +537,6 @@ namespace Repository.Context.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RentalContacts_LesseeId",
-                table: "RentalContacts",
-                column: "LesseeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RentalContacts_LessorId",
-                table: "RentalContacts",
-                column: "LessorId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_RentalContacts_UserId",
                 table: "RentalContacts",
                 column: "UserId");
@@ -581,6 +573,11 @@ namespace Repository.Context.Migrations
                 column: "RentalContactId",
                 unique: true,
                 filter: "[RentalContactId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RentalOrders_RentalLocationId",
+                table: "RentalOrders",
+                column: "RentalLocationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RentalOrders_UserId",

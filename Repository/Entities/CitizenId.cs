@@ -16,6 +16,7 @@ namespace Repository.Entities
         public string CitizenIdNumber { get; set; }
         public DateOnly BirthDate { get; set; }
         public string ImageUrl { get; set; }
+        public string ImageUrl2 { get; set; }
         public DocumentStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

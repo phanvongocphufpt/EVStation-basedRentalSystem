@@ -20,6 +20,8 @@ namespace Service.Services
         private readonly IDriverLicenseRepository _driverLicenseRepository;
         private readonly IUserRepository _userRepository;
         private readonly ICarRepository _carRepository;
+        private readonly ICarRentalLocationRepository _carRentalLocationRepository;
+        private readonly IRentalLocationRepository _rentalLocationRepository;
         private readonly IRentalContactRepository _rentalContactRepository;
         private readonly IMapper _mapper;
         public RentalOrderService(
@@ -29,7 +31,9 @@ namespace Service.Services
             IUserRepository userRepository,
             ICarRepository carRepository,
             IRentalContactRepository rentalContactRepository,
-            IMapper mapper)
+            IMapper mapper,
+            ICarRentalLocationRepository carRentalLocationRepository,
+            IRentalLocationRepository rentalLocationRepository)
         {
             _rentalOrderRepository = rentalOrderRepository;
             _citizenIdRepository = citizenIdRepository;
@@ -38,6 +42,8 @@ namespace Service.Services
             _carRepository = carRepository;
             _rentalContactRepository = rentalContactRepository;
             _mapper = mapper;
+            _carRentalLocationRepository = carRentalLocationRepository;
+            _rentalLocationRepository = rentalLocationRepository;
         }
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetAllAsync()
         {
@@ -68,6 +74,16 @@ namespace Service.Services
             {
                 return Result<CreateRentalOrderDTO>.Failure("Xe không tồn tại! Kiểm tra lại Id của xe.");
             }
+            var location = await _rentalLocationRepository.GetByIdAsync(dto.RentalLocationId);
+            if (location == null)
+            {
+                return Result<CreateRentalOrderDTO>.Failure("Địa điểm thuê xe không tồn tại! Kiểm tra lại Id của địa điểm.");
+            }
+            var carRentalLocation = await _carRentalLocationRepository.GetByCarAndLocationIdAsync(dto.CarId, dto.RentalLocationId);
+            if (carRentalLocation == null || carRentalLocation.Quantity == 0)
+            {
+                return Result<CreateRentalOrderDTO>.Failure("Xe không có sẵn tại địa điểm thuê xe đã chọn.");
+            }
             var subtotalDays = (dto.ExpectedReturnTime - dto.PickupTime).TotalDays;
             var subtotal = dto.WithDriver
                             ? subtotalDays * car.RentPricePerDayWithDriver
@@ -81,6 +97,7 @@ namespace Service.Services
             //}
             var order = new RentalOrder
             {
+                PhoneNumber = dto.PhoneNumber,
                 PickupTime = dto.PickupTime,
                 ExpectedReturnTime = dto.ExpectedReturnTime,
                 WithDriver = dto.WithDriver,
@@ -89,6 +106,8 @@ namespace Service.Services
                 User = user,
                 CarId = car.Id,
                 Car = car,
+                RentalLocationId = dto.RentalLocationId,
+                RentalLocation = location,
                 CreatedAt = DateTime.Now,
                 Status = RentalOrderStatus.Pending
             };
@@ -121,6 +140,10 @@ namespace Service.Services
             if (existingOrder.CitizenIdNavigation == null || existingOrder.DriverLicense == null)
             {
                 return Result<UpdateRentalOrderStatusDTO>.Failure("Chứng minh nhân dân hoặc giấy phép lái xe chưa được nộp. Không thể cập nhật trạng thái đơn đặt thuê.");
+            }
+            if (existingOrder.RentalContact.Status != DocumentStatus.Approved)
+            {
+                return Result<UpdateRentalOrderStatusDTO>.Failure("Hợp đồng thuê xe chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
             }
             if (existingOrder.CitizenIdNavigation.Status != DocumentStatus.Approved)
             {

@@ -12,6 +12,7 @@ namespace Repository.IRepositories
     {
         Task<IEnumerable<CarRentalLocation>> GetAllAsync();
         Task<CarRentalLocation?> GetByIdAsync(int id);
+        Task<CarRentalLocation?> GetByCarAndLocationIdAsync(int carId, int locationId);
         Task<IEnumerable<CarRentalLocation>> GetByCarIdAsync(int id);
         Task<IEnumerable<CarRentalLocation>> GetByRentalLocationIdAsync(int id);
         Task<CarRentalLocation?> GetByCarAndRentalLocationIdAsync(int carId, int locationId);

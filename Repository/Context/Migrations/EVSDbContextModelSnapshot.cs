@@ -44,6 +44,14 @@ namespace Repository.Context.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUrl2")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl3")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -98,6 +106,8 @@ namespace Repository.Context.Migrations
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ImageUrl = "https://example.com/tesla_model_3.jpg",
+                            ImageUrl2 = "https://example.com/tesla_model_3.jpg",
+                            ImageUrl3 = "https://example.com/tesla_model_3.jpg",
                             IsActive = true,
                             IsDeleted = false,
                             Model = "Tesla Model 3",
@@ -118,6 +128,8 @@ namespace Repository.Context.Migrations
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ImageUrl = "https://example.com/nissan_leaf.jpg",
+                            ImageUrl2 = "https://example.com/nissan_leaf.jpg",
+                            ImageUrl3 = "https://example.com/nissan_leaf.jpg",
                             IsActive = true,
                             IsDeleted = false,
                             Model = "Nissan Leaf",
@@ -130,6 +142,28 @@ namespace Repository.Context.Migrations
                             SizeType = "Hatchback",
                             Status = 1,
                             TrunkCapacity = 435
+                        },
+                        new
+                        {
+                            Id = 3,
+                            BatteryDuration = 259,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/chevrolet_bolt_ev.jpg",
+                            ImageUrl2 = "https://example.com/chevrolet_bolt_ev.jpg",
+                            ImageUrl3 = "https://example.com/chevrolet_bolt_ev.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "Chevrolet Bolt EV",
+                            Name = "Bolt EV",
+                            RentPricePerDay = 900000.0,
+                            RentPricePerDayWithDriver = 1300000.0,
+                            RentPricePerHour = 40000.0,
+                            RentPricePerHourWithDriver = 55000.0,
+                            Seats = 5,
+                            SizeType = "Hatchback",
+                            Status = 1,
+                            TrunkCapacity = 478
                         });
                 });
 
@@ -296,6 +330,10 @@ namespace Repository.Context.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUrl2")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -326,6 +364,10 @@ namespace Repository.Context.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl2")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -451,6 +493,9 @@ namespace Repository.Context.Migrations
                     b.Property<DateTime>("ReturnDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("TerminationClause")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -459,10 +504,6 @@ namespace Repository.Context.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LesseeId");
-
-                    b.HasIndex("LessorId");
 
                     b.HasIndex("UserId");
 
@@ -577,10 +618,17 @@ namespace Repository.Context.Migrations
                     b.Property<int?>("PaymentId")
                         .HasColumnType("int");
 
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("PickupTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("RentalContactId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RentalLocationId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -620,6 +668,8 @@ namespace Repository.Context.Migrations
                     b.HasIndex("RentalContactId")
                         .IsUnique()
                         .HasFilter("[RentalContactId] IS NOT NULL");
+
+                    b.HasIndex("RentalLocationId");
 
                     b.HasIndex("UserId");
 
@@ -860,24 +910,9 @@ namespace Repository.Context.Migrations
 
             modelBuilder.Entity("Repository.Entities.RentalContact", b =>
                 {
-                    b.HasOne("Repository.Entities.User", "Lessee")
-                        .WithMany()
-                        .HasForeignKey("LesseeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Repository.Entities.RentalLocation", "Lessor")
-                        .WithMany("RentalContacts")
-                        .HasForeignKey("LessorId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Repository.Entities.User", null)
                         .WithMany("RentalContacts")
                         .HasForeignKey("UserId");
-
-                    b.Navigation("Lessee");
-
-                    b.Navigation("Lessor");
                 });
 
             modelBuilder.Entity("Repository.Entities.RentalOrder", b =>
@@ -908,6 +943,12 @@ namespace Repository.Context.Migrations
                         .HasForeignKey("Repository.Entities.RentalOrder", "RentalContactId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Repository.Entities.RentalLocation", "RentalLocation")
+                        .WithMany("RentalOrders")
+                        .HasForeignKey("RentalLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Repository.Entities.User", "User")
                         .WithMany("RentalOrders")
                         .HasForeignKey("UserId")
@@ -923,6 +964,8 @@ namespace Repository.Context.Migrations
                     b.Navigation("Payment");
 
                     b.Navigation("RentalContact");
+
+                    b.Navigation("RentalLocation");
 
                     b.Navigation("User");
                 });
@@ -970,7 +1013,7 @@ namespace Repository.Context.Migrations
                 {
                     b.Navigation("CarRentalLocations");
 
-                    b.Navigation("RentalContacts");
+                    b.Navigation("RentalOrders");
 
                     b.Navigation("Users");
                 });
