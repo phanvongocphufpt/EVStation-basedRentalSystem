@@ -101,6 +101,7 @@ namespace Service.Services
             citizenId.BirthDate = updateCitizenIdInfoDTO.BirthDate;
             citizenId.ImageUrl = updateCitizenIdInfoDTO.ImageUrl;
             citizenId.ImageUrl2 = updateCitizenIdInfoDTO.ImageUrl2;
+            citizenId.Status = DocumentStatus.Pending;
             citizenId.UpdatedAt = DateTime.Now;
             await _citizenIdRepository.UpdateCitizenIdAsync(citizenId);
             return Result<UpdateCitizenIdInfoDTO>.Success(updateCitizenIdInfoDTO, "Cập nhật thông tin chứng minh nhân dân thành công.");

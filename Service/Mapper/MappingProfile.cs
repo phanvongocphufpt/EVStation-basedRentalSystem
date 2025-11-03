@@ -76,6 +76,7 @@ namespace Service.Mapper
             CreateMap<DriverLicense, DriverLicenseDTO>().ReverseMap()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.LicenseNumber, opt => opt.MapFrom(src => src.LicenseNumber))
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
                 .ForMember(dest => dest.ImageUrl2, opt => opt.MapFrom(src => src.ImageUrl2))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))

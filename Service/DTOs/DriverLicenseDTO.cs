@@ -12,6 +12,7 @@ namespace Service.DTOs
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string LicenseNumber { get; set; }
         public string ImageUrl { get; set; }
         public string ImageUrl2 { get; set; }
         public string Status { get; set; }
@@ -36,6 +37,7 @@ namespace Service.DTOs
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string LicenseNumber { get; set; }
         public string ImageUrl { get; set; }
         public string ImageUrl2 { get; set; }
     }

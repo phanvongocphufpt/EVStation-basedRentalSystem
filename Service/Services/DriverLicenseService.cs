@@ -66,6 +66,7 @@ namespace Service.Services
             var driverLicense = new DriverLicense
             {
                 Name = dto.Name,
+                LicenseNumber = dto.LicenseNumber,
                 ImageUrl = dto.ImageUrl,
                 ImageUrl2 = dto.ImageUrl2,
                 Status = DocumentStatus.Pending,
@@ -96,8 +97,10 @@ namespace Service.Services
                 return Result<UpdateDriverLicenseInfoDTO>.Failure("Giấy phép lái xe không tồn tại! Kiểm tra lại Id.");
             }
             existingDriverLicense.Name = driverLicenseDTO.Name;
+            existingDriverLicense.LicenseNumber = driverLicenseDTO.LicenseNumber;
             existingDriverLicense.ImageUrl = driverLicenseDTO.ImageUrl;
             existingDriverLicense.ImageUrl2 = driverLicenseDTO.ImageUrl2;
+            existingDriverLicense.Status = DocumentStatus.Pending;
             existingDriverLicense.UpdatedAt = DateTime.Now;
             await _driverLicenseRepository.UpdateAsync(existingDriverLicense);
             return Result<UpdateDriverLicenseInfoDTO>.Success(driverLicenseDTO, "Cập nhật thông tin giấy phép lái xe thành công.");
