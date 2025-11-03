@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Service.DTOs;
 using Service.IServices;
+using System.Threading.Tasks;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -17,42 +18,64 @@ namespace EVStation_basedRentalSystem.Controllers
             _service = service;
         }
 
+        // 📘 Lấy tất cả lịch sử trả xe
         [HttpGet]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAll()
         {
-            var list = await _service.GetAllAsync();
-            return Ok(list);
+            var result = await _service.GetAllAsync();
+            if (!result.IsSuccess)
+                return BadRequest(new { result.Message });
+
+            return Ok(result.Data);
         }
 
+        // 📘 Lấy lịch sử trả xe theo ID
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetById(int id)
         {
-            var item = await _service.GetByIdAsync(id);
-            if (item == null)
-                return NotFound("Không tìm thấy lịch sử trả xe.");
-            return Ok(item);
+            var result = await _service.GetByIdAsync(id);
+            if (!result.IsSuccess)
+                return NotFound(new { result.Message });
+
+            return Ok(result.Data);
         }
 
+        // 📗 Tạo mới lịch sử trả xe
         [HttpPost]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] CarReturnHistoryCreateDTO dto)
         {
-            await _service.AddAsync(dto);
-            return Ok("Thêm lịch sử trả xe thành công.");
+            var result = await _service.AddAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(new { result.Message });
+
+            return Ok(new { result.Message });
         }
 
+        // 📙 Cập nhật lịch sử trả xe
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Update(int id, [FromBody] CarReturnHistoryCreateDTO dto)
         {
-            await _service.UpdateAsync(id, dto);
-            return Ok("Cập nhật lịch sử trả xe thành công.");
+            var result = await _service.UpdateAsync(id, dto);
+            if (!result.IsSuccess)
+                return NotFound(new { result.Message });
+
+            return Ok(new { result.Message });
         }
 
+        // 📕 Xóa lịch sử trả xe
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _service.DeleteAsync(id);
-            return Ok("Xóa lịch sử trả xe thành công.");
+            var result = await _service.DeleteAsync(id);
+            if (!result.IsSuccess)
+                return NotFound(new { result.Message });
+
+            return Ok(new { result.Message });
         }
     }
 }
-

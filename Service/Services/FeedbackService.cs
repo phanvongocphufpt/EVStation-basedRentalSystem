@@ -1,9 +1,9 @@
 ﻿using Repository.Entities;
 using Repository.IRepositories;
-using Repository.Repositories;
-using Service.Common.Service.Common;
+using Service.Common;
 using Service.IServices;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Service.Services
@@ -17,64 +17,66 @@ namespace Service.Services
             _feedbackRepository = feedbackRepository;
         }
 
-        public async Task<IEnumerable<Feedback>> GetAllAsync()
+        // 🔹 Lấy tất cả feedback
+        public async Task<Result<IEnumerable<Feedback>>> GetAllAsync()
         {
-            return await _feedbackRepository.GetAllAsync();
+            var list = await _feedbackRepository.GetAllAsync();
+            return Result<IEnumerable<Feedback>>.Success(list);
         }
-        // 🔹 Lấy tất cả feedback (phân trang + tìm kiếm)
-        public async Task<Pagination<Feedback>> GetPagedAsync(int pageIndex, int pageSize, string? keyword = null)
+
+        // 🔹 Lấy feedback theo tên xe
+        public async Task<Result<Feedback>> GetByCarNameAsync(string carName)
+        {
+            var feedback = await _feedbackRepository.GetByCarName(carName);
+            if (feedback == null)
+                return Result<Feedback>.Failure("Không tìm thấy feedback cho xe này.");
+
+            return Result<Feedback>.Success(feedback);
+        }
+
+        // 🔹 Lấy danh sách feedback có phân trang và tìm kiếm
+        public async Task<Result<(IEnumerable<Feedback> Data, int Total)>> GetPagedAsync(int pageIndex, int pageSize, string? keyword = null)
         {
             var allFeedbacks = await _feedbackRepository.GetAllAsync();
-
             var filtered = allFeedbacks.Where(f => !f.IsDeleted);
 
-            // Tìm kiếm theo keyword (nếu có)
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 filtered = filtered.Where(f =>
                     (f.Content != null && f.Content.Contains(keyword)) ||
-                    (f.Title != null && f.Title.Contains(keyword)) 
+                    (f.Title != null && f.Title.Contains(keyword))
                 );
             }
 
-            // Tổng số phần tử
-            var totalCount = filtered.Count();
+            var total = filtered.Count();
 
-            // Lấy phần dữ liệu trang hiện tại
-            var items = filtered
-                .Skip(pageIndex * pageSize)
+            var data = filtered
+                .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
-            return new Pagination<Feedback>
-            {
-                TotalItemsCount = totalCount,
-                PageIndex = pageIndex,
-                PageSize = pageSize,
-                Items = items
-            };
+            return Result<(IEnumerable<Feedback> Data, int Total)>.Success((data, total));
         }
 
-        public async Task<Feedback> GetByCarName(string carName)
-        {
-            return await _feedbackRepository.GetByCarName(carName);
-        }
-
-        public async Task AddAsync(Feedback feedback)
+        // 🔹 Thêm feedback
+        public async Task<Result<bool>> AddAsync(Feedback feedback)
         {
             await _feedbackRepository.AddAsync(feedback);
+            return Result<bool>.Success(true, "Thêm feedback thành công.");
         }
 
-        public async Task UpdateAsync(Feedback feedback)
+        // 🔹 Cập nhật feedback
+        public async Task<Result<bool>> UpdateAsync(Feedback feedback)
         {
             await _feedbackRepository.UpdateAsync(feedback);
+            return Result<bool>.Success(true, "Cập nhật feedback thành công.");
         }
 
-        public async Task DeleteAsync(int id)
+        // 🔹 Xóa mềm feedback
+        public async Task<Result<bool>> DeleteAsync(int id)
         {
             await _feedbackRepository.DeleteAsync(id);
+            return Result<bool>.Success(true, "Xóa feedback thành công.");
         }
-
-        
     }
 }

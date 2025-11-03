@@ -8,7 +8,7 @@ namespace EVStation_basedRentalSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Yêu cầu xác thực cho tất cả các hành động
+    [Authorize]
     public class FeedbackController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;
@@ -17,108 +17,118 @@ namespace EVStation_basedRentalSystem.Controllers
         {
             _feedbackService = feedbackService;
         }
-        // Không phân trang
+
+        // 🔹 Lấy tất cả feedback (không phân trang)
         [HttpGet]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAll()
         {
-            var list = await _feedbackService.GetAllAsync();
-            return Ok(list);
+            var result = await _feedbackService.GetAllAsync();
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
         }
-        // 🔹 GET: api/Feedback (phân trang + tìm kiếm)
+
+        // 🔹 GET: api/Feedback/paged?pageIndex=1&pageSize=5&keyword=abc
         [HttpGet("paged")]
-        public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 5, [FromQuery] string? keyword = null)
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 5, [FromQuery] string? keyword = null)
         {
-            var pagedFeedbacks = await _feedbackService.GetPagedAsync(pageIndex, pageSize, keyword);
-            return Ok(pagedFeedbacks);
+            var result = await _feedbackService.GetPagedAsync(pageIndex, pageSize, keyword);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(new { total = result.Data.Total, data = result.Data.Data });
         }
 
-
-        // 🔍 Tìm feedback theo tên xe
+        // 🔹 GET: api/Feedback/byCar/Toyota
         [HttpGet("byCar/{carName}")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetByCarName(string carName)
         {
-            var fb = await _feedbackService.GetByCarName(carName);
-            if (fb == null)
-                return NotFound($"Không tìm thấy feedback cho xe có tên chứa: {carName}");
-            return Ok(fb);
+            var result = await _feedbackService.GetByCarNameAsync(carName);
+            if (!result.IsSuccess)
+                return NotFound(result.Message);
+
+            return Ok(result.Data);
         }
 
-        
+        // 🔹 POST: api/Feedback
         [HttpPost]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> Create([FromBody] Feedback fb)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // 🔹 Lấy userId từ token JWT
             var userIdClaim = User.FindFirst("Id");
             if (userIdClaim == null)
                 return Unauthorized("Không thể xác định người dùng.");
 
-
-            int userId = int.Parse(userIdClaim.Value);
-            fb.UserId = userId; // 🔒 Gắn chủ sở hữu feedback
-
-            // 🔹 Gắn ngày tạo
+            fb.UserId = int.Parse(userIdClaim.Value);
             fb.CreatedAt = DateTime.UtcNow;
             fb.IsDeleted = false;
 
-            await _feedbackService.AddAsync(fb);
+            var result = await _feedbackService.AddAsync(fb);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
 
-            return Ok(new
-            {
-                Message = "Thêm feedback thành công.",
-                fb
-            });
+            return Ok(new { Message = result.Message, fb });
         }
 
-
+        // 🔹 PUT: api/Feedback/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> Update(int id, [FromBody] Feedback fb)
         {
             var userIdClaim = User.FindFirst("Id");
             if (userIdClaim == null)
                 return Unauthorized("Không thể xác định người dùng.");
 
-            int userId = int.Parse(userIdClaim.Value);
+            var allFeedbacks = await _feedbackService.GetAllAsync();
+            var existing = allFeedbacks.Data.FirstOrDefault(f => f.Id == id && !f.IsDeleted);
 
-            // 🔍 Lấy feedback cũ
-            var existing = await _feedbackService.GetByCarName("carName");
-            if (existing == null || existing.IsDeleted)
+            if (existing == null)
                 return NotFound("Feedback không tồn tại.");
 
-            // ❌ Không phải chủ sở hữu
-            if (existing.UserId != userId)
+            if (existing.UserId != int.Parse(userIdClaim.Value))
                 return Forbid("Bạn không có quyền chỉnh sửa feedback này.");
 
-            // ✅ Cập nhật thông tin
             existing.Title = fb.Title;
             existing.Content = fb.Content;
             existing.UpdatedAt = DateTime.UtcNow;
 
-            await _feedbackService.UpdateAsync(existing);
+            var result = await _feedbackService.UpdateAsync(existing);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
 
-            return Ok(new { Message = "Cập nhật feedback thành công.", existing });
+            return Ok(new { Message = result.Message, existing });
         }
+
+        // 🔹 DELETE: api/Feedback/{id}
         [HttpDelete("{id}")]
-         public async Task<IActionResult> Delete(int id)
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> Delete(int id)
         {
             var userIdClaim = User.FindFirst("Id");
             if (userIdClaim == null)
                 return Unauthorized("Không thể xác định người dùng.");
 
-            int userId = int.Parse(userIdClaim.Value);
+            var allFeedbacks = await _feedbackService.GetAllAsync();
+            var feedback = allFeedbacks.Data.FirstOrDefault(f => f.Id == id && !f.IsDeleted);
 
-            var feedback = await _feedbackService.GetByCarName("carName");
-            if (feedback == null || feedback.IsDeleted)
+            if (feedback == null)
                 return NotFound("Feedback không tồn tại.");
 
-            if (feedback.UserId != userId)
+            if (feedback.UserId != int.Parse(userIdClaim.Value))
                 return Forbid("Bạn không có quyền xóa feedback này.");
 
-            await _feedbackService.DeleteAsync(id);
+            var result = await _feedbackService.DeleteAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
 
-            return Ok(new { Message = "Đã xóa mềm feedback thành công." });
+            return Ok(new { Message = result.Message });
         }
     }
 }

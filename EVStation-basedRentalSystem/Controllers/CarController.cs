@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 using Service.IServices;
+using System;
+using System.Threading.Tasks;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -17,81 +19,116 @@ namespace EVStation_basedRentalSystem.Controllers
             _carService = carService;
         }
 
-        // GET: api/Car
-
+        // ✅ GET: api/Car
         [HttpGet]
+        [Authorize(Roles = "Staff,Admin,Customer")]
         public async Task<IActionResult> GetAll()
         {
-            var cars = await _carService.GetAllAsync();
-            return Ok(cars);
+            var result = await _carService.GetAllAsync();
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message });
+
+            return Ok(new { message = result.Message, data = result.Data });
         }
 
-        // GET: api/Car/byName/{name}
-
+        // ✅ GET: api/Car/byName/{name}
         [HttpGet("byName/{name}")]
+        [Authorize(Roles = "Staff,Admin,Customer")]
         public async Task<IActionResult> GetByName(string name)
         {
-            var car = await _carService.GetByNameAsync(name);
-            if (car == null)
-                return NotFound($"Không tìm thấy xe có tên: {name}");
-            return Ok(car);
+            var result = await _carService.GetByNameAsync(name);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message });
+
+            return Ok(new { message = result.Message, data = result.Data });
         }
 
+        // ✅ GET: api/Car/paged?pageIndex=0&pageSize=10&keyword=...
         [HttpGet("paged")]
-        public async Task<IActionResult> GetPaged([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 10, [FromQuery] string? keyword = null)
+        [Authorize(Roles = "Staff,Admin,Customer")]
+        public async Task<IActionResult> GetPaged(
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? keyword = null)
         {
             var result = await _carService.GetPagedAsync(pageIndex, pageSize, keyword);
-            return Ok(result);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message });
+
+            return Ok(new
+            {
+                message = result.Message,
+                total = result.Data.Total,
+                data = result.Data.Data
+            });
         }
-        // POST: api/Car
+
+        // ✅ POST: api/Car
         [Authorize(Roles = "Staff,Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Car car)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            car.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
-    TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
-            car.UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
-    TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
 
-            await _carService.AddAsync(car);
-            return CreatedAtAction(nameof(GetByName), new { name = car.Name }, car);
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+
+            car.CreatedAt = vietnamTime;
+            car.UpdatedAt = vietnamTime;
+
+            var result = await _carService.AddAsync(car);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+
+            return CreatedAtAction(nameof(GetByName), new { name = car.Name }, new
+            {
+                message = result.Message,
+                data = result.Data
+            });
         }
 
-        // PUT: api/Car/{id}
+        // ✅ PUT: api/Car/{id}
         [Authorize(Roles = "Staff,Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Car car)
         {
             if (id != car.Id)
+                return BadRequest(new { message = "ID không khớp." });
 
-                return BadRequest("ID không khớp");
-            car.CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
-    TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
-            await _carService.UpdateAsync(car);
-            return NoContent();
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+            car.UpdatedAt = vietnamTime;
+
+            var result = await _carService.UpdateAsync(car);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message });
+
+            return Ok(new { message = result.Message, data = result.Data });
         }
 
-        // DELETE: api/Car/{id}
+        // ✅ DELETE: api/Car/{id}
         [Authorize(Roles = "Staff,Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _carService.DeleteAsync(id);
-            return NoContent();
+            var result = await _carService.DeleteAsync(id);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message });
+
+            return Ok(new { message = result.Message });
         }
 
-        // ✅ GET: api/Car/TopRented
+        // ✅ GET: api/Car/TopRented?topCount=3
         [HttpGet("TopRented")]
-     
+        [Authorize(Roles = "Staff,Admin,Customer")]
         public async Task<IActionResult> GetTopRentedCars([FromQuery] int topCount = 3)
         {
-            var cars = await _carService.GetTopRentedAsync(topCount);
-            return Ok(cars);
+            var result = await _carService.GetTopRentedAsync(topCount);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message });
+
+            return Ok(new { message = result.Message, data = result.Data });
         }
-
-
-
     }
 }

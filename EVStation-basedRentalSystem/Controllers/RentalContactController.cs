@@ -2,100 +2,116 @@
 using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 using Service.IServices;
-using Service.Services;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Yêu cầu đăng nhập
+    [Authorize] // Bắt buộc đăng nhập
     public class RentalContactController : ControllerBase
     {
         private readonly IRentalContactService _rentalContactService;
 
-        public RentalContactController(IRentalContactService service)
+        public RentalContactController(IRentalContactService rentalContactService)
         {
-            _rentalContactService = service;
+            _rentalContactService = rentalContactService;
         }
 
-        // 🟢 Lấy tất cả hợp đồng
-        // Admin/Staff thấy tất cả, User chỉ thấy hợp đồng của chính mình
+        // 🟢 Lấy tất cả hợp đồng (chỉ Admin/Staff)
         [HttpGet]
-        [Authorize(Roles = "Staff,Admin")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAll()
         {
-            var list = await _rentalContactService.GetAllAsync();
-            return Ok(list);
+            var result = await _rentalContactService.GetAllAsync();
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
         }
 
         // 🔍 Lấy hợp đồng theo RentalOrderId
         [HttpGet("byRentalOrder/{rentalOrderId}")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetByRentalOrderId(int rentalOrderId)
         {
-            var userIdClaim = User.FindFirst("id");
-            var roleClaim = User.FindFirst("role");
+            var result = await _rentalContactService.GetByRentalOrderIdAsync(rentalOrderId);
+
+            if (!result.IsSuccess || result.Data == null)
+                return NotFound(result.Message ?? $"Không tìm thấy hợp đồng với RentalOrderId = {rentalOrderId}");
+
+            var userIdClaim = User.FindFirst("Id");
+            var roleClaim = User.FindFirst("Role");
 
             if (userIdClaim == null)
                 return Unauthorized("Không thể xác định người dùng.");
 
             int userId = int.Parse(userIdClaim.Value);
-            string userRole = roleClaim?.Value ?? "User";
+            string role = roleClaim?.Value ?? "Customer";
 
-            var contact = await _rentalContactService.GetByRentalOrderIdAsync(rentalOrderId);
-            if (contact == null || contact.IsDeleted)
-                return NotFound($"Không tìm thấy hợp đồng với RentalOrderId = {rentalOrderId}");
-
-            // User chỉ được xem hợp đồng của mình
-            if (userRole == "User" && contact.LesseeId != userId)
+            // ✅ Khách chỉ xem được hợp đồng của chính họ
+            if (role == "Customer" && result.Data.LesseeId != userId)
                 return Forbid("Bạn không có quyền xem hợp đồng này.");
 
-            return Ok(contact);
+            return Ok(result.Data);
         }
 
-        // 🟡 Tạo hợp đồng (chỉ Staff, Admin)
+        // 🟡 Tạo mới hợp đồng thuê
         [HttpPost]
-        [Authorize(Roles = "Staff,Admin")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] RentalContact contact)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             contact.IsDeleted = false;
-            contact.RentalDate = contact.RentalDate == default ? DateTime.UtcNow : contact.RentalDate;
+            contact.RentalDate = contact.RentalDate == default
+                ? DateTime.UtcNow
+                : contact.RentalDate;
 
-            await _rentalContactService.AddAsync(contact);
-            return CreatedAtAction(nameof(GetByRentalOrderId), new { rentalOrderId = contact.RentalOrderId }, contact);
+            var result = await _rentalContactService.AddAsync(contact);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return CreatedAtAction(nameof(GetByRentalOrderId),
+                new { rentalOrderId = result.Data.RentalOrderId },
+                result.Data);
         }
 
-        //  Cập nhật hợp đồng (chỉ Staff, Admin)
+        // 🟠 Cập nhật hợp đồng
         [HttpPut("{id}")]
-        [Authorize(Roles = "Staff,Admin")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Update(int id, [FromBody] RentalContact contact)
         {
-            if (id != contact.Id)
-                return BadRequest("ID không khớp.");
+            if (contact.RentalOrderId == null)
+                return BadRequest("RentalOrderId không được để trống.");
 
-            var existing = await _rentalContactService.GetByRentalOrderIdAsync(id);
-            if (existing == null || existing.IsDeleted)
+            var existing = await _rentalContactService.GetByRentalOrderIdAsync(contact.RentalOrderId.Value);
+
+            if (!existing.IsSuccess || existing.Data == null)
                 return NotFound("Không tìm thấy hợp đồng thuê.");
 
-            await _rentalContactService.UpdateAsync(contact);
-            return Ok(new { Message = "Cập nhật hợp đồng thành công.", contact });
+            var result = await _rentalContactService.UpdateAsync(contact);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(new { Message = "Cập nhật hợp đồng thành công.", result.Data });
         }
 
-        // 🔴 Xóa mềm (chỉ Staff, Admin)
+        // 🔴 Xóa hợp đồng
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Staff,Admin")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Delete(int id)
         {
-            var contact = await _rentalContactService.GetByRentalOrderIdAsync(id);
-            if (contact == null || contact.IsDeleted)
+            var existing = await _rentalContactService.GetByRentalOrderIdAsync(id);
+            if (!existing.IsSuccess || existing.Data == null)
                 return NotFound("Không tìm thấy hợp đồng thuê.");
 
-            await _rentalContactService.DeleteAsync(id);
-            return Ok(new { Message = "Đã xóa mềm hợp đồng thành công." });
+            var result = await _rentalContactService.DeleteAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(new { Message = "Đã xóa hợp đồng thành công." });
         }
     }
 }

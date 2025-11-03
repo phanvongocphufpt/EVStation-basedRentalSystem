@@ -1,18 +1,16 @@
-﻿using Service.DTOs;
-using System;
+﻿using Service.Common;
+using Service.DTOs;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Service.IServices
 {
     public interface ICarReturnHistoryService
     {
-        Task<IEnumerable<CarReturnHistoryDTO>> GetAllAsync();
-        Task<CarReturnHistoryDTO?> GetByIdAsync(int id);
-        Task AddAsync(CarReturnHistoryCreateDTO dto);
-        Task UpdateAsync(int id, CarReturnHistoryCreateDTO dto);
-        Task DeleteAsync(int id);
+        Task<Result<IEnumerable<CarReturnHistoryDTO>>> GetAllAsync();
+        Task<Result<CarReturnHistoryDTO?>> GetByIdAsync(int id);
+        Task<Result<string>> AddAsync(CarReturnHistoryCreateDTO dto);
+        Task<Result<string>> UpdateAsync(int id, CarReturnHistoryCreateDTO dto);
+        Task<Result<string>> DeleteAsync(int id);
     }
 }
