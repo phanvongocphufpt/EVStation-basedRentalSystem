@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251103072639_InitMigration")]
+    [Migration("20251103074043_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -371,6 +371,10 @@ namespace Repository.Context.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl2")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LicenseNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

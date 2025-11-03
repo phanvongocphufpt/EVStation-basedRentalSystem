@@ -23,9 +23,9 @@ namespace Service.DTOs
     public class CreateDriverLicenseDTO
     {
         public string Name { get; set; }
+        public string LicenseNumber { get; set; }
         public string ImageUrl { get; set; }
         public string ImageUrl2 { get; set; }
-
         public int RentalOrderId { get; set; }
     }
     public class UpdateDriverLicenseStatusDTO
