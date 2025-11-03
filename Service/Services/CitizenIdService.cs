@@ -68,6 +68,7 @@ namespace Service.Services
                 Name = dto.Name,
                 BirthDate = dto.BirthDate,
                 ImageUrl = dto.ImageUrl,
+                ImageUrl2 = dto.ImageUrl2,
                 Status = DocumentStatus.Pending,
                 CreatedAt = DateTime.Now,
                 RentalOrderId = order.Id,
@@ -99,6 +100,7 @@ namespace Service.Services
             citizenId.CitizenIdNumber = updateCitizenIdInfoDTO.CitizenIdNumber;
             citizenId.BirthDate = updateCitizenIdInfoDTO.BirthDate;
             citizenId.ImageUrl = updateCitizenIdInfoDTO.ImageUrl;
+            citizenId.ImageUrl2 = updateCitizenIdInfoDTO.ImageUrl2;
             citizenId.UpdatedAt = DateTime.Now;
             await _citizenIdRepository.UpdateCitizenIdAsync(citizenId);
             return Result<UpdateCitizenIdInfoDTO>.Success(updateCitizenIdInfoDTO, "Cập nhật thông tin chứng minh nhân dân thành công.");

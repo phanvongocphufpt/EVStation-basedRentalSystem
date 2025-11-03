@@ -55,6 +55,8 @@ namespace Repository.Context
                         RentPricePerDayWithDriver = 1400000,
                         RentPricePerHourWithDriver = 60000,
                         ImageUrl = "https://example.com/tesla_model_3.jpg",
+                        ImageUrl2 = "https://example.com/tesla_model_3.jpg",
+                        ImageUrl3 = "https://example.com/tesla_model_3.jpg",
                         Status = 1,
                         CreatedAt = new DateTime(2025, 10, 11),
                         UpdatedAt = null,
@@ -76,12 +78,38 @@ namespace Repository.Context
                         RentPricePerDayWithDriver = 1200000,
                         RentPricePerHourWithDriver = 50000,
                         ImageUrl = "https://example.com/nissan_leaf.jpg",
+                        ImageUrl2 = "https://example.com/nissan_leaf.jpg",
+                        ImageUrl3 = "https://example.com/nissan_leaf.jpg",
                         Status = 1,
                         CreatedAt = new DateTime(2025, 10, 11),
                         UpdatedAt = null,
                         IsActive = true,
                         IsDeleted = false
-                    });
+                    },
+                    new Car
+                    {
+                        Id = 3,
+                        Model = "Chevrolet Bolt EV",
+                        Name = "Bolt EV",
+                        Seats = 5,
+                        SizeType = "Hatchback",
+                        TrunkCapacity = 478,
+                        BatteryType = "Lithium-Ion",
+                        BatteryDuration = 259,
+                        RentPricePerDay = 900000,
+                        RentPricePerHour = 40000,
+                        RentPricePerDayWithDriver = 1300000,
+                        RentPricePerHourWithDriver = 55000,
+                        ImageUrl = "https://example.com/chevrolet_bolt_ev.jpg",
+                        ImageUrl2 = "https://example.com/chevrolet_bolt_ev.jpg",
+                        ImageUrl3 = "https://example.com/chevrolet_bolt_ev.jpg",
+                        Status = 1,
+                        CreatedAt = new DateTime(2025, 10, 11),
+                        UpdatedAt = null,
+                        IsActive = true,
+                        IsDeleted = false
+                    }
+                );
             });
 
             // Configure CarDeliveryHistory
@@ -205,16 +233,6 @@ namespace Repository.Context
                         .WithOne(e => e.RentalContact)
                         .HasForeignKey<RentalOrder>(e => e.RentalContactId)
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    entity.HasOne(e => e.Lessee)
-                        .WithMany()
-                        .HasForeignKey(e => e.LesseeId)
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    entity.HasOne(e => e.Lessor)
-                        .WithMany(e => e.RentalContacts)
-                        .HasForeignKey(e => e.LessorId)
-                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
                 // Configure RentalLocation
@@ -225,10 +243,10 @@ namespace Repository.Context
                         .HasForeignKey(e => e.LocationId)
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    entity.HasMany(e => e.RentalContacts)
-                        .WithOne(e => e.Lessor)
-                        .HasForeignKey(e => e.LessorId)
-                        .OnDelete(DeleteBehavior.Restrict);
+                    entity.HasMany(e => e.RentalOrders)
+                        .WithOne(e => e.RentalLocation)
+                        .HasForeignKey(e => e.RentalLocationId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     entity.HasMany(e => e.Users)
                         .WithOne(e => e.RentalLocation)
@@ -282,6 +300,11 @@ namespace Repository.Context
                         .WithOne(e => e.RentalOrder)
                         .HasForeignKey<RentalOrder>(e => e.PaymentId)
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    entity.HasOne(e => e.RentalLocation)
+                        .WithMany(e => e.RentalOrders)
+                        .HasForeignKey(e => e.RentalLocationId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     entity.HasOne(e => e.CitizenIdNavigation)
                         .WithOne(e => e.RentalOrder)

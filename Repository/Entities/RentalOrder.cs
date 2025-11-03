@@ -12,6 +12,7 @@ namespace Repository.Entities
     {
         [Key]
         public int Id { get; set; }
+        public string PhoneNumber { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime PickupTime { get; set; }
         public DateTime ExpectedReturnTime { get; set; }
@@ -28,6 +29,8 @@ namespace Repository.Entities
         public DateTime? UpdatedAt { get; set; }
         public int UserId { get; set; }
         public User User { get; set; }
+        public int RentalLocationId { get; set; }
+        public RentalLocation RentalLocation { get; set; }
         public int CarId { get; set; }
         public Car Car { get; set; }
         public int? RentalContactId { get; set; }

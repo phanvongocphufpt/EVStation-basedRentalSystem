@@ -30,6 +30,10 @@ namespace Repository.Repositories
         {
             return await _context.CarRentalLocations.FindAsync(id);
         }
+        public async Task<CarRentalLocation?> GetByCarAndLocationIdAsync(int carId, int locationId)
+        {
+            return _context.CarRentalLocations.FirstOrDefault(crl => crl.CarId == carId && crl.LocationId == locationId && !crl.IsDeleted);
+        }
         public async Task<IEnumerable<CarRentalLocation>> GetByCarIdAsync(int id)
         {
             return _context.CarRentalLocations.Where(crl => crl.CarId == id && !crl.IsDeleted).ToList();

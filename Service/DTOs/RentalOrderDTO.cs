@@ -11,6 +11,7 @@ namespace Service.DTOs
     public class RentalOrderDTO
     {
         public int Id { get; set; }
+        public string PhoneNumber { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime PickupTime { get; set; }
         public DateTime ExpectedReturnTime { get; set; }
@@ -27,6 +28,7 @@ namespace Service.DTOs
         public DateTime? UpdatedAt { get; set; }
         public int UserId { get; set; }
         public int CarId { get; set; }
+        public int RentalLocationId { get; set; }
         public int? RentalContactId { get; set; }
         public int? CitizenId { get; set; }
         public int? DriverLicenseId { get; set; }
@@ -34,11 +36,13 @@ namespace Service.DTOs
     }
     public class CreateRentalOrderDTO
     {
+        public string PhoneNumber { get; set; }
         public DateTime PickupTime { get; set; }
         public DateTime ExpectedReturnTime { get; set; }
         public bool WithDriver { get; set; }
         public int UserId { get; set; }
         public int CarId { get; set; }
+        public int RentalLocationId { get; set; }
     }
     public class UpdateRentalOrderTotalDTO
     {
