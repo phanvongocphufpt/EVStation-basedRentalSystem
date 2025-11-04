@@ -21,7 +21,7 @@ namespace EVStation_basedRentalSystem.Controllers
 
         // ✅ GET: api/Car
         [HttpGet]
-        [Authorize(Roles = "Staff,Admin,Customer")]
+       
         public async Task<IActionResult> GetAll()
         {
             var result = await _carService.GetAllAsync();
@@ -33,7 +33,7 @@ namespace EVStation_basedRentalSystem.Controllers
 
         // ✅ GET: api/Car/byName/{name}
         [HttpGet("byName/{name}")]
-        [Authorize(Roles = "Staff,Admin,Customer")]
+      
         public async Task<IActionResult> GetByName(string name)
         {
             var result = await _carService.GetByNameAsync(name);
@@ -45,7 +45,7 @@ namespace EVStation_basedRentalSystem.Controllers
 
         // ✅ GET: api/Car/paged?pageIndex=0&pageSize=10&keyword=...
         [HttpGet("paged")]
-        [Authorize(Roles = "Staff,Admin,Customer")]
+   
         public async Task<IActionResult> GetPaged(
             [FromQuery] int pageIndex = 0,
             [FromQuery] int pageSize = 10,
@@ -121,7 +121,7 @@ namespace EVStation_basedRentalSystem.Controllers
 
         // ✅ GET: api/Car/TopRented?topCount=3
         [HttpGet("TopRented")]
-        [Authorize(Roles = "Staff,Admin,Customer")]
+    
         public async Task<IActionResult> GetTopRentedCars([FromQuery] int topCount = 3)
         {
             var result = await _carService.GetTopRentedAsync(topCount);

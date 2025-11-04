@@ -17,21 +17,21 @@ namespace EVStation_basedRentalSystem.Controllers
             _rentalLocationService = rentalLocationService;
         }
         [HttpGet("GetAll")]
-        [Authorize(Roles = "Admin,Staff,Customer")]
+    
         public async Task<IActionResult> GetAllAsync()
         {
             var Users = await _rentalLocationService.GetAllAsync();
             return Ok(Users);
         }
         [HttpGet("GetAllStaffByLocationId")]
-        [Authorize(Roles = "Admin,Staff")]
+
         public async Task<IActionResult> GetAllStaffByLocationId(int locationId)
         {
             var Users = await _rentalLocationService.GetAllStaffByLocationIdAsync(locationId);
             return Ok(Users);
         }
         [HttpGet("GetById")]
-        [Authorize(Roles = "Admin,Staff")]
+
         public async Task<IActionResult> GetById(int id)
         {
             var user = await _rentalLocationService.GetByIdAsync(id);
