@@ -46,8 +46,43 @@ namespace Repository.Repositories
 
         public async Task UpdateAsync(Car car)
         {
-            _context.Cars.Update(car);
-            await _context.SaveChangesAsync();
+            // Kiểm tra xem entity đã được track chưa
+            var tracked = _context.Cars.Local.FirstOrDefault(c => c.Id == car.Id);
+            
+            if (tracked != null)
+            {
+                // Entity đã được track (từ GetByIdAsync), chỉ cần SaveChanges
+                // Properties đã được update ở Service layer
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                // Entity chưa được track, load và update properties
+                var existing = await _context.Cars.FindAsync(car.Id);
+                if (existing != null)
+                {
+                    // Cập nhật properties từ car vào existing entity (không bao gồm navigation properties)
+                    existing.Name = car.Name;
+                    existing.Model = car.Model;
+                    existing.Seats = car.Seats;
+                    existing.SizeType = car.SizeType;
+                    existing.TrunkCapacity = car.TrunkCapacity;
+                    existing.BatteryType = car.BatteryType;
+                    existing.BatteryDuration = car.BatteryDuration;
+                    existing.RentPricePerDay = car.RentPricePerDay;
+                    existing.RentPricePerHour = car.RentPricePerHour;
+                    existing.RentPricePerDayWithDriver = car.RentPricePerDayWithDriver;
+                    existing.RentPricePerHourWithDriver = car.RentPricePerHourWithDriver;
+                    existing.ImageUrl = car.ImageUrl;
+                    existing.ImageUrl2 = car.ImageUrl2;
+                    existing.ImageUrl3 = car.ImageUrl3;
+                    existing.Status = car.Status;
+                    existing.IsActive = car.IsActive;
+                    existing.UpdatedAt = car.UpdatedAt ?? DateTime.UtcNow;
+                    // KHÔNG cập nhật: CarRentalLocations, RentalOrders, CreatedAt, IsDeleted
+                    await _context.SaveChangesAsync();
+                }
+            }
         }
 
         public async Task DeleteAsync(int id)

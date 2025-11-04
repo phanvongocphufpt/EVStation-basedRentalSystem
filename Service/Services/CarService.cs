@@ -3,6 +3,7 @@ using Repository.IRepositories;
 using Service.Common;
 using Service.DTOs;
 using Service.IServices;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -73,12 +74,39 @@ namespace Service.Services
 
         public async Task<Result<Car>> UpdateAsync(Car car)
         {
-            var existing = await _carRepository.GetByNameAsync(car.Name);
+            // Kiểm tra car có Id hợp lệ không
+            if (car.Id <= 0)
+                return Result<Car>.Failure("ID xe không hợp lệ.");
+
+            // Load entity hiện có bằng Id để tránh lỗi tracking
+            var existing = await _carRepository.GetByIdAsync(car.Id);
             if (existing == null)
                 return Result<Car>.Failure("Xe cần cập nhật không tồn tại.");
 
-            await _carRepository.UpdateAsync(car);
-            return Result<Car>.Success(car, "Cập nhật thông tin xe thành công.");
+            // Cập nhật các properties từ car mới vào existing entity
+            // KHÔNG cập nhật navigation properties (CarRentalLocations, RentalOrders)
+            existing.Name = car.Name;
+            existing.Model = car.Model;
+            existing.Seats = car.Seats;
+            existing.SizeType = car.SizeType;
+            existing.TrunkCapacity = car.TrunkCapacity;
+            existing.BatteryType = car.BatteryType;
+            existing.BatteryDuration = car.BatteryDuration;
+            existing.RentPricePerDay = car.RentPricePerDay;
+            existing.RentPricePerHour = car.RentPricePerHour;
+            existing.RentPricePerDayWithDriver = car.RentPricePerDayWithDriver;
+            existing.RentPricePerHourWithDriver = car.RentPricePerHourWithDriver;
+            existing.ImageUrl = car.ImageUrl;
+            existing.ImageUrl2 = car.ImageUrl2;
+            existing.ImageUrl3 = car.ImageUrl3;
+            existing.Status = car.Status;
+            existing.IsActive = car.IsActive;
+            existing.UpdatedAt = DateTime.UtcNow;
+            // KHÔNG cập nhật: CarRentalLocations, RentalOrders, CreatedAt, IsDeleted
+
+            // Gọi repository để save - entity đã được track nên chỉ cần SaveChanges
+            await _carRepository.UpdateAsync(existing);
+            return Result<Car>.Success(existing, "Cập nhật thông tin xe thành công.");
         }
 
         public async Task<Result<bool>> DeleteAsync(int id)
