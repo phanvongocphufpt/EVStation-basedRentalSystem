@@ -9,7 +9,7 @@ namespace EVStation_basedRentalSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    [Authorize]
     public class CarController : ControllerBase
     {
         private readonly ICarService _carService;
