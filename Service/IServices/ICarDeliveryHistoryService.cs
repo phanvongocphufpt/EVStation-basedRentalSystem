@@ -17,7 +17,7 @@ namespace Service.IServices
         Task<Result<string>> AddAsync(CarDeliveryHistoryCreateDTO dto);
 
         // 🔹 Cập nhật lịch sử giao xe
-        Task<Result<string>> UpdateAsync(int id, CarDeliveryHistoryCreateDTO dto);
+        Task<Result<string>> UpdateAsync(CarDeliveryHistoryUpdateDTO dto);
 
         // 🔹 Xóa lịch sử giao xe
         Task<Result<string>> DeleteAsync(int id);

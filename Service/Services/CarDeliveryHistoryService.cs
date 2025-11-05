@@ -62,54 +62,54 @@ public class CarDeliveryHistoryService : ICarDeliveryHistoryService
     // 🔹 Thêm lịch sử giao xe
     public async Task<Result<string>> AddAsync(CarDeliveryHistoryCreateDTO dto)
     {
-        // Kiểm tra tồn tại xe ở chi nhánh
-        var carRentalLocation = await _carRentalLocationRepo
-            .GetByCarAndRentalLocationIdAsync(dto.CarId, dto.LocationId);
-
-        if (carRentalLocation == null)
-            return Result<string>.Failure("Không tìm thấy xe tại chi nhánh này.");
-
-        if (carRentalLocation.Quantity <= 0)
-            return Result<string>.Failure("Chi nhánh này không còn xe khả dụng để giao.");
-
-        using var transaction = await _carRentalLocationRepo.BeginTransactionAsync();
-
         try
         {
-            // Trừ số lượng xe
+            // 🔍 Lấy thông tin đơn thuê
+            var order = await _rentalOrderRepo.GetByIdAsync(dto.OrderId);
+            if (order == null)
+                return Result<string>.Failure("Không tìm thấy đơn thuê.");
+
+            // 🔍 Kiểm tra xe có ở chi nhánh không
+            var carRentalLocation = await _carRentalLocationRepo
+                .GetByCarAndRentalLocationIdAsync(order.CarId, order.RentalLocationId);
+
+            if (carRentalLocation == null)
+                return Result<string>.Failure("Không tìm thấy xe tại chi nhánh này.");
+
+            if (carRentalLocation.Quantity <= 0)
+                return Result<string>.Failure("Chi nhánh này không còn xe khả dụng để giao.");
+
+            using var transaction = await _carRentalLocationRepo.BeginTransactionAsync();
+
+            // Giảm số lượng xe khả dụng
             carRentalLocation.Quantity -= 1;
             await _carRentalLocationRepo.UpdateAsync(carRentalLocation);
 
-            // Lưu lịch sử giao xe
+            // Tạo mới lịch sử giao xe
             var history = new CarDeliveryHistory
             {
                 DeliveryDate = dto.DeliveryDate,
                 OdometerStart = dto.OdometerStart,
                 BatteryLevelStart = dto.BatteryLevelStart,
                 VehicleConditionStart = dto.VehicleConditionStart,
-                OrderId = dto.OrderId,
-                CustomerId = dto.CustomerId,
-                StaffId = dto.StaffId,
-                CarId = dto.CarId,
-                LocationId = dto.LocationId
+                OrderId = order.Id,
+                CustomerId = order.UserId,
+                StaffId = 0, // có thể set sau theo user đang đăng nhập
+                CarId = order.CarId,
+                LocationId = order.RentalLocationId
             };
+
             await _repo.AddAsync(history);
 
-            // Cập nhật trạng thái đơn hàng
-            var order = await _rentalOrderRepo.GetByIdAsync(dto.OrderId);
-            if (order != null)
-            {
-                order.Status = RentalOrderStatus.Renting;
-                await _rentalOrderRepo.UpdateAsync(order);
-            }
+            // ✅ Cập nhật trạng thái đơn hàng
+            order.Status = RentalOrderStatus.Renting;
+            await _rentalOrderRepo.UpdateAsync(order);
 
             await transaction.CommitAsync();
-
             return Result<string>.Success("✅ Giao xe thành công, trạng thái đơn đã chuyển sang 'Renting'.");
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
             return Result<string>.Failure($"❌ Giao xe thất bại: {ex.Message}");
         }
     }
