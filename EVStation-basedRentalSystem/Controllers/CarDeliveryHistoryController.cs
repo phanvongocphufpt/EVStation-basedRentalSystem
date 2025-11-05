@@ -58,7 +58,7 @@ namespace EVStation_basedRentalSystem.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] CarDeliveryHistoryUpdateDTO dto)
         {
             dto.Id = id; // gán id từ route cho DTO
-            var result = await _service.UpdateAsync(dto);
+            var result = await _service.UpdateAsync(id, dto);
             if (!result.IsSuccess)
                 return NotFound(new { result.Message });
 
