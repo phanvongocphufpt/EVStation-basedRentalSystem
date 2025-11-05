@@ -18,7 +18,7 @@ namespace EVStation_basedRentalSystem.Controllers
             _service = service;
         }
 
-        // 📘 Lấy tất cả lịch sử trả xe
+        // 📘 GET: api/CarReturnHistory
         [HttpGet]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAll()
@@ -27,10 +27,14 @@ namespace EVStation_basedRentalSystem.Controllers
             if (!result.IsSuccess)
                 return BadRequest(new { result.Message });
 
-            return Ok(result.Data);
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.Data
+            });
         }
 
-        // 📘 Lấy lịch sử trả xe theo ID
+        // 📘 GET: api/CarReturnHistory/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetById(int id)
@@ -39,14 +43,21 @@ namespace EVStation_basedRentalSystem.Controllers
             if (!result.IsSuccess)
                 return NotFound(new { result.Message });
 
-            return Ok(result.Data);
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.Data
+            });
         }
 
-        // 📗 Tạo mới lịch sử trả xe
+        // 📗 POST: api/CarReturnHistory
         [HttpPost]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] CarReturnHistoryCreateDTO dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var result = await _service.AddAsync(dto);
             if (!result.IsSuccess)
                 return BadRequest(new { result.Message });
@@ -54,7 +65,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(new { result.Message });
         }
 
-        // 📙 Cập nhật lịch sử trả xe
+        // 📙 PUT: api/CarReturnHistory/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Update(int id, [FromBody] CarReturnHistoryCreateDTO dto)
@@ -66,7 +77,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(new { result.Message });
         }
 
-        // 📕 Xóa lịch sử trả xe
+        // 📕 DELETE: api/CarReturnHistory/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Delete(int id)

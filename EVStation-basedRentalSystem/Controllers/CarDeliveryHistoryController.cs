@@ -55,14 +55,16 @@ namespace EVStation_basedRentalSystem.Controllers
         // 📙 PUT: api/CarDeliveryHistory/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> Update(int id, [FromBody] CarDeliveryHistoryCreateDTO dto)
+        public async Task<IActionResult> Update(int id, [FromBody] CarDeliveryHistoryUpdateDTO dto)
         {
+            dto.Id = id; // gán id từ route cho DTO
             var result = await _service.UpdateAsync(id, dto);
             if (!result.IsSuccess)
                 return NotFound(new { result.Message });
 
             return Ok(new { result.Message });
         }
+
 
         // 📕 DELETE: api/CarDeliveryHistory/{id}
         [HttpDelete("{id}")]
