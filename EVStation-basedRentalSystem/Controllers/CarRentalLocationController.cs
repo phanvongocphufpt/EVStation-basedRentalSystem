@@ -16,7 +16,7 @@ namespace EVStation_basedRentalSystem.Controllers
             _carRentalLocationService = carRentalLocationService;
         }
         [HttpGet("GetAll")]
-        [Authorize(Roles = "Admin,Staff,Customer")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllAsync()
         {
             var carRentalLocations = await _carRentalLocationService.GetAllAsync();
