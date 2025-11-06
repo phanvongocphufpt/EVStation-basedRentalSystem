@@ -1,98 +1,69 @@
-﻿using Repository.Entities;
+﻿using AutoMapper;
+using Repository.Entities;
 using Repository.IRepositories;
 using Service.Common;
-using Service.Common.Service.Common;
+using Service.DTOs;
 using Service.IServices;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Service.Services
 {
     public class RentalContactService : IRentalContactService
     {
-        private readonly IRentalContactRepository _repository;
+        private readonly IRentalContactRepository _repo;
+        private readonly IMapper _mapper;
 
-        public RentalContactService(IRentalContactRepository repository)
+        public RentalContactService(IRentalContactRepository repo, IMapper mapper)
         {
-            _repository = repository;
+            _repo = repo;
+            _mapper = mapper;
         }
 
-        // ✅ Lấy tất cả liên hệ thuê xe
-        public async Task<Result<IEnumerable<RentalContact>>> GetAllAsync()
+        public async Task<Result<IEnumerable<RentalContactDTO>>> GetAllAsync()
         {
-            try
-            {
-                var data = await _repository.GetAllAsync();
-                if (data == null || !data.Any())
-                    return Result<IEnumerable<RentalContact>>.Failure("Không có liên hệ thuê xe nào.");
-
-                return Result<IEnumerable<RentalContact>>.Success(data, "Lấy danh sách liên hệ thuê xe thành công.");
-            }
-            catch (Exception ex)
-            {
-                return Result<IEnumerable<RentalContact>>.Failure($"Lỗi khi lấy danh sách: {ex.Message}");
-            }
+            var list = await _repo.GetAllAsync();
+            var mapped = _mapper.Map<IEnumerable<RentalContactDTO>>(list);
+            return Result<IEnumerable<RentalContactDTO>>.Success(mapped);
         }
 
-        // ✅ Lấy liên hệ theo RentalOrderId
-        public async Task<Result<RentalContact>> GetByRentalOrderIdAsync(int rentalOrderId)
+        public async Task<Result<RentalContactDTO?>> GetByRentalOrderIdAsync(int rentalOrderId)
         {
-            try
-            {
-                var contact = await _repository.GetByRentalOrderIdAsync(rentalOrderId);
-                if (contact == null)
-                    return Result<RentalContact>.Failure("Không tìm thấy thông tin liên hệ thuê xe.");
+            var entity = await _repo.GetByRentalOrderIdAsync(rentalOrderId);
+            if (entity == null || entity.IsDeleted)
+                return Result<RentalContactDTO?>.Failure("Không tìm thấy hợp đồng.");
 
-                return Result<RentalContact>.Success(contact, "Lấy thông tin liên hệ thuê xe thành công.");
-            }
-            catch (Exception ex)
-            {
-                return Result<RentalContact>.Failure($"Lỗi khi lấy thông tin: {ex.Message}");
-            }
+            return Result<RentalContactDTO?>.Success(_mapper.Map<RentalContactDTO>(entity));
         }
 
-        // ✅ Thêm mới liên hệ
-        public async Task<Result<RentalContact>> AddAsync(RentalContact contact)
+        public async Task<Result<string>> AddAsync(RentalContactCreateDTO dto)
         {
-            try
-            {
-                await _repository.AddAsync(contact);
-                return Result<RentalContact>.Success(contact, "Thêm liên hệ thuê xe thành công.");
-            }
-            catch (Exception ex)
-            {
-                return Result<RentalContact>.Failure($"Lỗi khi thêm liên hệ: {ex.Message}");
-            }
+            var entity = _mapper.Map<RentalContact>(dto);
+            entity.IsDeleted = false;
+
+            await _repo.AddAsync(entity);
+            return Result<string>.Success("Thêm hợp đồng thành công.");
         }
 
-        // ✅ Cập nhật liên hệ
-        public async Task<Result<RentalContact>> UpdateAsync(RentalContact contact)
+        public async Task<Result<string>> UpdateAsync(RentalContactUpdateDTO dto)
         {
-            try
-            {
-                await _repository.UpdateAsync(contact);
-                return Result<RentalContact>.Success(contact, "Cập nhật liên hệ thuê xe thành công.");
-            }
-            catch (Exception ex)
-            {
-                return Result<RentalContact>.Failure($"Lỗi khi cập nhật liên hệ: {ex.Message}");
-            }
+            var entity = await _repo.GetByRentalOrderIdAsync(dto.RentalOrderId ?? 0);
+            if (entity == null)
+                return Result<string>.Failure("Không tìm thấy hợp đồng để cập nhật.");
+
+            _mapper.Map(dto, entity);
+            await _repo.UpdateAsync(entity);
+            return Result<string>.Success("Cập nhật hợp đồng thành công.");
         }
 
-        // ✅ Xóa liên hệ
-        public async Task<Result<bool>> DeleteAsync(int id)
+        public async Task<Result<string>> DeleteAsync(int id)
         {
-            try
-            {
-                await _repository.DeleteAsync(id);
-                return Result<bool>.Success(true, "Xóa liên hệ thuê xe thành công.");
-            }
-            catch (Exception ex)
-            {
-                return Result<bool>.Failure($"Lỗi khi xóa liên hệ: {ex.Message}");
-            }
+            var entity = await _repo.GetByRentalOrderIdAsync(id);
+            if (entity == null)
+                return Result<string>.Failure("Không tìm thấy hợp đồng để xóa.");
+
+            await _repo.DeleteAsync(id);
+            return Result<string>.Success("Xóa hợp đồng thành công.");
         }
     }
 }
