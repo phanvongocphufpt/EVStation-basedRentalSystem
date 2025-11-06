@@ -29,7 +29,6 @@ namespace EVStation_basedRentalSystem.Controllers
         {
             try
             {
-                // 1. Lấy dữ liệu từ database (giới hạn sample để prompt ngắn)
                 var cars = await _dbContext.Cars
                     .Where(c => !c.IsDeleted && c.IsActive)
                     .Take(5)
@@ -49,7 +48,6 @@ namespace EVStation_basedRentalSystem.Controllers
                     .Select(r => new { r.Id, r.WithDriver, r.Status, r.Total })
                     .ToListAsync();
 
-                // 2. Tạo prompt gửi AI
                 var prompt = @$"
 Bạn là chuyên gia phân tích dữ liệu thuê xe.
 Dưới đây là thông tin các xe, đơn hàng và phản hồi khách hàng:
@@ -59,13 +57,15 @@ Phản hồi khách hàng: {System.Text.Json.JsonSerializer.Serialize(feedbacks)
 Đơn hàng: {System.Text.Json.JsonSerializer.Serialize(rentalOrders)}
 
 Hãy phân tích và đưa ra gợi ý nâng cấp dịch vụ hoặc cải thiện xe.
-Trả lời ngắn gọn, tối đa 300 ký tự.
+Trả lời ngắn, tối đa 1000 ký tự.
+Dễ nhìn
+- Không dùng dấu *, ** hay markdown.
+- Dùng các dòng tách nhau bằng xuống dòng \n.
+- Mỗi ý là 1 câu dễ đọc, thân thiện với người xem.
 ";
 
-                // 3. Gửi prompt tới AI
                 var aiResponse = await _aiService.GenerateResponseAsync(prompt);
 
-                // 4. Trả về response
                 return Ok(new { response = aiResponse });
             }
             catch (Exception ex)
@@ -74,5 +74,68 @@ Trả lời ngắn gọn, tối đa 300 ký tự.
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+        /// <summary>
+        /// Phân tích tỷ lệ sử dụng xe và giờ cao điểm
+        /// </summary>
+        [HttpGet("car-usage")]
+        public async Task<IActionResult> AnalyzeCarUsage()
+        {
+            try
+            {
+                // Lấy dữ liệu Car, CarDeliveryHistory và RentalOrder
+                var cars = await _dbContext.Cars
+                    .Where(c => !c.IsDeleted && c.IsActive)
+                    .Select(c => new { c.Id, c.Name })
+                    .ToListAsync();
+
+                var deliveries = await _dbContext.CarDeliveryHistories
+                    .Include(d => d.Order)
+                    .ToListAsync();
+
+                var rentalOrders = await _dbContext.RentalOrders
+                    .Where(r => r.Status.ToString() == "Completed" || r.Status.ToString() == "Ongoing")
+                    .ToListAsync();
+
+                // Tính tỷ lệ sử dụng xe: số đơn trên tổng xe
+                var usageData = cars.Select(c =>
+                {
+                    var count = rentalOrders.Count(r => r.CarId == c.Id);
+                    var ratio = cars.Count > 0 ? (double)count / cars.Count : 0;
+                    return new { c.Name, Rentals = count, UsageRatio = ratio };
+                }).ToList();
+
+                // Lấy giờ cao điểm dựa trên PickupTime hoặc DeliveryDate
+                var peakHours = rentalOrders
+                    .Select(r => r.PickupTime.Hour)
+                    .GroupBy(h => h)
+                    .Select(g => new { Hour = g.Key, Count = g.Count() })
+                    .OrderByDescending(x => x.Count)
+                    .Take(3) // 3 giờ cao điểm nhiều nhất
+                    .ToList();
+
+                // Tạo prompt gửi AI
+                var prompt = @$"
+Bạn là chuyên gia phân tích dữ liệu thuê xe.
+Dựa trên dữ liệu dưới đây:
+
+Danh sách xe và số lần thuê: {System.Text.Json.JsonSerializer.Serialize(usageData)}
+Giờ cao điểm thuê xe: {System.Text.Json.JsonSerializer.Serialize(peakHours)}
+
+Hãy phân tích tỷ lệ sử dụng xe và xác định giờ cao điểm.
+Trả lời ngắn gọn, dễ đọc, mỗi ý 1 dòng.
+Không dùng *, ** hay markdown.
+";
+
+                var aiResponse = await _aiService.GenerateResponseAsync(prompt);
+
+                return Ok(new { response = aiResponse });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error analyzing car usage");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
     }
 }
