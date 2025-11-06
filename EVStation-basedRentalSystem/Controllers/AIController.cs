@@ -122,7 +122,7 @@ Danh sách xe và số lần thuê: {System.Text.Json.JsonSerializer.Serialize(u
 Giờ cao điểm thuê xe: {System.Text.Json.JsonSerializer.Serialize(peakHours)}
 
 Hãy phân tích tỷ lệ sử dụng xe và xác định giờ cao điểm.
-Trả lời ngắn gọn, dễ đọc, mỗi ý 1 dòng.
+Trả lời ngắn cỡ 1000 từ, dễ đọc, mỗi ý 1 dòng.
 Không dùng *, ** hay markdown.
 ";
 
