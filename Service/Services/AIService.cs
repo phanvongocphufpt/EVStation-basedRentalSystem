@@ -1,10 +1,11 @@
-﻿using System.Net.Http;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Repository.Context;
+using Service.IServices;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
-using Service.IServices;
-using Repository.Context;
-using Microsoft.EntityFrameworkCore;
 
 namespace Service.Services
 {
@@ -15,13 +16,13 @@ namespace Service.Services
         private readonly string _apiKey;
         private readonly EVSDbContext _dbContext;
 
-        public AIService(HttpClient httpClient, ILogger<AIService> logger, EVSDbContext dbContext)
+        public AIService(HttpClient httpClient, ILogger<AIService> logger, IConfiguration configuration, EVSDbContext dbContext)
         {
             _httpClient = httpClient;
             _logger = logger;
             _dbContext = dbContext;
 
-            _apiKey = "AIzaSyBls6rTvX65uYqBwMq41S8AfSdTr8d07pk";
+            _apiKey = configuration["Gemini:ApiKey"] ?? throw new ArgumentNullException("Gemini:ApiKey missing");
             _httpClient.BaseAddress = new Uri("https://generativelanguage.googleapis.com/v1/");
         }
 
@@ -83,9 +84,7 @@ namespace Service.Services
             }
         }
 
-        /// <summary>
-        /// Phân tích tỷ lệ sử dụng xe và giờ cao điểm dựa trên dữ liệu trong DB
-        /// </summary>
+
         public async Task<string> AnalyzeCarUsageAsync(string model = "flash", bool shortAnswer = false)
         {
             try
