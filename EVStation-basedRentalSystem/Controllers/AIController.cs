@@ -21,9 +21,6 @@ namespace EVStation_basedRentalSystem.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Phân tích dữ liệu từ database và trả về gợi ý nâng cấp
-        /// </summary>
         [HttpGet("analyze")]
         public async Task<IActionResult> AnalyzeData()
         {
@@ -74,9 +71,7 @@ Dễ nhìn
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-        /// <summary>
-        /// Phân tích tỷ lệ sử dụng xe và giờ cao điểm
-        /// </summary>
+
         [HttpGet("car-usage")]
         public async Task<IActionResult> AnalyzeCarUsage()
         {
