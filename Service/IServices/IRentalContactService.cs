@@ -1,6 +1,5 @@
-﻿using Repository.Entities;
-using Service.Common;
-using Service.Common.Service.Common;
+﻿using Service.Common;
+using Service.DTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,19 +7,10 @@ namespace Service.IServices
 {
     public interface IRentalContactService
     {
-        // ✅ Lấy tất cả liên hệ thuê xe
-        Task<Result<IEnumerable<RentalContact>>> GetAllAsync();
-
-        // ✅ Lấy liên hệ theo RentalOrderId
-        Task<Result<RentalContact>> GetByRentalOrderIdAsync(int rentalOrderId);
-
-        // ✅ Thêm mới
-        Task<Result<RentalContact>> AddAsync(RentalContact contact);
-
-        // ✅ Cập nhật
-        Task<Result<RentalContact>> UpdateAsync(RentalContact contact);
-
-        // ✅ Xóa
-        Task<Result<bool>> DeleteAsync(int id);
+        Task<Result<IEnumerable<RentalContactDTO>>> GetAllAsync();
+        Task<Result<RentalContactDTO?>> GetByRentalOrderIdAsync(int rentalOrderId);
+        Task<Result<string>> AddAsync(RentalContactCreateDTO dto);
+        Task<Result<string>> UpdateAsync(RentalContactUpdateDTO dto);
+        Task<Result<string>> DeleteAsync(int id);
     }
 }
