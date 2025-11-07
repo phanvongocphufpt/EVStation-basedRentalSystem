@@ -111,6 +111,25 @@ namespace Service.Mapper
                 .ForMember(dest => dest.RentalContactId, opt => opt.MapFrom(src => src.RentalContactId))
                 .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId));
             CreateMap<CreateRentalOrderDTO, RentalOrder>();
+            //Rental Contact Mappings
+            CreateMap<RentalContact, RentalContactDTO>()
+                .ForMember(dest => dest.RentalOrderId, opt => opt.MapFrom(src => src.RentalOrderId))
+                .ForMember(dest => dest.RentalDate, opt => opt.MapFrom(src => src.RentalDate))
+                .ForMember(dest => dest.RentalPeriod, opt => opt.MapFrom(src => src.RentalPeriod))
+                .ForMember(dest => dest.ReturnDate, opt => opt.MapFrom(src => src.ReturnDate))
+                .ForMember(dest => dest.TerminationClause, opt => opt.MapFrom(src => src.TerminationClause))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.LesseeId, opt => opt.MapFrom(src => src.LesseeId))
+                .ForMember(dest => dest.LessorId, opt => opt.MapFrom(src => src.LessorId))
+                .ReverseMap();
+            CreateMap<RentalContactCreateDTO, RentalContact>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore()) // tránh map ID thủ công
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(_ => false));
+            CreateMap<RentalContactUpdateDTO, RentalContact>()
+
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+
+
         }
     }
 }

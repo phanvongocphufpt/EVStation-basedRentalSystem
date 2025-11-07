@@ -46,9 +46,25 @@ namespace Repository.Repositories
 
         public async Task UpdateAsync(RentalContact contact)
         {
-            _context.RentalContacts.Update(contact);
+            // 🔍 Tìm hợp đồng theo OrderId
+            var existing = await _context.RentalContacts
+                .FirstOrDefaultAsync(c => c.RentalOrderId == contact.RentalOrderId && !c.IsDeleted);
+
+            if (existing == null)
+                throw new KeyNotFoundException("Không tìm thấy hợp đồng thuê tương ứng với OrderId đã cho.");
+
+            // 🔄 Cập nhật các trường có thể thay đổi
+            existing.RentalDate = contact.RentalDate;
+            existing.RentalPeriod = contact.RentalPeriod;
+            existing.ReturnDate = contact.ReturnDate;
+            existing.TerminationClause = contact.TerminationClause;
+            existing.Status = contact.Status;
+            existing.LesseeId = contact.LesseeId;
+            existing.LessorId = contact.LessorId;
+
             await _context.SaveChangesAsync();
         }
+
 
         public async Task DeleteAsync(int id)
         {

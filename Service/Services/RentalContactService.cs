@@ -20,6 +20,7 @@ namespace Service.Services
             _mapper = mapper;
         }
 
+        // 🔹 Lấy tất cả hợp đồng thuê
         public async Task<Result<IEnumerable<RentalContactDTO>>> GetAllAsync()
         {
             var list = await _repo.GetAllAsync();
@@ -27,6 +28,7 @@ namespace Service.Services
             return Result<IEnumerable<RentalContactDTO>>.Success(mapped);
         }
 
+        // 🔹 Lấy hợp đồng theo RentalOrderId
         public async Task<Result<RentalContactDTO?>> GetByRentalOrderIdAsync(int rentalOrderId)
         {
             var entity = await _repo.GetByRentalOrderIdAsync(rentalOrderId);
@@ -36,6 +38,7 @@ namespace Service.Services
             return Result<RentalContactDTO?>.Success(_mapper.Map<RentalContactDTO>(entity));
         }
 
+        // 🔹 Thêm hợp đồng
         public async Task<Result<string>> AddAsync(RentalContactCreateDTO dto)
         {
             var entity = _mapper.Map<RentalContact>(dto);
@@ -45,24 +48,37 @@ namespace Service.Services
             return Result<string>.Success("Thêm hợp đồng thành công.");
         }
 
+        // 🔹 Cập nhật hợp đồng theo RentalOrderId
         public async Task<Result<string>> UpdateAsync(RentalContactUpdateDTO dto)
         {
-            var entity = await _repo.GetByRentalOrderIdAsync(dto.RentalOrderId ?? 0);
-            if (entity == null)
+            if (dto.RentalOrderId == null)
+                return Result<string>.Failure("Thiếu thông tin RentalOrderId để cập nhật.");
+
+            var existing = await _repo.GetByRentalOrderIdAsync(dto.RentalOrderId.Value);
+            if (existing == null)
                 return Result<string>.Failure("Không tìm thấy hợp đồng để cập nhật.");
 
-            _mapper.Map(dto, entity);
-            await _repo.UpdateAsync(entity);
+            // Cập nhật thủ công (hoặc có thể dùng AutoMapper)
+            existing.RentalDate = dto.RentalDate;
+            existing.RentalPeriod = dto.RentalPeriod;
+            existing.ReturnDate = dto.ReturnDate;
+            existing.TerminationClause = dto.TerminationClause;
+            existing.Status = dto.Status;
+            existing.LesseeId = dto.LesseeId;
+            existing.LessorId = dto.LessorId;
+
+            await _repo.UpdateAsync(existing);
             return Result<string>.Success("Cập nhật hợp đồng thành công.");
         }
 
-        public async Task<Result<string>> DeleteAsync(int id)
+        // 🔹 Xóa hợp đồng theo RentalOrderId
+        public async Task<Result<string>> DeleteAsync(int rentalOrderId)
         {
-            var entity = await _repo.GetByRentalOrderIdAsync(id);
-            if (entity == null)
+            var existing = await _repo.GetByRentalOrderIdAsync(rentalOrderId);
+            if (existing == null)
                 return Result<string>.Failure("Không tìm thấy hợp đồng để xóa.");
 
-            await _repo.DeleteAsync(id);
+            await _repo.DeleteAsync(existing.Id); // dùng Id để đánh dấu IsDeleted
             return Result<string>.Success("Xóa hợp đồng thành công.");
         }
     }
