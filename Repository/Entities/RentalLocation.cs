@@ -20,7 +20,7 @@ namespace Repository.Entities
         public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
         public ICollection<User> Users { get; set; }
         public ICollection<RentalOrder> RentalOrders { get; set; }
-        //public int LocationId { get; set; } 
+        public int LocationId { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

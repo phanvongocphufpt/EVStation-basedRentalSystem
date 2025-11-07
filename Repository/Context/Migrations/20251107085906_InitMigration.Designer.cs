@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251104090214_InitMigration")]
+    [Migration("20251107085906_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -167,6 +167,160 @@ namespace Repository.Context.Migrations
                             SizeType = "Hatchback",
                             Status = 1,
                             TrunkCapacity = 478
+                        },
+                        new
+                        {
+                            Id = 4,
+                            BatteryDuration = 305,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/hyundai_kona.jpg",
+                            ImageUrl2 = "https://example.com/hyundai_kona.jpg",
+                            ImageUrl3 = "https://example.com/hyundai_kona.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "Hyundai Kona Electric",
+                            Name = "Kona Electric",
+                            RentPricePerDay = 900000.0,
+                            RentPricePerDayWithDriver = 1300000.0,
+                            RentPricePerHour = 40000.0,
+                            RentPricePerHourWithDriver = 55000.0,
+                            Seats = 5,
+                            SizeType = "SUV",
+                            Status = 1,
+                            TrunkCapacity = 332
+                        },
+                        new
+                        {
+                            Id = 5,
+                            BatteryDuration = 510,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/kia_ev6.jpg",
+                            ImageUrl2 = "https://example.com/kia_ev6.jpg",
+                            ImageUrl3 = "https://example.com/kia_ev6.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "Kia EV6",
+                            Name = "EV6",
+                            RentPricePerDay = 1200000.0,
+                            RentPricePerDayWithDriver = 1600000.0,
+                            RentPricePerHour = 55000.0,
+                            RentPricePerHourWithDriver = 75000.0,
+                            Seats = 5,
+                            SizeType = "Crossover",
+                            Status = 1,
+                            TrunkCapacity = 480
+                        },
+                        new
+                        {
+                            Id = 6,
+                            BatteryDuration = 285,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/vf_e34.jpg",
+                            ImageUrl2 = "https://example.com/vf_e34.jpg",
+                            ImageUrl3 = "https://example.com/vf_e34.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "VinFast VF e34",
+                            Name = "VF e34",
+                            RentPricePerDay = 850000.0,
+                            RentPricePerDayWithDriver = 1150000.0,
+                            RentPricePerHour = 38000.0,
+                            RentPricePerHourWithDriver = 52000.0,
+                            Seats = 5,
+                            SizeType = "SUV",
+                            Status = 1,
+                            TrunkCapacity = 290
+                        },
+                        new
+                        {
+                            Id = 7,
+                            BatteryDuration = 200,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/bmw_i3.jpg",
+                            ImageUrl2 = "https://example.com/bmw_i3.jpg",
+                            ImageUrl3 = "https://example.com/bmw_i3.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "BMW i3",
+                            Name = "i3",
+                            RentPricePerDay = 1100000.0,
+                            RentPricePerDayWithDriver = 1450000.0,
+                            RentPricePerHour = 50000.0,
+                            RentPricePerHourWithDriver = 68000.0,
+                            Seats = 4,
+                            SizeType = "Hatchback",
+                            Status = 1,
+                            TrunkCapacity = 260
+                        },
+                        new
+                        {
+                            Id = 8,
+                            BatteryDuration = 450,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/porsche_taycan.jpg",
+                            ImageUrl2 = "https://example.com/porsche_taycan.jpg",
+                            ImageUrl3 = "https://example.com/porsche_taycan.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "Porsche Taycan",
+                            Name = "Taycan",
+                            RentPricePerDay = 2500000.0,
+                            RentPricePerDayWithDriver = 3000000.0,
+                            RentPricePerHour = 100000.0,
+                            RentPricePerHourWithDriver = 130000.0,
+                            Seats = 4,
+                            SizeType = "Sedan",
+                            Status = 1,
+                            TrunkCapacity = 366
+                        },
+                        new
+                        {
+                            Id = 9,
+                            BatteryDuration = 410,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/mercedes_eqc.jpg",
+                            ImageUrl2 = "https://example.com/mercedes_eqc.jpg",
+                            ImageUrl3 = "https://example.com/mercedes_eqc.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "Mercedes EQC",
+                            Name = "EQC",
+                            RentPricePerDay = 1800000.0,
+                            RentPricePerDayWithDriver = 2300000.0,
+                            RentPricePerHour = 85000.0,
+                            RentPricePerHourWithDriver = 110000.0,
+                            Seats = 5,
+                            SizeType = "SUV",
+                            Status = 1,
+                            TrunkCapacity = 500
+                        },
+                        new
+                        {
+                            Id = 10,
+                            BatteryDuration = 430,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/audi_etron.jpg",
+                            ImageUrl2 = "https://example.com/audi_etron.jpg",
+                            ImageUrl3 = "https://example.com/audi_etron.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "Audi e-tron",
+                            Name = "e-tron",
+                            RentPricePerDay = 1700000.0,
+                            RentPricePerDayWithDriver = 2200000.0,
+                            RentPricePerHour = 80000.0,
+                            RentPricePerHourWithDriver = 100000.0,
+                            Seats = 5,
+                            SizeType = "SUV",
+                            Status = 1,
+                            TrunkCapacity = 555
                         });
                 });
 
@@ -257,6 +411,86 @@ namespace Repository.Context.Migrations
                             IsDeleted = false,
                             LocationId = 1,
                             Quantity = 5
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CarId = 2,
+                            IsDeleted = false,
+                            LocationId = 1,
+                            Quantity = 3
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CarId = 3,
+                            IsDeleted = false,
+                            LocationId = 2,
+                            Quantity = 4
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CarId = 4,
+                            IsDeleted = false,
+                            LocationId = 2,
+                            Quantity = 2
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CarId = 5,
+                            IsDeleted = false,
+                            LocationId = 3,
+                            Quantity = 6
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CarId = 6,
+                            IsDeleted = false,
+                            LocationId = 3,
+                            Quantity = 3
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CarId = 7,
+                            IsDeleted = false,
+                            LocationId = 4,
+                            Quantity = 5
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CarId = 8,
+                            IsDeleted = false,
+                            LocationId = 4,
+                            Quantity = 2
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CarId = 9,
+                            IsDeleted = false,
+                            LocationId = 5,
+                            Quantity = 4
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CarId = 10,
+                            IsDeleted = false,
+                            LocationId = 5,
+                            Quantity = 3
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CarId = 1,
+                            IsDeleted = false,
+                            LocationId = 6,
+                            Quantity = 2
                         });
                 });
 
@@ -434,6 +668,108 @@ namespace Repository.Context.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Feedbacks");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Content = "Xe mới, sạch sẽ và nhân viên hỗ trợ rất nhiệt tình.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 1,
+                            Title = "Dịch vụ tuyệt vời",
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Content = "Giá thuê xe phù hợp, chất lượng xe tốt, pin đầy đủ.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 2,
+                            Title = "Giá hợp lý",
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Content = "Chỉ mất vài phút để hoàn thành thủ tục thuê xe.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 3,
+                            Title = "Thủ tục nhanh chóng",
+                            UserId = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Content = "Nhân viên tư vấn rất chu đáo, hướng dẫn chi tiết khi nhận xe.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 4,
+                            Title = "Nhân viên thân thiện",
+                            UserId = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Content = "Xe điện chạy rất êm, tiết kiệm và thân thiện môi trường.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 5,
+                            Title = "Xe chạy êm",
+                            UserId = 5
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Content = "Mọi thứ ổn, nhưng mong có thêm nhiều trạm sạc hơn ở trung tâm.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 6,
+                            Title = "Cần thêm trạm sạc",
+                            UserId = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Content = "Dịch vụ chuyên nghiệp, hệ thống đặt xe dễ dùng.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 7,
+                            Title = "Trải nghiệm tốt",
+                            UserId = 7
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Content = "Tôi gặp vấn đề nhỏ về pin, nhân viên đã hỗ trợ rất nhanh.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 8,
+                            Title = "Hỗ trợ nhanh",
+                            UserId = 8
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Content = "Xe mới, thiết kế hiện đại, rất hài lòng với chuyến đi.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 9,
+                            Title = "Xe đẹp",
+                            UserId = 9
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Content = "Tôi sẽ tiếp tục thuê xe ở đây trong các chuyến công tác sau.",
+                            CreatedAt = new DateTime(2025, 11, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            RentalOrderId = 10,
+                            Title = "Rất hài lòng",
+                            UserId = 10
+                        });
                 });
 
             modelBuilder.Entity("Repository.Entities.Payment", b =>
@@ -515,6 +851,138 @@ namespace Repository.Context.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RentalContacts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsDeleted = false,
+                            LesseeId = 1,
+                            LessorId = 2,
+                            RentalDate = new DateTime(2025, 10, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 1,
+                            RentalPeriod = "3 ngày",
+                            ReturnDate = new DateTime(2025, 10, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 1,
+                            TerminationClause = "Chấm dứt hợp đồng sớm sẽ chịu phí 10%."
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsDeleted = false,
+                            LesseeId = 2,
+                            LessorId = 3,
+                            RentalDate = new DateTime(2025, 10, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 2,
+                            RentalPeriod = "7 ngày",
+                            ReturnDate = new DateTime(2025, 10, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 0,
+                            TerminationClause = "Phí chấm dứt sớm: 15%."
+                        },
+                        new
+                        {
+                            Id = 3,
+                            IsDeleted = false,
+                            LesseeId = 3,
+                            LessorId = 1,
+                            RentalDate = new DateTime(2025, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 3,
+                            RentalPeriod = "5 ngày",
+                            ReturnDate = new DateTime(2025, 10, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 2,
+                            TerminationClause = "Phải thông báo trước 24h để chấm dứt hợp đồng."
+                        },
+                        new
+                        {
+                            Id = 4,
+                            IsDeleted = false,
+                            LesseeId = 4,
+                            LessorId = 5,
+                            RentalDate = new DateTime(2025, 10, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 4,
+                            RentalPeriod = "2 ngày",
+                            ReturnDate = new DateTime(2025, 10, 17, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 1,
+                            TerminationClause = "Không hoàn tiền nếu hủy trong vòng 12h."
+                        },
+                        new
+                        {
+                            Id = 5,
+                            IsDeleted = false,
+                            LesseeId = 5,
+                            LessorId = 6,
+                            RentalDate = new DateTime(2025, 10, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 5,
+                            RentalPeriod = "10 ngày",
+                            ReturnDate = new DateTime(2025, 10, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 0,
+                            TerminationClause = "Phí hủy hợp đồng: 20% tổng giá trị."
+                        },
+                        new
+                        {
+                            Id = 6,
+                            IsDeleted = false,
+                            LesseeId = 6,
+                            LessorId = 7,
+                            RentalDate = new DateTime(2025, 10, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 6,
+                            RentalPeriod = "1 ngày",
+                            ReturnDate = new DateTime(2025, 10, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 0,
+                            TerminationClause = "Không hoàn tiền nếu hủy trong ngày thuê."
+                        },
+                        new
+                        {
+                            Id = 7,
+                            IsDeleted = false,
+                            LesseeId = 7,
+                            LessorId = 8,
+                            RentalDate = new DateTime(2025, 10, 22, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 7,
+                            RentalPeriod = "4 ngày",
+                            ReturnDate = new DateTime(2025, 10, 26, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 0,
+                            TerminationClause = "Có thể gia hạn thêm tối đa 2 ngày."
+                        },
+                        new
+                        {
+                            Id = 8,
+                            IsDeleted = false,
+                            LesseeId = 8,
+                            LessorId = 9,
+                            RentalDate = new DateTime(2025, 10, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 8,
+                            RentalPeriod = "6 ngày",
+                            ReturnDate = new DateTime(2025, 10, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 2,
+                            TerminationClause = "Không áp dụng hoàn tiền nếu xe bị hư hại."
+                        },
+                        new
+                        {
+                            Id = 9,
+                            IsDeleted = false,
+                            LesseeId = 9,
+                            LessorId = 10,
+                            RentalDate = new DateTime(2025, 11, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 9,
+                            RentalPeriod = "8 ngày",
+                            ReturnDate = new DateTime(2025, 11, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 0,
+                            TerminationClause = "Có thể kết thúc sớm nhưng không hoàn phí thuê."
+                        },
+                        new
+                        {
+                            Id = 10,
+                            IsDeleted = false,
+                            LesseeId = 10,
+                            LessorId = 1,
+                            RentalDate = new DateTime(2025, 11, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            RentalOrderId = 10,
+                            RentalPeriod = "3 ngày",
+                            ReturnDate = new DateTime(2025, 11, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 1,
+                            TerminationClause = "Hợp đồng sẽ tự động hết hạn sau ngày trả xe."
+                        });
                 });
 
             modelBuilder.Entity("Repository.Entities.RentalLocation", b =>
@@ -578,6 +1046,94 @@ namespace Repository.Context.Migrations
                             IsDeleted = false,
                             LocationId = 0,
                             Name = "Airport Rental Location"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Address = "12 Le Loi St, District 1, Ho Chi Minh City",
+                            Coordinates = "10.7760,106.7030",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            LocationId = 0,
+                            Name = "District 1 Rental Location"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Address = "89 Nguyen Van Linh St, District 7, Ho Chi Minh City",
+                            Coordinates = "10.7298,106.7219",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            LocationId = 0,
+                            Name = "District 7 Rental Location"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Address = "27 Dinh Bo Linh St, Binh Thanh District, Ho Chi Minh City",
+                            Coordinates = "10.8123,106.7098",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            LocationId = 0,
+                            Name = "Binh Thanh Rental Location"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Address = "101 Vo Van Ngan St, Thu Duc City",
+                            Coordinates = "10.8502,106.7549",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            LocationId = 0,
+                            Name = "Thu Duc Rental Location"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Address = "35 Hoang Van Thu St, Tan Binh District, Ho Chi Minh City",
+                            Coordinates = "10.8015,106.6521",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            LocationId = 0,
+                            Name = "Tan Binh Rental Location"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Address = "58 Phan Xich Long St, Phu Nhuan District, Ho Chi Minh City",
+                            Coordinates = "10.7998,106.6825",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            LocationId = 0,
+                            Name = "Phu Nhuan Rental Location"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Address = "245 Quang Trung St, Go Vap District, Ho Chi Minh City",
+                            Coordinates = "10.8412,106.6647",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            LocationId = 0,
+                            Name = "Go Vap Rental Location"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Address = "500 Kinh Duong Vuong St, Binh Tan District, Ho Chi Minh City",
+                            Coordinates = "10.7487,106.6032",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            LocationId = 0,
+                            Name = "Binh Tan Rental Location"
                         });
                 });
 
@@ -691,6 +1247,9 @@ namespace Repository.Context.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConfirmEmailToken")
                         .HasColumnType("nvarchar(max)");
 
@@ -717,6 +1276,9 @@ namespace Repository.Context.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("RentalLocationId")
@@ -777,6 +1339,111 @@ namespace Repository.Context.Migrations
                             IsEmailConfirmed = true,
                             Password = "1",
                             PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
+                            Role = "Customer"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Address = "123 Tran Hung Dao St, Ho Chi Minh City",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "duongduy12314@gmail.com",
+                            FullName = "Customer User 1",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "$2a$12$examplehash4",
+                            PhoneNumber = "0945353500",
+                            RentalLocationId = 1,
+                            Role = "Admin"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Address = "456 Nguyen Cuu Phuc St, Ho Chi Minh City",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "customer2@gmail.com",
+                            FullName = "Customer User 2",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "$2a$12$examplehash5",
+                            PhoneNumber = "0901000005",
+                            RentalLocationId = 2,
+                            Role = "Customer"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Address = "789 Le Lai St, Ho Chi Minh City",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "staff1@gmail.com",
+                            FullName = "Staff User 1",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "$2a$12$examplehash6",
+                            PhoneNumber = "0901000006",
+                            RentalLocationId = 1,
+                            Role = "Staff"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Address = "101 Nguyen Van Linh St, District 7, Ho Chi Minh City",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "staff2@gmail.com",
+                            FullName = "Staff User 2",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "$2a$12$examplehash7",
+                            PhoneNumber = "0901000007",
+                            RentalLocationId = 2,
+                            Role = "Staff"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Address = "202 Le Loi St, District 1, Ho Chi Minh City",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "customer3@gmail.com",
+                            FullName = "Customer User 3",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "$2a$12$examplehash8",
+                            PhoneNumber = "0901000008",
+                            RentalLocationId = 3,
+                            Role = "Customer"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Address = "303 Vo Van Tan St, District 3, Ho Chi Minh City",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "staff3@gmail.com",
+                            FullName = "Staff User 3",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "$2a$12$examplehash9",
+                            PhoneNumber = "0901000009",
+                            RentalLocationId = 3,
+                            Role = "Staff"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Address = "404 Nguyen Trai St, District 5, Ho Chi Minh City",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "customer4@gmail.com",
+                            FullName = "Customer User 4",
+                            IsActive = true,
+                            IsEmailConfirmed = true,
+                            Password = "1",
+                            PasswordHash = "$2a$12$examplehash10",
+                            PhoneNumber = "0901000010",
+                            RentalLocationId = 4,
                             Role = "Customer"
                         });
                 });
