@@ -1007,9 +1007,6 @@ namespace Repository.Context.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("LocationId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1030,7 +1027,6 @@ namespace Repository.Context.Migrations
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsActive = true,
                             IsDeleted = false,
-                            LocationId = 0,
                             Name = "Downtown Rental Location"
                         },
                         new
@@ -1041,7 +1037,6 @@ namespace Repository.Context.Migrations
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsActive = true,
                             IsDeleted = false,
-                            LocationId = 0,
                             Name = "Airport Rental Location"
                         },
                         new
