@@ -137,26 +137,44 @@ namespace Service.Services
             {
                 return Result<UpdateRentalOrderStatusDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
             }
-            if (existingOrder.CitizenIdNavigation == null || existingOrder.DriverLicense == null)
+
+            // Chỉ kiểm tra giấy tờ khi cập nhật sang trạng thái cần giấy tờ (Confirmed, Renting)
+            // Cho phép cập nhật sang Cancelled hoặc Completed mà không cần kiểm tra giấy tờ
+            if (updateRentalOrderStatusDTO.Status == RentalOrderStatus.Confirmed || 
+                updateRentalOrderStatusDTO.Status == RentalOrderStatus.Renting)
             {
-                return Result<UpdateRentalOrderStatusDTO>.Failure("Chứng minh nhân dân hoặc giấy phép lái xe chưa được nộp. Không thể cập nhật trạng thái đơn đặt thuê.");
+                if (existingOrder.CitizenIdNavigation == null || existingOrder.DriverLicense == null)
+                {
+                    return Result<UpdateRentalOrderStatusDTO>.Failure("Chứng minh nhân dân hoặc giấy phép lái xe chưa được nộp. Không thể cập nhật trạng thái đơn đặt thuê.");
+                }
+                
+                // Kiểm tra RentalContact có tồn tại và đã được duyệt
+                //if (existingOrder.RentalContact == null)
+                //{
+                //    return Result<UpdateRentalOrderStatusDTO>.Failure("Hợp đồng thuê xe chưa được tạo. Không thể cập nhật trạng thái đơn đặt thuê.");
+                //}
+                
+                //if (existingOrder.RentalContact.Status != DocumentStatus.Approved)
+                //{
+                //    return Result<UpdateRentalOrderStatusDTO>.Failure("Hợp đồng thuê xe chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
+                //}
+                
+                if (existingOrder.CitizenIdNavigation.Status != DocumentStatus.Approved)
+                {
+                    return Result<UpdateRentalOrderStatusDTO>.Failure("Chứng minh nhân dân chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
+                }
+                
+                if (existingOrder.DriverLicense.Status != DocumentStatus.Approved)
+                {
+                    return Result<UpdateRentalOrderStatusDTO>.Failure("Giấy phép lái xe chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
+                }
             }
-            if (existingOrder.RentalContact.Status != DocumentStatus.Approved)
-            {
-                return Result<UpdateRentalOrderStatusDTO>.Failure("Hợp đồng thuê xe chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
-            }
-            if (existingOrder.CitizenIdNavigation.Status != DocumentStatus.Approved)
-            {
-                return Result<UpdateRentalOrderStatusDTO>.Failure("Chứng minh nhân dân chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
-            }
-            if (existingOrder.DriverLicense.Status != DocumentStatus.Approved)
-            {
-                return Result<UpdateRentalOrderStatusDTO>.Failure("Giấy phép lái xe chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
-            }
-            existingOrder.Status = RentalOrderStatus.Confirmed;
+
+            // Cập nhật status từ DTO thay vì hardcode
+            existingOrder.Status = updateRentalOrderStatusDTO.Status;
             existingOrder.UpdatedAt = DateTime.Now;
             await _rentalOrderRepository.UpdateAsync(existingOrder);
-            return Result<UpdateRentalOrderStatusDTO>.Success(updateRentalOrderStatusDTO, "Cập nhật trạng thái thành công! Mọi giấy tờ đã được duyệt!");
+            return Result<UpdateRentalOrderStatusDTO>.Success(updateRentalOrderStatusDTO, "Cập nhật trạng thái thành công!");
         }
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id)
         {

@@ -17,7 +17,7 @@ namespace EVStation_basedRentalSystem.Controllers
             _rentalLocationService = rentalLocationService;
         }
         [HttpGet("GetAll")]
-    
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllAsync()
         {
             var Users = await _rentalLocationService.GetAllAsync();
