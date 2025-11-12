@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251104090214_InitMigration")]
+    [Migration("20251112084150_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -542,9 +542,6 @@ namespace Repository.Context.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("LocationId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -565,7 +562,6 @@ namespace Repository.Context.Migrations
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsActive = true,
                             IsDeleted = false,
-                            LocationId = 0,
                             Name = "Downtown Rental Location"
                         },
                         new
@@ -576,7 +572,6 @@ namespace Repository.Context.Migrations
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsActive = true,
                             IsDeleted = false,
-                            LocationId = 0,
                             Name = "Airport Rental Location"
                         });
                 });
