@@ -13,6 +13,7 @@ namespace Repository.IRepositories
         Task<IEnumerable<Payment>> GetAllAsync();
         Task<Payment?> GetByIdAsync(int id);
         Task<IEnumerable<Payment>> GetAllByUserIdAsync(int id);
+        Task<IEnumerable<Payment>> GetByRentalLocationAsync(); // theo location doanh thu
         Task AddAsync(Payment payment);
         Task UpdateAsync(Payment payment);
         Task<IDbContextTransaction> BeginTransactionAsync();

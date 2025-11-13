@@ -11,6 +11,10 @@ namespace Service.IServices
     public interface IPaymentService
     {
         Task<Result<IEnumerable<PaymentDTO>>> GetAllAsync();
+
+        Task<Result<IEnumerable<RevenueByLocationDTO>>> GetRevenueByLocationAsync();
+
+
         Task<Result<IEnumerable<PaymentDTO>>> GetAllByUserIdAsync(int id);
         Task<Result<PaymentDTO>> GetByIdAsync(int id);
         Task<Result<CreatePaymentDTO>> AddAsync(CreatePaymentDTO createPaymentDTO);

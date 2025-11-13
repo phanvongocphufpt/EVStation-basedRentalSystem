@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Service.DTOs;
 using Service.IServices;
+using Service.Services;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -23,7 +24,16 @@ namespace EVStation_basedRentalSystem.Controllers
             var Payments = await _paymentService.GetAllAsync();
             return Ok(Payments);
         }
+        [HttpGet("byRentalLocation")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetRevenueByLocation()
+        {
+            var result = await _paymentService.GetRevenueByLocationAsync();
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
 
+            return Ok(result.Data);
+        }
         [HttpGet("GetAllByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAllCustomerPayment(int UserId)

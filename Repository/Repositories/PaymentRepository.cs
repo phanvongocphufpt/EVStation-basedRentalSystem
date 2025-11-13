@@ -22,6 +22,14 @@ namespace Repository.Repositories
         {
             return await _context.Payments.ToListAsync();
         }
+        public async Task<IEnumerable<Payment>> GetByRentalLocationAsync()
+        {
+            return await _context.Payments
+                .Include(p => p.RentalOrder)
+                    .ThenInclude(ro => ro.RentalLocation)
+                .Where(p => p.Status == Entities.Enum.PaymentStatus.Completed)
+                .ToListAsync();
+        }
         public async Task<Payment?> GetByIdAsync(int id)
         {
             return await _context.Payments.FindAsync(id);
