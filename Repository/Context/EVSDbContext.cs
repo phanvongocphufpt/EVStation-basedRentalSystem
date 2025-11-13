@@ -14,7 +14,7 @@ namespace Repository.Context
         public EVSDbContext() { }
         public EVSDbContext(DbContextOptions<EVSDbContext> options) : base(options) { }
         public DbSet<Car> Cars { get; set; }
-        public DbSet<ChatMessage> ChatMessages { get; set; }
+
 
         public DbSet<CarDeliveryHistory> CarDeliveryHistories { get; set; }
         public DbSet<CarReturnHistory> CarReturnHistories { get; set; }

@@ -141,6 +141,9 @@ Không dùng *, ** hay markdown.
         [HttpPost("chat")]
         public async Task<IActionResult> Chat([FromBody] Service.DTOs.ChatRequest request)
         {
+
+            var Message = $@"
+Bạn là ChatBot cho  EV rental. chỉ trả lời ngắn gọn khoảng 100 từ ";
             if (string.IsNullOrWhiteSpace(request.Message))
                 return BadRequest(new { error = "Message không được để trống" });
 
