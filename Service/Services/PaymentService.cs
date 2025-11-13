@@ -22,7 +22,28 @@ namespace Service.Services
             _mapper = mapper;
             _userRepository = userRepository;
         }
+        public async Task<Result<IEnumerable<RevenueByLocationDTO>>> GetRevenueByLocationAsync()
+        {
+            try
+            {
+                var payments = await _paymentRepository.GetByRentalLocationAsync();
 
+                var grouped = payments
+                    .GroupBy(p => p.RentalOrder.RentalLocation.Name)
+                    .Select(g => new RevenueByLocationDTO
+                    {
+                        RentalLocationName = g.Key,
+                        TotalRevenue = g.Sum(p => p.Amount),
+                        PaymentCount = g.Count()
+                    }).ToList();
+
+                return Result<IEnumerable<RevenueByLocationDTO>>.Success(grouped, "Lấy doanh thu theo điểm thuê thành công.");
+            }
+            catch (System.Exception ex)
+            {
+                return Result<IEnumerable<RevenueByLocationDTO>>.Failure($"Lỗi khi tính doanh thu: {ex.Message}");
+            }
+        }
         public async Task<Result<CreatePaymentDTO>> AddAsync(CreatePaymentDTO createPaymentDTO)
         {
             var dto = _mapper.Map<Payment>(createPaymentDTO);
