@@ -23,6 +23,7 @@ namespace Service.Services
         private readonly ICarRentalLocationRepository _carRentalLocationRepository;
         private readonly IRentalLocationRepository _rentalLocationRepository;
         private readonly IRentalContactRepository _rentalContactRepository;
+        private readonly IPaymentRepository _paymentRepository;
         private readonly IMapper _mapper;
         public RentalOrderService(
             IRentalOrderRepository rentalOrderRepository,
@@ -33,7 +34,8 @@ namespace Service.Services
             IRentalContactRepository rentalContactRepository,
             IMapper mapper,
             ICarRentalLocationRepository carRentalLocationRepository,
-            IRentalLocationRepository rentalLocationRepository)
+            IRentalLocationRepository rentalLocationRepository,
+            IPaymentRepository paymentRepository)
         {
             _rentalOrderRepository = rentalOrderRepository;
             _citizenIdRepository = citizenIdRepository;
@@ -44,6 +46,7 @@ namespace Service.Services
             _mapper = mapper;
             _carRentalLocationRepository = carRentalLocationRepository;
             _rentalLocationRepository = rentalLocationRepository;
+            _paymentRepository = paymentRepository;
         }
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetAllAsync()
         {
@@ -102,6 +105,7 @@ namespace Service.Services
                 ExpectedReturnTime = dto.ExpectedReturnTime,
                 WithDriver = dto.WithDriver,
                 SubTotal = subtotal,
+                Deposit = car.DepositAmount,
                 UserId = user.Id,
                 User = user,
                 CarId = car.Id,
@@ -112,6 +116,17 @@ namespace Service.Services
                 Status = RentalOrderStatus.Pending
             };
             await _rentalOrderRepository.AddAsync(order);
+            var payment = new Payment
+            {
+                PaymentType = PaymentType.Deposit,
+                Amount = car.DepositAmount,
+                PaymentMethod = "Direct",
+                Status = PaymentStatus.Pending,
+                UserId = order.UserId,
+                RentalOrder = order,
+                User = order.User,
+            };
+            await _paymentRepository.AddAsync(payment);
             return Result<CreateRentalOrderDTO>.Success(createRentalOrderDTO, "Tạo Order thành công!");
         }
         public async Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)
@@ -121,7 +136,7 @@ namespace Service.Services
             {
                 return Result<UpdateRentalOrderTotalDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
             }
-            var total = (existingOrder.SubTotal ?? 0) + updateRentalOrderTotalDTO.ExtraFee + updateRentalOrderTotalDTO.DamageFee;
+            var total = (existingOrder.SubTotal ?? 0) + updateRentalOrderTotalDTO.ExtraFee + updateRentalOrderTotalDTO.DamageFee - existingOrder.Deposit;
             existingOrder.Total = total;
             existingOrder.ExtraFee = updateRentalOrderTotalDTO.ExtraFee;
             existingOrder.DamageFee = updateRentalOrderTotalDTO.DamageFee;
@@ -129,6 +144,55 @@ namespace Service.Services
             existingOrder.UpdatedAt = DateTime.Now;
             await _rentalOrderRepository.UpdateAsync(existingOrder);
             return Result<UpdateRentalOrderTotalDTO>.Success(updateRentalOrderTotalDTO, "Cập nhật tổng tiền cho đơn hàng thành công!");
+        }
+        public async Task<Result<bool>> ConfirmPaymentAsync (int orderId)
+        {
+            var order = await _rentalOrderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
+            }
+            if (order.Status != RentalOrderStatus.PaymentPending)
+            {
+                return Result<bool>.Failure("Đơn đặt thuê không ở trạng thái chờ thanh toán. Không thể xác nhận thanh toán.");
+            }
+            var total = order.Total;
+            if (total.HasValue && total.Value < 0)
+            {
+                var refundAmount = -total.Value;
+                var payment = new Payment
+                {
+                    PaymentType = PaymentType.RefundPayment,
+                    Amount = refundAmount,
+                    PaymentMethod = "Direct",
+                    Status = PaymentStatus.Pending,
+                    UserId = order.UserId,
+                    RentalOrderId = order.Id,
+                    User = order.User,
+                };
+                await _paymentRepository.AddAsync(payment);
+            }
+            else if (total.HasValue && total.Value > 0)
+            {
+                var paymentAmount = total.Value;
+                var payment = new Payment
+                {
+                    PaymentType = PaymentType.OrderPayment,
+                    Amount = paymentAmount,
+                    PaymentMethod = "Direct",
+                    Status = PaymentStatus.Pending,
+                    UserId = order.UserId,
+                    RentalOrderId = order.Id,
+                    User = order.User,
+                };
+                await _paymentRepository.AddAsync(payment);
+            }
+            else
+            {
+                order.Status = RentalOrderStatus.Completed;
+            }
+            await _rentalOrderRepository.UpdateAsync(order);
+            return Result<bool>.Success(true, "Xác nhận thanh toán thành công!");
         }
         public async Task<Result<UpdateRentalOrderStatusDTO>> UpdateStatusAsync(UpdateRentalOrderStatusDTO updateRentalOrderStatusDTO)
         {

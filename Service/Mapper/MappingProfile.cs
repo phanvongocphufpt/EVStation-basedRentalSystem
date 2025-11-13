@@ -94,6 +94,7 @@ namespace Service.Mapper
                 .ForMember(dest => dest.ExpectedReturnTime, opt => opt.MapFrom(src => src.ExpectedReturnTime))
                 .ForMember(dest => dest.ActualReturnTime, opt => opt.MapFrom(src => src.ActualReturnTime))
                 .ForMember(dest => dest.SubTotal, opt => opt.MapFrom(src => src.SubTotal))
+                .ForMember(dest => dest.Deposit, opt => opt.MapFrom(src => src.Deposit))
                 .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Total))
                 .ForMember(dest => dest.Discount, opt => opt.MapFrom(src => src.Discount))
                 .ForMember(dest => dest.ExtraFee, opt => opt.MapFrom(src => src.ExtraFee))
@@ -108,8 +109,7 @@ namespace Service.Mapper
                 .ForMember(dest => dest.RentalLocationId, opt => opt.MapFrom(src => src.RentalLocationId))
                 .ForMember(dest => dest.CitizenId, opt => opt.MapFrom(src => src.CitizenId))
                 .ForMember(dest => dest.DriverLicenseId, opt => opt.MapFrom(src => src.DriverLicenseId))
-                .ForMember(dest => dest.RentalContactId, opt => opt.MapFrom(src => src.RentalContactId))
-                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId));
+                .ForMember(dest => dest.RentalContactId, opt => opt.MapFrom(src => src.RentalContactId));
             CreateMap<CreateRentalOrderDTO, RentalOrder>();
             //Rental Contact Mappings
             CreateMap<RentalContact, RentalContactDTO>()

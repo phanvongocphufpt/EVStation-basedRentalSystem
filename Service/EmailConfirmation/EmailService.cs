@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Repository.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,6 @@ namespace Service.EmailConfirmation
 
         public async Task SendConfirmationEmail(string email, string token)
         {
-
             if (string.IsNullOrWhiteSpace(email) || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
             {
                 throw new ArgumentException("Địa chỉ email không hợp lệ.", nameof(email));
@@ -113,6 +113,61 @@ namespace Service.EmailConfirmation
             {
                 Console.WriteLine($"Lỗi khi gửi email reset: {ex.Message}");
                 throw;
+            }
+        }
+        public async Task SendRemindEmail(string email, RentalOrder rentalOrder)
+        {
+            if (string.IsNullOrWhiteSpace(email) || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
+            {
+                throw new ArgumentException("Địa chỉ email không hợp lệ.", nameof(email));
+            }
+            // Tạo nội dung email với mã xác nhận (token) thay vì đường link
+            var emailSubject = $"[EVRental] Đơn #{rentalOrder.Id} – Cập nhật GPLX & CCCD thành công!";
+            var emailBody = $@"
+<p>Kính gửi quý khách,</p>
+
+<p>Thông tin giấy phép lái xe (GPLX) và căn cước công dân (CCCD) của bạn đã được cập nhật thành công cho đơn hàng:</p>
+<p><br/></p>
+    <p>Mã đơn: <strong>#{rentalOrder.Id}</strong></p>
+    <p>Xe: {rentalOrder.Car.Name}</p>
+    <p>Model: {rentalOrder.Car.Model}</p>
+    <p>Thời gian thuê: {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} → {rentalOrder.ExpectedReturnTime:dd/MM/yyyy HH:mm}</p>
+<p><br/></p>
+<p>Hẹn gặp quý khách vào ngày {rentalOrder.PickupTime:dd/MM/yyyy HH:mm}.</p>
+<p>Khi đến, quý khách vui lòng mang theo GPLX, CCCD vật lý để chúng tôi xác minh. </p>
+<p>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc.</p>
+
+<p>Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email.</p>
+<p>Cảm ơn bạn đã sử dụng dịch vụ EVRental!</p>
+<p><br/></p>
+Trân trọng,
+Đội ngũ EVRental!
+";
+
+            using var smtpClient = new SmtpClient(_smtpSettings.Server)
+            {
+                Port = _smtpSettings.Port,
+                Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password),
+                EnableSsl = true,
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username),
+                Subject = emailSubject,
+                Body = emailBody,
+                IsBodyHtml = true,
+            };
+
+            mailMessage.To.Add(email);
+
+            try
+            {
+                await smtpClient.SendMailAsync(mailMessage);
+            }
+            catch (SmtpException ex)
+            {
+                Console.WriteLine($"Lỗi khi gửi email: {ex.Message}");
             }
         }
     }

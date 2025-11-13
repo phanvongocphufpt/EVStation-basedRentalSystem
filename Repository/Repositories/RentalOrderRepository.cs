@@ -30,6 +30,7 @@ namespace Repository.Repositories
                 .Include(ro => ro.Car)
                 .Include(ro => ro.RentalContact)
                 .Include(ro => ro.RentalLocation)
+                .Include(ro => ro.Payments)
                 .FirstOrDefaultAsync();
         }
         public async Task<IEnumerable<RentalOrder>> GetByUserIdAsync(int id)

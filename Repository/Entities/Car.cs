@@ -23,6 +23,7 @@ namespace Repository.Entities
         public double RentPricePerHour { get; set; }
         public double RentPricePerDayWithDriver { get; set; }
         public double RentPricePerHourWithDriver { get; set; }
+        public double DepositAmount { get; set; }
         public string ImageUrl { get; set; }
         public string ImageUrl2 { get; set; }
         public string ImageUrl3 { get; set; }
@@ -30,7 +31,6 @@ namespace Repository.Entities
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }
-
         public bool IsDeleted { get; set; } = false;
         public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
         public ICollection<RentalOrder> RentalOrders { get; set; }

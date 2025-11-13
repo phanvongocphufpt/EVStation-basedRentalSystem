@@ -54,6 +54,7 @@ namespace Repository.Context
                         RentPricePerHour = 45000,
                         RentPricePerDayWithDriver = 1400000,
                         RentPricePerHourWithDriver = 60000,
+                        DepositAmount = 5000000,
                         ImageUrl = "https://example.com/tesla_model_3.jpg",
                         ImageUrl2 = "https://example.com/tesla_model_3.jpg",
                         ImageUrl3 = "https://example.com/tesla_model_3.jpg",
@@ -77,6 +78,7 @@ namespace Repository.Context
                         RentPricePerHour = 35000,
                         RentPricePerDayWithDriver = 1200000,
                         RentPricePerHourWithDriver = 50000,
+                        DepositAmount = 4000000,
                         ImageUrl = "https://example.com/nissan_leaf.jpg",
                         ImageUrl2 = "https://example.com/nissan_leaf.jpg",
                         ImageUrl3 = "https://example.com/nissan_leaf.jpg",
@@ -100,9 +102,34 @@ namespace Repository.Context
                         RentPricePerHour = 40000,
                         RentPricePerDayWithDriver = 1300000,
                         RentPricePerHourWithDriver = 55000,
+                        DepositAmount = 4500000,
                         ImageUrl = "https://example.com/chevrolet_bolt_ev.jpg",
                         ImageUrl2 = "https://example.com/chevrolet_bolt_ev.jpg",
                         ImageUrl3 = "https://example.com/chevrolet_bolt_ev.jpg",
+                        Status = 1,
+                        CreatedAt = new DateTime(2025, 10, 11),
+                        UpdatedAt = null,
+                        IsActive = true,
+                        IsDeleted = false
+                    },
+                    new Car
+                    {
+                        Id = 4,
+                        Model = "BMW i3",
+                        Name = "i3",
+                        Seats = 4,
+                        SizeType = "Hatchback",
+                        TrunkCapacity = 260,
+                        BatteryType = "Lithium-Ion",
+                        BatteryDuration = 153,
+                        RentPricePerDay = 1100000,
+                        RentPricePerHour = 50000,
+                        RentPricePerDayWithDriver = 1500000,
+                        RentPricePerHourWithDriver = 65000,
+                        DepositAmount = 5500000,
+                        ImageUrl = "https://example.com/bmw_i3.jpg",
+                        ImageUrl2 = "https://example.com/bmw_i3.jpg",
+                        ImageUrl3 = "https://example.com/bmw_i3.jpg",
                         Status = 1,
                         CreatedAt = new DateTime(2025, 10, 11),
                         UpdatedAt = null,
@@ -118,16 +145,6 @@ namespace Repository.Context
                 entity.HasOne(e => e.Order)
                     .WithMany()
                     .HasForeignKey(e => e.OrderId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.Customer)
-                    .WithMany(e => e.CarDeliveryHistories)
-                    .HasForeignKey(e => e.CustomerId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.Staff)
-                    .WithMany()
-                    .HasForeignKey(e => e.StaffId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Car)
@@ -155,7 +172,71 @@ namespace Repository.Context
                         CarId = 1,
                         LocationId = 1,
                         Quantity = 5
-                    });
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 2,
+                        CarId = 2,
+                        LocationId = 1,
+                        Quantity = 3
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 3,
+                        CarId = 3,
+                        LocationId = 2,
+                        Quantity = 4
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 4,
+                        CarId = 4,
+                        LocationId = 3,
+                        Quantity = 2
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 5,
+                        CarId = 1,
+                        LocationId = 2,
+                        Quantity = 2
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 6,
+                        CarId = 2,
+                        LocationId = 3,
+                        Quantity = 3
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 7,
+                        CarId = 3,
+                        LocationId = 1,
+                        Quantity = 1
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 8,
+                        CarId = 4,
+                        LocationId = 2,
+                        Quantity = 2
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 9,
+                        CarId = 1,
+                        LocationId = 3,
+                        Quantity = 4
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 10,
+                        CarId = 2,
+                        LocationId = 2,
+                        Quantity = 2
+                    }
+                    );
             });
 
             // Configure CarReturnHistory
@@ -164,16 +245,6 @@ namespace Repository.Context
                 entity.HasOne(e => e.Order)
                     .WithMany()
                     .HasForeignKey(e => e.OrderId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.Customer)
-                    .WithMany()
-                    .HasForeignKey(e => e.CustomerId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.Staff)
-                    .WithMany()
-                    .HasForeignKey(e => e.StaffId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Car)
@@ -221,8 +292,8 @@ namespace Repository.Context
                         .HasForeignKey(e => e.UserId)
                         .OnDelete(DeleteBehavior.Cascade);
                     entity.HasOne(e => e.RentalOrder)
-                        .WithOne(e => e.Payment)
-                        .HasForeignKey<Payment>(e => e.RentalOrderId)
+                        .WithMany(e => e.Payments)
+                        .HasForeignKey(e => e.RentalOrderId)
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -275,7 +346,19 @@ namespace Repository.Context
                             UpdatedAt = null,
                             IsActive = true,
                             IsDeleted = false
-                        });
+                        },
+                        new RentalLocation
+                        {
+                            Id = 3,
+                            Name = "Suburban Rental Location",
+                            Address = "789 Le Van Viet St, Ho Chi Minh City",
+                            Coordinates = "10.8500,106.7500",
+                            CreatedAt = new DateTime(2025, 10, 11),
+                            UpdatedAt = null,
+                            IsActive = true,
+                            IsDeleted = false
+                        }
+                        );
                 });
 
                 // Configure RentalOrder
@@ -296,9 +379,9 @@ namespace Repository.Context
                         .HasForeignKey<RentalOrder>(e => e.RentalContactId)
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    entity.HasOne(e => e.Payment)
+                    entity.HasMany(e => e.Payments)
                         .WithOne(e => e.RentalOrder)
-                        .HasForeignKey<RentalOrder>(e => e.PaymentId)
+                        .HasForeignKey(e => e.RentalOrderId)
                         .OnDelete(DeleteBehavior.Cascade);
 
                     entity.HasOne(e => e.RentalLocation)
@@ -340,12 +423,6 @@ namespace Repository.Context
                         .HasForeignKey(e => e.UserId)
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    entity.HasMany(e => e.CarDeliveryHistories)
-                        .WithOne(e => e.Customer)
-                        .HasForeignKey(e => e.CustomerId)
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    // Note: Ignored ICollection<CarRentalLocation> as no corresponding FK in CarRentalLocation
                     entity.HasData(
                 new User
                 {
