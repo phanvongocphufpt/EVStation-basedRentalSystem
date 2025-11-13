@@ -5,6 +5,7 @@ using Repository.IRepositories;
 using Repository.Repositories;
 using Service.Common;
 using Service.DTOs;
+using Service.EmailConfirmation;
 using Service.IServices;
 using System;
 using System.Collections.Generic;
@@ -18,12 +19,14 @@ namespace Service.Services
     {
         private readonly IDriverLicenseRepository _driverLicenseRepository;
         private readonly IRentalOrderRepository _rentalOrderRepository;
+        private readonly EmailService _emailService;
         private readonly IMapper _mapper;
-        public DriverLicenseService(IDriverLicenseRepository driverLicenseRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository)
+        public DriverLicenseService(IDriverLicenseRepository driverLicenseRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository, EmailService emailService)
         {
             _driverLicenseRepository = driverLicenseRepository;
             _mapper = mapper;
             _rentalOrderRepository = rentalOrderRepository;
+            _emailService = emailService;
         }
         public async Task<Result<IEnumerable<DriverLicenseDTO>>> GetAllAsync()
         {
@@ -75,6 +78,10 @@ namespace Service.Services
                 RentalOrder = order
             };
             await _driverLicenseRepository.AddAsync(driverLicense);
+            if (order.CitizenId.HasValue)
+            {
+                await _emailService.SendRemindEmail(order.User.Email, order);
+            }
             return Result<CreateDriverLicenseDTO>.Success(createDriverLicenseDTO, "Tạo giấy phép lái xe thành công.");
         }
         public async Task<Result<UpdateDriverLicenseStatusDTO>> UpdateStatusAsync(UpdateDriverLicenseStatusDTO driverLicenseDTO)

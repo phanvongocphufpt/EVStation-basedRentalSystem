@@ -4,6 +4,7 @@ using Repository.Entities.Enum;
 using Repository.IRepositories;
 using Service.Common;
 using Service.DTOs;
+using Service.EmailConfirmation;
 using Service.IServices;
 using System;
 using System.Collections.Generic;
@@ -17,12 +18,14 @@ namespace Service.Services
     {
         private readonly ICitizenIdRepository _citizenIdRepository;
         private readonly IRentalOrderRepository _rentalOrderRepository;
+        private readonly EmailService _emailService;
         private readonly IMapper _mapper;
-        public CitizenIdService(ICitizenIdRepository citizenIdRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository)
+        public CitizenIdService(ICitizenIdRepository citizenIdRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository, EmailService emailService)
         {
             _citizenIdRepository = citizenIdRepository;
             _mapper = mapper;
             _rentalOrderRepository = rentalOrderRepository; 
+            _emailService = emailService;
         }
         public async Task<Result<IEnumerable<CitizenIdDTO>>> GetAllCitizenIdsAsync()
         {
@@ -75,7 +78,11 @@ namespace Service.Services
                 RentalOrder = order
             };
             await _citizenIdRepository.AddCitizenIdAsync(citizenId);
-            return Result<CreateCitizenIdDTO>.Success(createCitizenIdDTO, "Tạo chứng minh nhân dân thành công.");
+            if (order.DriverLicenseId.HasValue)
+            {
+                await _emailService.SendRemindEmail(order.User.Email, order);
+            }
+            return Result<CreateCitizenIdDTO>.Success(createCitizenIdDTO, "Tạo chứng minh nhân dân thành công."); 
         }
         public async Task<Result<UpdateCitizenIdStatusDTO>> UpdateCitizenIdStatusAsync(UpdateCitizenIdStatusDTO updateCitizenIdStatusDTO)
         {

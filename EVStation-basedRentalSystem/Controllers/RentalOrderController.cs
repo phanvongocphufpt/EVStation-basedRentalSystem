@@ -81,5 +81,16 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
+        [HttpPut("ConfirmPayment")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> ConfirmPayment(int orderId)
+        {
+            var result = await _rentalOrderService.ConfirmPaymentAsync(orderId);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

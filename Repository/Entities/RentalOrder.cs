@@ -18,6 +18,7 @@ namespace Repository.Entities
         public DateTime ExpectedReturnTime { get; set; }
         public DateTime? ActualReturnTime { get; set; }
         public double? SubTotal { get; set; }
+        public double? Deposit { get; set; }
         public double? Total { get; set; }
         public int? Discount { get; set; }
         public double? ExtraFee { get; set; }
@@ -39,7 +40,6 @@ namespace Repository.Entities
         public CitizenId? CitizenIdNavigation { get; set; }
         public int? DriverLicenseId { get; set; }
         public DriverLicense? DriverLicense { get; set; }
-        public int? PaymentId { get; set; }
-        public Payment? Payment { get; set; }
+        public ICollection<Payment> Payments { get; set; }
     }
 }

@@ -95,10 +95,7 @@ namespace Service.Services
                     BatteryLevelStart = dto.BatteryLevelStart,
                     VehicleConditionStart = dto.VehicleConditionStart,
                     OrderId = order.Id,
-                    CustomerId = order.UserId,
-                    StaffId = 0, // Có thể cập nhật theo user đăng nhập
                     CarId = order.CarId,
-                    LocationId = order.RentalLocationId
                 };
 
                 await _repo.AddAsync(history);

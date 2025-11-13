@@ -16,14 +16,8 @@ namespace Repository.Entities
         public int BatteryLevelStart { get; set; }
         public string VehicleConditionStart { get; set; }
         public int OrderId { get; set; }
-        public int CustomerId { get; set; }
-        public int StaffId { get; set; }
         public int CarId { get; set; }
         public RentalOrder Order { get; set; }
-        public User Customer { get; set; }
-        public User Staff { get; set; }
         public Car Car { get; set; }
-        public int LocationId { get; set; }
-        public RentalLocation Location { get; set; }
     }
 }

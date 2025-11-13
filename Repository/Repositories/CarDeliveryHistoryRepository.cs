@@ -19,9 +19,7 @@ namespace Repository.Repositories
         {
             return await _context.CarDeliveryHistories
                 .Include(x => x.Car)
-                .Include(x => x.Customer)
-                .Include(x => x.Staff)
-                .Include(x => x.Location)
+                .Include(x => x.Order)
                 .OrderByDescending(x => x.DeliveryDate)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
@@ -37,9 +35,7 @@ namespace Repository.Repositories
         {
             return await _context.CarDeliveryHistories
                 .Include(x => x.Car)
-                .Include(x => x.Customer)
-                .Include(x => x.Staff)
-                .Include(x => x.Location)
+                .Include(x => x.Order)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 

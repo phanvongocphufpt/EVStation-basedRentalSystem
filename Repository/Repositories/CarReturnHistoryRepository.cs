@@ -24,8 +24,6 @@ namespace Repository.Repositories
         {
             return await _context.CarReturnHistories
                 .Include(x => x.Order)
-                .Include(x => x.Customer)
-                .Include(x => x.Staff)
                 .Include(x => x.Car)
                 .ToListAsync();
         }
@@ -34,8 +32,6 @@ namespace Repository.Repositories
         {
             return await _context.CarReturnHistories
                 .Include(x => x.Order)
-                .Include(x => x.Customer)
-                .Include(x => x.Staff)
                 .Include(x => x.Car)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
