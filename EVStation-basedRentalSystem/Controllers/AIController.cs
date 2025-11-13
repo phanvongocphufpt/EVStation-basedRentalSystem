@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repository.Context;
-using Repository.Entities;
 using Service.IServices;
+using Service.DTOs;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -21,6 +21,9 @@ namespace EVStation_basedRentalSystem.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Phân tích dữ liệu tổng thể: xe, phản hồi, đơn hàng
+        /// </summary>
         [HttpGet("analyze")]
         public async Task<IActionResult> AnalyzeData()
         {
@@ -45,7 +48,7 @@ namespace EVStation_basedRentalSystem.Controllers
                     .Select(r => new { r.Id, r.WithDriver, r.Status, r.Total })
                     .ToListAsync();
 
-                var prompt = @$"
+                var prompt = $@"
 Bạn là chuyên gia phân tích dữ liệu thuê xe.
 Dưới đây là thông tin các xe, đơn hàng và phản hồi khách hàng:
 
@@ -55,13 +58,10 @@ Phản hồi khách hàng: {System.Text.Json.JsonSerializer.Serialize(feedbacks)
 
 Hãy phân tích và đưa ra gợi ý nâng cấp dịch vụ hoặc cải thiện xe.
 Trả lời ngắn, tối đa 1000 ký tự.
-Dễ nhìn
-- Không dùng dấu *, ** hay markdown.
-- Dùng các dòng tách nhau bằng xuống dòng \n.
-- Mỗi ý là 1 câu dễ đọc, thân thiện với người xem.
+Dễ nhìn, mỗi ý 1 dòng, không dùng *, ** hay markdown.
 ";
 
-                var aiResponse = await _aiService.GenerateResponseAsync(prompt);
+                var aiResponse = await _aiService.GenerateResponseAsync(prompt, shortAnswer: true);
 
                 return Ok(new { response = aiResponse });
             }
@@ -72,56 +72,59 @@ Dễ nhìn
             }
         }
 
+        /// <summary>
+        /// Phân tích tỷ lệ sử dụng xe và giờ cao điểm
+        /// </summary>
         [HttpGet("car-usage")]
         public async Task<IActionResult> AnalyzeCarUsage()
         {
             try
             {
-                // Lấy dữ liệu Car, CarDeliveryHistory và RentalOrder
+                // Lấy danh sách xe và các đơn thuê liên quan
                 var cars = await _dbContext.Cars
                     .Where(c => !c.IsDeleted && c.IsActive)
                     .Select(c => new { c.Id, c.Name })
                     .ToListAsync();
 
-                var deliveries = await _dbContext.CarDeliveryHistories
-                    .Include(d => d.Order)
-                    .ToListAsync();
-
                 var rentalOrders = await _dbContext.RentalOrders
-                    .Where(r => r.Status.ToString() == "Completed" || r.Status.ToString() == "Ongoing")
+                    .Where(r => r.Status == Repository.Entities.Enum.RentalOrderStatus.Completed
+                             || r.Status == Repository.Entities.Enum.RentalOrderStatus.Renting)
                     .ToListAsync();
 
-                // Tính tỷ lệ sử dụng xe: số đơn trên tổng xe
+                if (!cars.Any() || !rentalOrders.Any())
+                    return Ok(new { response = "Chưa có dữ liệu thuê xe để phân tích." });
+
+                // Tính tỷ lệ sử dụng xe
                 var usageData = cars.Select(c =>
                 {
                     var count = rentalOrders.Count(r => r.CarId == c.Id);
-                    var ratio = cars.Count > 0 ? (double)count / cars.Count : 0;
-                    return new { c.Name, Rentals = count, UsageRatio = ratio };
-                }).ToList();
+                    var ratio = cars.Count > 0 ? (double)count / rentalOrders.Count : 0;
+                    return new { c.Name, Rentals = count, UsageRatio = Math.Round(ratio * 100, 2) + "%" };
+                }).OrderByDescending(x => x.Rentals).ToList();
 
-                // Lấy giờ cao điểm dựa trên PickupTime hoặc DeliveryDate
+                // Tính giờ cao điểm theo PickupTime
                 var peakHours = rentalOrders
-                    .Select(r => r.PickupTime.Hour)
-                    .GroupBy(h => h)
+                    .GroupBy(r => r.PickupTime.Hour)
                     .Select(g => new { Hour = g.Key, Count = g.Count() })
                     .OrderByDescending(x => x.Count)
-                    .Take(3) // 3 giờ cao điểm nhiều nhất
+                    .Take(3)
                     .ToList();
 
-                // Tạo prompt gửi AI
-                var prompt = @$"
+                var prompt = $@"
 Bạn là chuyên gia phân tích dữ liệu thuê xe.
-Dựa trên dữ liệu dưới đây:
+Dữ liệu hiện tại:
 
-Danh sách xe và số lần thuê: {System.Text.Json.JsonSerializer.Serialize(usageData)}
-Giờ cao điểm thuê xe: {System.Text.Json.JsonSerializer.Serialize(peakHours)}
+Tỷ lệ sử dụng xe:
+{System.Text.Json.JsonSerializer.Serialize(usageData)}
 
-Hãy phân tích tỷ lệ sử dụng xe và xác định giờ cao điểm.
-Trả lời ngắn cỡ 1000 từ, dễ đọc, mỗi ý 1 dòng.
+Giờ cao điểm thuê xe:
+{System.Text.Json.JsonSerializer.Serialize(peakHours)}
+
+Hãy viết phân tích rõ ràng, dễ đọc, mỗi ý 1 dòng, tối đa 1000 ký tự.
 Không dùng *, ** hay markdown.
 ";
 
-                var aiResponse = await _aiService.GenerateResponseAsync(prompt);
+                var aiResponse = await _aiService.GenerateResponseAsync(prompt, shortAnswer: true);
 
                 return Ok(new { response = aiResponse });
             }
@@ -132,5 +135,28 @@ Không dùng *, ** hay markdown.
             }
         }
 
+        /// <summary>
+        /// Chat với AI
+        /// </summary>
+        [HttpPost("chat")]
+        public async Task<IActionResult> Chat([FromBody] Service.DTOs.ChatRequest request)
+        {
+
+            var Message = $@"
+Bạn là ChatBot cho  EV rental. chỉ trả lời ngắn gọn khoảng 100 từ ";
+            if (string.IsNullOrWhiteSpace(request.Message))
+                return BadRequest(new { error = "Message không được để trống" });
+
+            try
+            {
+                var reply = await _aiService.GenerateResponseAsync(request.Message, shortAnswer: request.ShortAnswer);
+                return Ok(new Service.DTOs.ChatResponse { Reply = reply });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in chat endpoint");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
     }
 }
