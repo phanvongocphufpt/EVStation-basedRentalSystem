@@ -93,6 +93,16 @@ namespace Service.Services
             {
                 return Result<UpdateCitizenIdStatusDTO>.Failure("Chứng minh nhân dân không tồn tại! Kiểm tra lại Id.");
             }
+            var order = await _rentalOrderRepository.GetByIdAsync(citizenId.RentalOrderId);
+            if (order == null)
+            {
+                return Result<UpdateCitizenIdStatusDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của order.");
+            }
+            if (order.DriverLicenseId.HasValue && order.DriverLicense.Status == DocumentStatus.Approved)
+            {
+                order.Status = RentalOrderStatus.DepositPending;
+                await _rentalOrderRepository.UpdateAsync(order);
+            }
             citizenId.Status = updateCitizenIdStatusDTO.Status;
             citizenId.UpdatedAt = DateTime.Now;
             await _citizenIdRepository.UpdateCitizenIdAsync(citizenId);

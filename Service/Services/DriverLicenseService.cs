@@ -93,6 +93,16 @@ namespace Service.Services
             {
                 return Result<UpdateDriverLicenseStatusDTO>.Failure("Giấy phép lái xe không tồn tại! Kiểm tra lại Id.");
             }
+            var order = await _rentalOrderRepository.GetByIdAsync(existingDriverLicense.RentalOrderId);
+            if (order == null)
+            {
+                return Result<UpdateDriverLicenseStatusDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của order.");
+            }
+            if (order.DriverLicenseId.HasValue && order.DriverLicense.Status == DocumentStatus.Approved)
+            {
+                order.Status = RentalOrderStatus.DepositPending;
+                await _rentalOrderRepository.UpdateAsync(order);
+            }
             existingDriverLicense.Status = driverLicenseDTO.Status;
             existingDriverLicense.UpdatedAt = DateTime.Now;
             await _driverLicenseRepository.UpdateAsync(existingDriverLicense);
