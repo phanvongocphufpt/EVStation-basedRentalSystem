@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Service.DTOs;
 using Service.IServices;
-using Service.Services;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -12,6 +11,7 @@ namespace EVStation_basedRentalSystem.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
+
         public PaymentController(IPaymentService paymentService)
         {
             _paymentService = paymentService;
@@ -21,9 +21,10 @@ namespace EVStation_basedRentalSystem.Controllers
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAllPayment()
         {
-            var Payments = await _paymentService.GetAllAsync();
-            return Ok(Payments);
+            var payments = await _paymentService.GetAllAsync();
+            return Ok(payments);
         }
+
         [HttpGet("byRentalLocation")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetRevenueByLocation()
@@ -34,12 +35,13 @@ namespace EVStation_basedRentalSystem.Controllers
 
             return Ok(result.Data);
         }
+
         [HttpGet("GetAllByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
-        public async Task<IActionResult> GetAllCustomerPayment(int UserId)
+        public async Task<IActionResult> GetAllCustomerPayment(int userId)
         {
-            var Payments = await _paymentService.GetAllByUserIdAsync(UserId);
-            return Ok(Payments);
+            var payments = await _paymentService.GetAllByUserIdAsync(userId);
+            return Ok(payments);
         }
 
         [HttpGet("GetByPaymentId")]
@@ -47,21 +49,38 @@ namespace EVStation_basedRentalSystem.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var payment = await _paymentService.GetByIdAsync(id);
-            if (payment == null)
-                return NotFound();
+            if (!payment.IsSuccess)
+                return NotFound(payment.Message);
 
-            return Ok(payment);
+            return Ok(payment.Data);
         }
 
         [HttpPost("Create")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> Create([FromBody] CreatePaymentDTO createPaymentDTO)
+        public async Task<IActionResult> Create([FromBody] CreatePaymentWithOrderDTO createPaymentDTO)
         {
             if (createPaymentDTO == null)
                 return BadRequest("Invalid data.");
 
-            var result = await _paymentService.AddAsync(createPaymentDTO);
-            return Ok(result);
+            var result = await _paymentService.CreatePaymentFromOrderAsync(createPaymentDTO);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
+        }
+
+        [HttpPost("CreateFromOrder")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> CreateFromOrder([FromBody] CreatePaymentWithOrderDTO dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid data.");
+
+            var result = await _paymentService.CreatePaymentFromOrderAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
         }
 
         [HttpPut("UpdatePaymentStatus")]
@@ -72,7 +91,10 @@ namespace EVStation_basedRentalSystem.Controllers
                 return BadRequest("Invalid data.");
 
             var result = await _paymentService.UpdatePaymentStatusAsync(updatePaymentStatusDTO);
-            return Ok(result);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
         }
     }
 }

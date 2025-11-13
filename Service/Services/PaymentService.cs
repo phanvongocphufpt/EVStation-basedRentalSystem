@@ -1,104 +1,151 @@
-﻿using AutoMapper;
-using Repository.Entities;
-using Repository.IRepositories;
-using Service.Common;
-using Service.DTOs;
-using Service.IServices;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿    using AutoMapper;
+    using Repository.Entities;
+    using Repository.IRepositories;
+    using Service.Common;
+    using Service.DTOs;
+    using Service.IServices;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.EntityFrameworkCore;
 
-namespace Service.Services
-{
-    public class PaymentService : IPaymentService
+    namespace Service.Services
     {
-        private readonly IPaymentRepository _paymentRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
-        public PaymentService(IPaymentRepository paymentRepository, IMapper mapper, IUserRepository userRepository)
+        public class PaymentService : IPaymentService
         {
-            _paymentRepository = paymentRepository;
-            _mapper = mapper;
-            _userRepository = userRepository;
-        }
+            private readonly IPaymentRepository _paymentRepository;
+            private readonly IUserRepository _userRepository;
+            private readonly IRentalOrderRepository _rentalOrderRepository;
+            private readonly IMapper _mapper;
+
+            public PaymentService(
+                IPaymentRepository paymentRepository,
+                IMapper mapper,
+                IUserRepository userRepository,
+                IRentalOrderRepository rentalOrderRepository)
+            {
+                _paymentRepository = paymentRepository;
+                _mapper = mapper;
+                _userRepository = userRepository;
+                _rentalOrderRepository = rentalOrderRepository;
+            }
+
         public async Task<Result<IEnumerable<RevenueByLocationDTO>>> GetRevenueByLocationAsync()
         {
             try
             {
+                // Lấy payments kèm RentalOrder và RentalLocation
                 var payments = await _paymentRepository.GetByRentalLocationAsync();
 
-                var grouped = payments
+                // Lọc các payment có RentalOrder và RentalLocation không null
+                var validPayments = payments
+                    .Where(p => p.RentalOrder != null && p.RentalOrder.RentalLocation != null)
+                    .ToList();
+
+                var grouped = validPayments
                     .GroupBy(p => p.RentalOrder.RentalLocation.Name)
                     .Select(g => new RevenueByLocationDTO
                     {
                         RentalLocationName = g.Key,
                         TotalRevenue = g.Sum(p => p.Amount),
                         PaymentCount = g.Count()
-                    }).ToList();
+                    })
+                    .ToList();
 
-                return Result<IEnumerable<RevenueByLocationDTO>>.Success(grouped, "Lấy doanh thu theo điểm thuê thành công.");
+                return Result<IEnumerable<RevenueByLocationDTO>>.Success(grouped,
+                    "Lấy doanh thu theo điểm thuê thành công.");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return Result<IEnumerable<RevenueByLocationDTO>>.Failure($"Lỗi khi tính doanh thu: {ex.Message}");
+                return Result<IEnumerable<RevenueByLocationDTO>>.Failure(
+                    $"Lỗi khi tính doanh thu: {ex.Message}");
             }
         }
-        public async Task<Result<CreatePaymentDTO>> AddAsync(CreatePaymentDTO createPaymentDTO)
+
+        // Tạo Payment từ Order
+        public async Task<Result<PaymentWithLocationDTO>> CreatePaymentFromOrderAsync(CreatePaymentWithOrderDTO dto)
         {
-            var dto = _mapper.Map<Payment>(createPaymentDTO);
-            var user = await _userRepository.GetByIdAsync(dto.UserId.Value);
+            // Lấy order theo Id, đã bao gồm RentalLocation, Car, User
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.OrderId);
+            if (order == null)
+                return Result<PaymentWithLocationDTO>.Failure("Order không tồn tại");
+
+            // Lấy user theo Id
+            var user = await _userRepository.GetByIdAsync(dto.UserId);
             if (user == null)
-            {
-                return Result<CreatePaymentDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id của người dùng.");
-            }
+                return Result<PaymentWithLocationDTO>.Failure("Người dùng không tồn tại");
+
+            // Tạo payment mới
             var payment = new Payment
             {
                 PaymentDate = dto.PaymentDate,
-                Amount = dto.Amount,
-                PaymentMethod = dto.PaymentMethod,
+                Amount = dto.Amount ?? order.Payments.Count,
+                PaymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "Unknown" : dto.PaymentMethod, // đảm bảo không null
                 Status = dto.Status,
                 UserId = user.Id,
-                RentalOrderId = dto.RentalOrderId,
-                User = user
+                RentalOrderId = order.Id
             };
+
             await _paymentRepository.AddAsync(payment);
-            return Result<CreatePaymentDTO>.Success(createPaymentDTO, "Tạo thanh toán thành công.");
-        }
 
-        public async Task<Result<IEnumerable<PaymentDTO>>> GetAllAsync()
-        {
-            var payments = await _paymentRepository.GetAllAsync();
-            var dtos = _mapper.Map<IEnumerable<PaymentDTO>>(payments);
-            return Result<IEnumerable<PaymentDTO>>.Success(dtos);
-        }
-
-        public async Task<Result<IEnumerable<PaymentDTO>>> GetAllByUserIdAsync(int id)
-        {
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
+            // Chuyển sang DTO trả về
+            var resultDto = new PaymentWithLocationDTO
             {
-                return Result<IEnumerable<PaymentDTO>>.Failure("Người dùng không tồn tại! Kiểm tra lại Id.");
-            }
-            var payments = await _paymentRepository.GetAllByUserIdAsync(id);
-            var dtos = _mapper.Map<IEnumerable<PaymentDTO>>(payments);
-            return Result<IEnumerable<PaymentDTO>>.Success(dtos);
+                PaymentId = payment.Id,
+                PaymentDate = payment.PaymentDate ?? DateTime.Now,
+                Amount = payment.Amount,
+                Status = payment.Status,
+                PaymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "Unknown" : dto.PaymentMethod, // đảm bảo không null
+                UserId = user.Id,
+                OrderId = order.Id,
+                OrderDate = order.OrderDate,
+                RentalLocationName = order.RentalLocation?.Name ?? ""
+            };
+
+            return Result<PaymentWithLocationDTO>.Success(resultDto, "Tạo thanh toán thành công");
         }
 
-        public async Task<Result<PaymentDTO>> GetByIdAsync(int id)
-        {
-            var payment = await _paymentRepository.GetByIdAsync(id);
-            if (payment == null)
+
+        
+            public async Task<Result<IEnumerable<PaymentDTO>>> GetAllAsync()
             {
-                return Result<PaymentDTO>.Failure("Thanh toán không tồn tại! Kiểm tra lại Id.");
+                var payments = await _paymentRepository.GetAllAsync();
+                var dtos = _mapper.Map<IEnumerable<PaymentDTO>>(payments);
+                return Result<IEnumerable<PaymentDTO>>.Success(dtos);
             }
-            var dto = _mapper.Map<PaymentDTO>(payment);
-            return Result<PaymentDTO>.Success(dto);
-        }
 
-        public Task<Result<UpdatePaymentStatusDTO>> UpdatePaymentStatusAsync(UpdatePaymentStatusDTO updatePaymentDTO)
-        {
-            throw new NotImplementedException();
+            public async Task<Result<IEnumerable<PaymentDTO>>> GetAllByUserIdAsync(int id)
+            {
+                var user = await _userRepository.GetByIdAsync(id);
+                if (user == null)
+                    return Result<IEnumerable<PaymentDTO>>.Failure("Người dùng không tồn tại! Kiểm tra lại Id.");
+
+                var payments = await _paymentRepository.GetAllByUserIdAsync(id);
+                var dtos = _mapper.Map<IEnumerable<PaymentDTO>>(payments);
+                return Result<IEnumerable<PaymentDTO>>.Success(dtos);
+            }
+
+            public async Task<Result<PaymentDTO>> GetByIdAsync(int id)
+            {
+                var payment = await _paymentRepository.GetByIdAsync(id);
+                if (payment == null)
+                    return Result<PaymentDTO>.Failure("Thanh toán không tồn tại! Kiểm tra lại Id.");
+
+                var dto = _mapper.Map<PaymentDTO>(payment);
+                return Result<PaymentDTO>.Success(dto);
+            }
+
+            public async Task<Result<UpdatePaymentStatusDTO>> UpdatePaymentStatusAsync(UpdatePaymentStatusDTO updatePaymentDTO)
+            {
+                var payment = await _paymentRepository.GetByIdAsync(updatePaymentDTO.Id);
+                if (payment == null)
+                    return Result<UpdatePaymentStatusDTO>.Failure("Thanh toán không tồn tại");
+
+                payment.Status = updatePaymentDTO.Status;
+                await _paymentRepository.UpdateAsync(payment);
+
+                return Result<UpdatePaymentStatusDTO>.Success(updatePaymentDTO, "Cập nhật trạng thái thanh toán thành công");
+            }
         }
     }
-}
