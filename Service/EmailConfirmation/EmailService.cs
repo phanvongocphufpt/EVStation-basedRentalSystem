@@ -124,22 +124,21 @@ namespace Service.EmailConfirmation
             // Tạo nội dung email với mã xác nhận (token) thay vì đường link
             var emailSubject = $"[EVRental] Đơn #{rentalOrder.Id} – Cập nhật GPLX & CCCD thành công!";
             var emailBody = $@"
-<p>Kính gửi quý khách,</p>
+<p><b>Kính gửi quý khách,</b></p>
 
 <p>Thông tin giấy phép lái xe (GPLX) và căn cước công dân (CCCD) của bạn đã được cập nhật thành công cho đơn hàng:</p>
 <p><br/></p>
-    <p>Mã đơn: <strong>#{rentalOrder.Id}</strong></p>
-    <p>Xe: {rentalOrder.Car.Name}</p>
-    <p>Model: {rentalOrder.Car.Model}</p>
-    <p>Thời gian thuê: {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} → {rentalOrder.ExpectedReturnTime:dd/MM/yyyy HH:mm}</p>
+    <p><b>Mã đơn:</b> <strong>#{rentalOrder.Id}</strong></p>
+    <p><b>Xe:</b> {rentalOrder.Car.Name}</p>
+    <p><b>Model:</b> {rentalOrder.Car.Model}</p>
+    <p><b>Thời gian thuê:</b> {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} → {rentalOrder.ExpectedReturnTime:dd/MM/yyyy HH:mm}</p>
 <p><br/></p>
 <p>Hẹn gặp quý khách vào ngày {rentalOrder.PickupTime:dd/MM/yyyy HH:mm}.</p>
 <p>Khi đến, quý khách vui lòng mang theo GPLX, CCCD vật lý để chúng tôi xác minh. </p>
-<p>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc.</p>
-
+<p><b>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc là {rentalOrder.Deposit} VNĐ.</b></p>
+<p><br/></p>
 <p>Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email.</p>
 <p>Cảm ơn bạn đã sử dụng dịch vụ EVRental!</p>
-<p><br/></p>
 Trân trọng,
 Đội ngũ EVRental!
 ";
