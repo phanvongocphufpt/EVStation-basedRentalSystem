@@ -115,6 +115,7 @@ namespace Service.Services
                 CreatedAt = DateTime.Now,
                 Status = RentalOrderStatus.Pending
             };
+            await _rentalOrderRepository.AddAsync(order);
             var payment = new Payment
             {
                 PaymentType = PaymentType.Deposit,
@@ -126,7 +127,6 @@ namespace Service.Services
                 User = order.User,
             };
             await _paymentRepository.AddAsync(payment);
-            await _rentalOrderRepository.AddAsync(order);
             return Result<CreateRentalOrderDTO>.Success(createRentalOrderDTO, "Tạo Order thành công!");
         }
         public async Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)

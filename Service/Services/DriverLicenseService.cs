@@ -80,6 +80,8 @@ namespace Service.Services
             await _driverLicenseRepository.AddAsync(driverLicense);
             if (order.CitizenId.HasValue)
             {
+                order.Status = RentalOrderStatus.DocumentsSubmitted;
+                await _rentalOrderRepository.UpdateAsync(order);
                 await _emailService.SendRemindEmail(order.User.Email, order);
             }
             return Result<CreateDriverLicenseDTO>.Success(createDriverLicenseDTO, "Tạo giấy phép lái xe thành công.");
