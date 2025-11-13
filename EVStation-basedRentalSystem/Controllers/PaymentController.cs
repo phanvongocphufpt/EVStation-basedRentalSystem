@@ -55,19 +55,6 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(payment.Data);
         }
 
-        [HttpPost("Create")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> Create([FromBody] CreatePaymentWithOrderDTO createPaymentDTO)
-        {
-            if (createPaymentDTO == null)
-                return BadRequest("Invalid data.");
-
-            var result = await _paymentService.CreatePaymentFromOrderAsync(createPaymentDTO);
-            if (!result.IsSuccess)
-                return BadRequest(result.Message);
-
-            return Ok(result.Data);
-        }
 
         [HttpPost("CreateFromOrder")]
         [Authorize(Roles = "Admin,Staff")]
