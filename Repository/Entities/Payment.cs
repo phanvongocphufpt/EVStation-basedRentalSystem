@@ -15,7 +15,7 @@ namespace Repository.Entities
         public DateTime? PaymentDate { get; set; }
         public PaymentType PaymentType { get; set; }
         public double Amount { get; set; }
-        public string PaymentMethod { get; set; }
+        public string? PaymentMethod { get; set; }
         public string? BillingImageUrl { get; set; }
         public PaymentStatus Status { get; set; }
         public int? UserId { get; set; }
