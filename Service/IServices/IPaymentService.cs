@@ -15,5 +15,6 @@ namespace Service.IServices
         Task<Result<PaymentDTO>> GetByIdAsync(int id);
         Task<Result<CreatePaymentDTO>> AddAsync(CreatePaymentDTO createPaymentDTO);
         Task<Result<UpdatePaymentStatusDTO>> UpdatePaymentStatusAsync(UpdatePaymentStatusDTO updatePaymentDTO);
+        Task<Result<bool>> ConfirmDepositPaymentAsync(int orderId);
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using Repository.Context;
 using Repository.Entities;
+using Repository.Entities.Enum;
 using Repository.IRepositories;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,10 @@ namespace Repository.Repositories
         public async Task<Payment?> GetByIdAsync(int id)
         {
             return await _context.Payments.FindAsync(id);
+        }
+        public async Task<Payment?> GetDepositByOrderIdAsync(int orderId)
+        {
+            return await _context.Payments.Where(p => p.PaymentType == PaymentType.Deposit).FirstOrDefaultAsync(p => p.RentalOrderId == orderId);
         }
         public async Task<IEnumerable<Payment>> GetAllByUserIdAsync(int id)
         {

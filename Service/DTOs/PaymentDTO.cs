@@ -31,4 +31,8 @@ namespace Service.DTOs
         public int Id { get; set; }
         public PaymentStatus Status { get; set; }
     }
+    public class ConfirmDepositPaymentDTO
+    {
+        public int OrderId { get; set; }
+    }
 }

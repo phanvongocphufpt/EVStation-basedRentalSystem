@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Repository.Entities;
+using Repository.Entities.Enum;
 using Repository.IRepositories;
 using Service.Common;
 using Service.DTOs;
@@ -15,12 +16,14 @@ namespace Service.Services
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IRentalOrderRepository _rentalOrderRepository;
         private readonly IMapper _mapper;
-        public PaymentService(IPaymentRepository paymentRepository, IMapper mapper, IUserRepository userRepository)
+        public PaymentService(IPaymentRepository paymentRepository, IMapper mapper, IUserRepository userRepository, IRentalOrderRepository rentalOrderRepository)
         {
             _paymentRepository = paymentRepository;
             _mapper = mapper;
             _userRepository = userRepository;
+            _rentalOrderRepository = rentalOrderRepository;
         }
 
         public async Task<Result<CreatePaymentDTO>> AddAsync(CreatePaymentDTO createPaymentDTO)
@@ -75,9 +78,35 @@ namespace Service.Services
             return Result<PaymentDTO>.Success(dto);
         }
 
-        public Task<Result<UpdatePaymentStatusDTO>> UpdatePaymentStatusAsync(UpdatePaymentStatusDTO updatePaymentDTO)
+        public async Task<Result<bool>> ConfirmDepositPaymentAsync(int orderId)
         {
-            throw new NotImplementedException();
+            var order = await _rentalOrderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                return Result<bool>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
+            }
+            var depositPayment = await _paymentRepository.GetDepositByOrderIdAsync(orderId);
+            if (depositPayment == null)
+            {
+                return Result<bool>.Failure("Thanh toán đặt cọc không tồn tại cho đơn hàng này.");
+            }
+            depositPayment.Status = PaymentStatus.Completed;
+            await _paymentRepository.UpdateAsync(depositPayment);
+            order.Status = RentalOrderStatus.Confirmed;
+            await _rentalOrderRepository.UpdateAsync(order);
+            return Result<bool>.Success(true, "Xác nhận thanh toán đặt cọc thành công.");
+        }
+
+        public async Task<Result<UpdatePaymentStatusDTO>> UpdatePaymentStatusAsync(UpdatePaymentStatusDTO updatePaymentDTO)
+        {
+            var payment = await _paymentRepository.GetByIdAsync(updatePaymentDTO.Id);
+            if (payment == null)
+            {
+                return Result<UpdatePaymentStatusDTO>.Failure("Thanh toán không tồn tại! Kiểm tra lại Id.");
+            }
+            payment.Status = updatePaymentDTO.Status;
+            await _paymentRepository.UpdateAsync(payment);
+            return Result<UpdatePaymentStatusDTO>.Success(updatePaymentDTO, "Cập nhật trạng thái thanh toán thành công.");
         }
     }
 }

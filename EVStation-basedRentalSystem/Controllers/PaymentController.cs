@@ -64,5 +64,12 @@ namespace EVStation_basedRentalSystem.Controllers
             var result = await _paymentService.UpdatePaymentStatusAsync(updatePaymentStatusDTO);
             return Ok(result);
         }
+        [HttpPut("ConfirmDepositPayment")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> ConfirmDepositPayment(int orderId)
+        {
+            var result = await _paymentService.ConfirmDepositPaymentAsync(orderId);
+            return Ok(result);
+        }
     }
 }
