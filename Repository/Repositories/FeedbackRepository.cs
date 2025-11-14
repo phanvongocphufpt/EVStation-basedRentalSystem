@@ -2,7 +2,6 @@
 using Repository.Context;
 using Repository.Entities;
 using Repository.IRepositories;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,21 +20,18 @@ namespace Repository.Repositories
         public async Task<IEnumerable<Feedback>> GetAllAsync()
         {
             return await _context.Feedbacks
+                .Include(f => f.User)
                 .Include(f => f.RentalOrder)
-                .ThenInclude(o => o.Car)
                 .Where(f => !f.IsDeleted)
                 .ToListAsync();
         }
 
-        // 🔍 Tìm feedback theo tên xe
-        public async Task<Feedback?> GetByCarName(string carName)
+        public async Task<Feedback?> GetByIdAsync(int id)
         {
             return await _context.Feedbacks
+                .Include(f => f.User)
                 .Include(f => f.RentalOrder)
-                .ThenInclude(o => o.Car)
-                .Where(f => !f.IsDeleted &&
-                            f.RentalOrder.Car.Name.ToLower().Contains(carName.ToLower()))
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted);
         }
 
         public async Task AddAsync(Feedback feedback)
@@ -52,10 +48,10 @@ namespace Repository.Repositories
 
         public async Task DeleteAsync(int id)
         {
-            var fb = await _context.Feedbacks.FindAsync(id);
-            if (fb != null)
+            var feedback = await _context.Feedbacks.FindAsync(id);
+            if (feedback != null)
             {
-                fb.IsDeleted = true;
+                feedback.IsDeleted = true;
                 await _context.SaveChangesAsync();
             }
         }

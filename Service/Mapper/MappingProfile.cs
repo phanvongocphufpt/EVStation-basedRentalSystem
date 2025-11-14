@@ -111,8 +111,20 @@ namespace Service.Mapper
                 .ForMember(dest => dest.DriverLicenseId, opt => opt.MapFrom(src => src.DriverLicenseId))
                 .ForMember(dest => dest.RentalContactId, opt => opt.MapFrom(src => src.RentalContactId));
             CreateMap<CreateRentalOrderDTO, RentalOrder>();
-            //Rental Contact Mappings
-            CreateMap<RentalContact, RentalContactDTO>()
+            //feedback mappings
+            CreateMap<Feedback, FeedbackDTO>()
+                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.User.FullName));
+
+            // DTO -> Entity
+            CreateMap<CreateFeedbackDTO, Feedback>()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.Now))
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(_ => false));
+
+            CreateMap<UpdateFeedbackDTO, Feedback>()
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now));
+        
+        //Rental Contact Mappings
+        CreateMap<RentalContact, RentalContactDTO>()
                 .ForMember(dest => dest.RentalOrderId, opt => opt.MapFrom(src => src.RentalOrderId))
                 .ForMember(dest => dest.RentalDate, opt => opt.MapFrom(src => src.RentalDate))
                 .ForMember(dest => dest.RentalPeriod, opt => opt.MapFrom(src => src.RentalPeriod))

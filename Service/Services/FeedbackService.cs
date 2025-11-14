@@ -1,7 +1,10 @@
-﻿using Repository.Entities;
+﻿using AutoMapper;
+using Repository.Entities;
 using Repository.IRepositories;
 using Service.Common;
+using Service.DTOs;
 using Service.IServices;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,72 +14,117 @@ namespace Service.Services
     public class FeedbackService : IFeedbackService
     {
         private readonly IFeedbackRepository _feedbackRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
-        public FeedbackService(IFeedbackRepository feedbackRepository)
+        public FeedbackService(IFeedbackRepository feedbackRepository, IUserRepository userRepository, IMapper mapper)
         {
             _feedbackRepository = feedbackRepository;
+            _userRepository = userRepository;
+            _mapper = mapper;
         }
 
-        // 🔹 Lấy tất cả feedback
-        public async Task<Result<IEnumerable<Feedback>>> GetAllAsync()
+        public async Task<Result<FeedbackDTO>> CreateAsync(CreateFeedbackDTO dto)
         {
-            var list = await _feedbackRepository.GetAllAsync();
-            return Result<IEnumerable<Feedback>>.Success(list);
-        }
+            var user = await _userRepository.GetByIdAsync(dto.UserId);
+            if (user == null) return Result<FeedbackDTO>.Failure("Người dùng không tồn tại");
 
-        // 🔹 Lấy feedback theo tên xe
-        public async Task<Result<Feedback>> GetByCarNameAsync(string carName)
-        {
-            var feedback = await _feedbackRepository.GetByCarName(carName);
-            if (feedback == null)
-                return Result<Feedback>.Failure("Không tìm thấy feedback cho xe này.");
-
-            return Result<Feedback>.Success(feedback);
-        }
-
-        // 🔹 Lấy danh sách feedback có phân trang và tìm kiếm
-        public async Task<Result<(IEnumerable<Feedback> Data, int Total)>> GetPagedAsync(int pageIndex, int pageSize, string? keyword = null)
-        {
-            var allFeedbacks = await _feedbackRepository.GetAllAsync();
-            var filtered = allFeedbacks.Where(f => !f.IsDeleted);
-
-            if (!string.IsNullOrWhiteSpace(keyword))
+            var feedback = new Feedback
             {
-                filtered = filtered.Where(f =>
-                    (f.Content != null && f.Content.Contains(keyword)) ||
-                    (f.Title != null && f.Title.Contains(keyword))
-                );
-            }
+                Title = dto.Title,
+                Content = dto.Content,
+                UserId = dto.UserId,
+                RentalOrderId = dto.RentalOrderId,
+                CreatedAt = DateTime.Now
+            };
 
-            var total = filtered.Count();
-
-            var data = filtered
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return Result<(IEnumerable<Feedback> Data, int Total)>.Success((data, total));
-        }
-
-        // 🔹 Thêm feedback
-        public async Task<Result<bool>> AddAsync(Feedback feedback)
-        {
             await _feedbackRepository.AddAsync(feedback);
-            return Result<bool>.Success(true, "Thêm feedback thành công.");
+
+            var feedbackDto = new FeedbackDTO
+            {
+                Id = feedback.Id,
+                Title = feedback.Title,
+                Content = feedback.Content,
+                CreatedAt = feedback.CreatedAt,
+                UserFullName = user.FullName,
+                RentalOrderId = feedback.RentalOrderId
+            };
+
+            return Result<FeedbackDTO>.Success(feedbackDto, "Tạo feedback thành công");
         }
 
-        // 🔹 Cập nhật feedback
-        public async Task<Result<bool>> UpdateAsync(Feedback feedback)
-        {
-            await _feedbackRepository.UpdateAsync(feedback);
-            return Result<bool>.Success(true, "Cập nhật feedback thành công.");
-        }
-
-        // 🔹 Xóa mềm feedback
         public async Task<Result<bool>> DeleteAsync(int id)
         {
-            await _feedbackRepository.DeleteAsync(id);
-            return Result<bool>.Success(true, "Xóa feedback thành công.");
+            var feedback = await _feedbackRepository.GetByIdAsync(id);
+            if (feedback == null) return Result<bool>.Failure("Feedback không tồn tại");
+
+            feedback.IsDeleted = true;
+            await _feedbackRepository.UpdateAsync(feedback);
+
+            return Result<bool>.Success(true, "Xóa feedback thành công");
+        }
+
+        public async Task<Result<IEnumerable<FeedbackDTO>>> GetAllAsync()
+        {
+            var feedbacks = (await _feedbackRepository.GetAllAsync())
+                .Where(f => !f.IsDeleted)
+                .ToList();
+
+            var dtos = feedbacks.Select(f => new FeedbackDTO
+            {
+                Id = f.Id,
+                Title = f.Title,
+                Content = f.Content,
+                CreatedAt = f.CreatedAt,
+                UserFullName = f.User?.FullName ?? "",
+                RentalOrderId = f.RentalOrderId
+            });
+
+            return Result<IEnumerable<FeedbackDTO>>.Success(dtos);
+        }
+
+        public async Task<Result<FeedbackDTO>> GetByIdAsync(int id)
+        {
+            var feedback = await _feedbackRepository.GetByIdAsync(id);
+            if (feedback == null || feedback.IsDeleted)
+                return Result<FeedbackDTO>.Failure("Feedback không tồn tại");
+
+            var dto = new FeedbackDTO
+            {
+                Id = feedback.Id,
+                Title = feedback.Title,
+                Content = feedback.Content,
+                CreatedAt = feedback.CreatedAt,
+                UserFullName = feedback.User?.FullName ?? "",
+                RentalOrderId = feedback.RentalOrderId
+            };
+
+            return Result<FeedbackDTO>.Success(dto);
+        }
+
+        public async Task<Result<FeedbackDTO>> UpdateAsync(UpdateFeedbackDTO dto)
+        {
+            var feedback = await _feedbackRepository.GetByIdAsync(dto.Id);
+            if (feedback == null || feedback.IsDeleted)
+                return Result<FeedbackDTO>.Failure("Feedback không tồn tại");
+
+            feedback.Title = dto.Title ?? feedback.Title;
+            feedback.Content = dto.Content ?? feedback.Content;
+            feedback.UpdatedAt = DateTime.Now;
+
+            await _feedbackRepository.UpdateAsync(feedback);
+
+            var feedbackDto = new FeedbackDTO
+            {
+                Id = feedback.Id,
+                Title = feedback.Title,
+                Content = feedback.Content,
+                CreatedAt = feedback.CreatedAt,
+                UserFullName = feedback.User?.FullName ?? "",
+                RentalOrderId = feedback.RentalOrderId
+            };
+
+            return Result<FeedbackDTO>.Success(feedbackDto, "Cập nhật feedback thành công");
         }
     }
 }
