@@ -82,7 +82,8 @@ namespace Service.Services
                     OdometerEnd = dto.OdometerEnd,
                     BatteryLevelEnd = dto.BatteryLevelEnd,
                     VehicleConditionEnd = dto.VehicleConditionEnd,
-                    OrderId = dto.OrderId
+                    OrderId = dto.OrderId,
+                    CarId = order.CarId       
                 };
                 await _repo.AddAsync(entity);
                 order.Status = RentalOrderStatus.Returned;
