@@ -59,22 +59,22 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPut("UpdateStatus")]
+        [HttpPut("UpdateTotal")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> UpdateStatus([FromForm] UpdateRentalOrderStatusDTO updateRentalOrderStatusDTO)
+        public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)
         {
-            var result = await _rentalOrderService.UpdateStatusAsync(updateRentalOrderStatusDTO);
+            var result = await _rentalOrderService.UpdateTotalAsync(updateRentalOrderTotalDTO);
             if (result.IsSuccess)
             {
                 return Ok(result);
             }
             return BadRequest(result);
         }
-        [HttpPut("UpdateTotal")]
+        [HttpPut("ConfirmTotal")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)
+        public async Task<IActionResult> ConfirmTotal(int orderId)
         {
-            var result = await _rentalOrderService.UpdateTotalAsync(updateRentalOrderTotalDTO);
+            var result = await _rentalOrderService.ConfirmTotalAsync(orderId);
             if (result.IsSuccess)
             {
                 return Ok(result);

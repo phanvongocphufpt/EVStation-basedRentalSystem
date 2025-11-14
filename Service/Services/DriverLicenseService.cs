@@ -98,14 +98,14 @@ namespace Service.Services
             {
                 return Result<UpdateDriverLicenseStatusDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của order.");
             }
-            if (order.DriverLicenseId.HasValue && order.DriverLicense.Status == DocumentStatus.Approved)
+            existingDriverLicense.Status = driverLicenseDTO.Status;
+            existingDriverLicense.UpdatedAt = DateTime.Now;
+            await _driverLicenseRepository.UpdateAsync(existingDriverLicense);
+            if (order.CitizenId.HasValue && order.CitizenIdNavigation.Status == DocumentStatus.Approved && order.Status == RentalOrderStatus.DocumentsSubmitted)
             {
                 order.Status = RentalOrderStatus.DepositPending;
                 await _rentalOrderRepository.UpdateAsync(order);
             }
-            existingDriverLicense.Status = driverLicenseDTO.Status;
-            existingDriverLicense.UpdatedAt = DateTime.Now;
-            await _driverLicenseRepository.UpdateAsync(existingDriverLicense);
             return Result<UpdateDriverLicenseStatusDTO>.Success(driverLicenseDTO, "Cập nhật trạng thái giấy phép lái xe thành công.");
         }
         public async Task<Result<UpdateDriverLicenseInfoDTO>> UpdateInfoAsync(UpdateDriverLicenseInfoDTO driverLicenseDTO)

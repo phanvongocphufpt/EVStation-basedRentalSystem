@@ -26,13 +26,14 @@ namespace Service.Mapper
             CreateMap<Payment, PaymentDTO>()
                 .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.PaymentDate, opt => opt.MapFrom(src => src.PaymentDate))
+                .ForMember(dest => dest.PaymentType, otp => otp.MapFrom(src => src.PaymentType.ToString()))
                 .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.RentalOrder.User.Id))
                 .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.RentalOrder.Id))
                 .ForMember(dest => dest.OrderDate, otp => otp.MapFrom(src => src.RentalOrder.OrderDate));
-            CreateMap<CreatePaymentWithOrderDTO, Payment>();
+            CreateMap<CreatePaymentDTO, Payment>();
 
             //RentalLocation Mappings
             CreateMap<RentalLocation, RentalLocationDTO>()

@@ -135,7 +135,7 @@ namespace Service.EmailConfirmation
 <p><br/></p>
 <p>Hẹn gặp quý khách vào ngày {rentalOrder.PickupTime:dd/MM/yyyy HH:mm}.</p>
 <p>Khi đến, quý khách vui lòng mang theo GPLX, CCCD vật lý để chúng tôi xác minh. </p>
-<p><b>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc là {rentalOrder.Deposit} VNĐ.</b></p>
+<p><b>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc là {rentalOrder.Deposit} VNĐ. Tiền cọc này là 20% giá trị của đơn, sẽ được hoàn trả chung với hóa đơn cuối cùng sau khi đã khấu trừ phí vượt mức, hư hại nếu có.</b></p>
 <p><br/></p>
 <p>Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email.</p>
 <p>Cảm ơn bạn đã sử dụng dịch vụ EVRental!</p>

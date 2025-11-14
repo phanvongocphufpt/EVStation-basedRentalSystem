@@ -14,6 +14,7 @@ namespace Repository.IRepositories
         Task<Payment?> GetByIdAsync(int id);
         Task<IEnumerable<Payment>> GetAllByUserIdAsync(int id);
         Task<Payment?> GetDepositByOrderIdAsync(int orderId);
+        Task<Payment?> GetOrderPaymentByOrderIdAsync(int orderId);
         Task AddAsync(Payment payment);
         Task UpdateAsync(Payment payment);
         Task<IDbContextTransaction> BeginTransactionAsync();

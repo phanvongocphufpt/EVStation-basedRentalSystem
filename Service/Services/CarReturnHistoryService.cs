@@ -59,7 +59,8 @@ namespace Service.Services
                 var order = await _rentalOrderRepo.GetByIdAsync(dto.OrderId);
                 if (order == null)
                     return Result<string>.Failure("Không tìm thấy đơn hàng để trả xe.");
-
+                if (order.Status != RentalOrderStatus.Renting)
+                    return Result<string>.Failure("Đơn hàng không ở trạng thái 'Renting', không thể trả xe.");
                 // Lấy thông tin xe tại chi nhánh
                 var carLocation = await _carRentalLocationRepo.GetByCarAndRentalLocationIdAsync(order.CarId, order.RentalLocationId);
                 if (carLocation == null)
@@ -84,7 +85,8 @@ namespace Service.Services
                     OrderId = dto.OrderId
                 };
                 await _repo.AddAsync(entity);
-
+                order.Status = RentalOrderStatus.Returned;
+                await _rentalOrderRepo.UpdateAsync(order);
                 await transaction.CommitAsync();
                 return Result<string>.Success("OK", "✅ Trả xe thành công, đơn hàng đã cập nhật sang trạng thái 'Returned'.");
             }
