@@ -18,6 +18,7 @@ namespace Repository.Entities
         public string SizeType { get; set; }
         public int TrunkCapacity { get; set; }
         public string BatteryType { get; set; }
+        public double DepositAmount { get; set; }
         public int BatteryDuration { get; set; } // in km
         public double RentPricePerDay { get; set; }
         public double RentPricePerHour { get; set; }
