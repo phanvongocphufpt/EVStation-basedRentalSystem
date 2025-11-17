@@ -92,5 +92,16 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
+        [HttpPut("UpdateStatus")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> UpdateStatus([FromBody] UpdateRentalOrderStatusDTO updateRentalOrderStatusDTO)
+        {
+            var result = await _rentalOrderService.UpdateStatusAsync(updateRentalOrderStatusDTO);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

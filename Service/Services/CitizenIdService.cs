@@ -101,9 +101,19 @@ namespace Service.Services
             citizenId.Status = updateCitizenIdStatusDTO.Status;
             citizenId.UpdatedAt = DateTime.Now;
             await _citizenIdRepository.UpdateCitizenIdAsync(citizenId);
-            if (order.DriverLicenseId.HasValue && order.DriverLicense.Status == DocumentStatus.Approved && order.Status == RentalOrderStatus.DocumentsSubmitted)
+            
+            // Reload order để lấy thông tin mới nhất
+            order = await _rentalOrderRepository.GetByIdAsync(citizenId.RentalOrderId);
+            
+            // Chuyển sang DepositPending khi cả 2 giấy tờ đều được approve và status là DocumentsSubmitted
+            if (order.DriverLicenseId.HasValue && 
+                order.CitizenIdNavigation != null && 
+                order.CitizenIdNavigation.Status == DocumentStatus.Approved && 
+                order.DriverLicense.Status == DocumentStatus.Approved && 
+                order.Status == RentalOrderStatus.DocumentsSubmitted)
             {
                 order.Status = RentalOrderStatus.DepositPending;
+                order.UpdatedAt = DateTime.Now;
                 await _rentalOrderRepository.UpdateAsync(order);
             }
             return Result<UpdateCitizenIdStatusDTO>.Success(updateCitizenIdStatusDTO, "Cập nhật trạng thái chứng minh nhân dân thành công.");

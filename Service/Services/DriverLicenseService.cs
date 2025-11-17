@@ -101,9 +101,19 @@ namespace Service.Services
             existingDriverLicense.Status = driverLicenseDTO.Status;
             existingDriverLicense.UpdatedAt = DateTime.Now;
             await _driverLicenseRepository.UpdateAsync(existingDriverLicense);
-            if (order.CitizenId.HasValue && order.CitizenIdNavigation.Status == DocumentStatus.Approved && order.Status == RentalOrderStatus.DocumentsSubmitted)
+            
+            // Reload order để lấy thông tin mới nhất
+            order = await _rentalOrderRepository.GetByIdAsync(existingDriverLicense.RentalOrderId);
+            
+            // Chuyển sang DepositPending khi cả 2 giấy tờ đều được approve và status là DocumentsSubmitted
+            if (order.CitizenId.HasValue && 
+                order.CitizenIdNavigation != null && 
+                order.CitizenIdNavigation.Status == DocumentStatus.Approved && 
+                order.DriverLicense.Status == DocumentStatus.Approved && 
+                order.Status == RentalOrderStatus.DocumentsSubmitted)
             {
                 order.Status = RentalOrderStatus.DepositPending;
+                order.UpdatedAt = DateTime.Now;
                 await _rentalOrderRepository.UpdateAsync(order);
             }
             return Result<UpdateDriverLicenseStatusDTO>.Success(driverLicenseDTO, "Cập nhật trạng thái giấy phép lái xe thành công.");

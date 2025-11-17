@@ -220,7 +220,9 @@ namespace Service.Services
             }
             payments.Status = PaymentStatus.Completed;
             await _paymentRepository.UpdateAsync(payments);
+            // Chuyển sang Completed khi thanh toán thành công
             order.Status = RentalOrderStatus.Completed;
+            order.UpdatedAt = DateTime.Now;
             await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận đơn đã thanh toán thành công!");
         }
@@ -232,26 +234,24 @@ namespace Service.Services
                 return Result<UpdateRentalOrderStatusDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
             }
 
-            // Chỉ kiểm tra giấy tờ khi cập nhật sang trạng thái cần giấy tờ (Confirmed, Renting)
-            // Cho phép cập nhật sang Cancelled hoặc Completed mà không cần kiểm tra giấy tờ
-            if (updateRentalOrderStatusDTO.Status == RentalOrderStatus.Confirmed || 
-                updateRentalOrderStatusDTO.Status == RentalOrderStatus.Renting)
+            // Validate status transition
+            var currentStatus = existingOrder.Status;
+            var newStatus = updateRentalOrderStatusDTO.Status;
+
+            // Kiểm tra chuyển đổi trạng thái hợp lệ
+            if (!IsValidStatusTransition(currentStatus, newStatus))
+            {
+                return Result<UpdateRentalOrderStatusDTO>.Failure($"Không thể chuyển từ trạng thái {currentStatus} sang {newStatus}. Vui lòng kiểm tra lại luồng trạng thái.");
+            }
+
+            // Chỉ kiểm tra giấy tờ khi cập nhật sang trạng thái cần giấy tờ (Renting)
+            // Confirmed được chuyển tự động khi xác nhận tiền cọc
+            if (newStatus == RentalOrderStatus.Renting)
             {
                 if (existingOrder.CitizenIdNavigation == null || existingOrder.DriverLicense == null)
                 {
                     return Result<UpdateRentalOrderStatusDTO>.Failure("Chứng minh nhân dân hoặc giấy phép lái xe chưa được nộp. Không thể cập nhật trạng thái đơn đặt thuê.");
                 }
-                
-                // Kiểm tra RentalContact có tồn tại và đã được duyệt
-                //if (existingOrder.RentalContact == null)
-                //{
-                //    return Result<UpdateRentalOrderStatusDTO>.Failure("Hợp đồng thuê xe chưa được tạo. Không thể cập nhật trạng thái đơn đặt thuê.");
-                //}
-                
-                //if (existingOrder.RentalContact.Status != DocumentStatus.Approved)
-                //{
-                //    return Result<UpdateRentalOrderStatusDTO>.Failure("Hợp đồng thuê xe chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
-                //}
                 
                 if (existingOrder.CitizenIdNavigation.Status != DocumentStatus.Approved)
                 {
@@ -262,13 +262,88 @@ namespace Service.Services
                 {
                     return Result<UpdateRentalOrderStatusDTO>.Failure("Giấy phép lái xe chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
                 }
+
+                if (currentStatus != RentalOrderStatus.Confirmed)
+                {
+                    return Result<UpdateRentalOrderStatusDTO>.Failure("Chỉ có thể bắt đầu thuê xe khi đơn hàng ở trạng thái Confirmed.");
+                }
             }
 
-            // Cập nhật status từ DTO thay vì hardcode
-            existingOrder.Status = updateRentalOrderStatusDTO.Status;
+            // Kiểm tra khi chuyển sang Returned
+            if (newStatus == RentalOrderStatus.Returned)
+            {
+                if (currentStatus != RentalOrderStatus.Renting)
+                {
+                    return Result<UpdateRentalOrderStatusDTO>.Failure("Chỉ có thể xác nhận trả xe khi đơn hàng đang ở trạng thái Renting.");
+                }
+                existingOrder.ActualReturnTime = DateTime.Now;
+            }
+
+            // Kiểm tra khi chuyển sang Cancelled
+            if (newStatus == RentalOrderStatus.Cancelled)
+            {
+                // Chỉ cho phép hủy khi đơn hàng chưa bắt đầu thuê (chưa ở trạng thái Renting, Returned, PaymentPending, Completed)
+                if (currentStatus == RentalOrderStatus.Renting || 
+                    currentStatus == RentalOrderStatus.Returned || 
+                    currentStatus == RentalOrderStatus.PaymentPending || 
+                    currentStatus == RentalOrderStatus.Completed)
+                {
+                    return Result<UpdateRentalOrderStatusDTO>.Failure("Không thể hủy đơn hàng khi đã bắt đầu thuê xe hoặc đã hoàn thành.");
+                }
+            }
+
+            // Cập nhật status
+            existingOrder.Status = newStatus;
             existingOrder.UpdatedAt = DateTime.Now;
             await _rentalOrderRepository.UpdateAsync(existingOrder);
             return Result<UpdateRentalOrderStatusDTO>.Success(updateRentalOrderStatusDTO, "Cập nhật trạng thái thành công!");
+        }
+
+        private bool IsValidStatusTransition(RentalOrderStatus currentStatus, RentalOrderStatus newStatus)
+        {
+            // Cho phép chuyển sang cùng trạng thái (idempotent)
+            if (currentStatus == newStatus)
+            {
+                return true;
+            }
+
+            // Luồng chuyển đổi trạng thái hợp lệ
+            switch (currentStatus)
+            {
+                case RentalOrderStatus.Pending:
+                    return newStatus == RentalOrderStatus.DocumentsSubmitted || 
+                           newStatus == RentalOrderStatus.Cancelled;
+                
+                case RentalOrderStatus.DocumentsSubmitted:
+                    return newStatus == RentalOrderStatus.DepositPending || 
+                           newStatus == RentalOrderStatus.Cancelled;
+                
+                case RentalOrderStatus.DepositPending:
+                    return newStatus == RentalOrderStatus.Confirmed || 
+                           newStatus == RentalOrderStatus.Cancelled;
+                
+                case RentalOrderStatus.Confirmed:
+                    return newStatus == RentalOrderStatus.Renting || 
+                           newStatus == RentalOrderStatus.Cancelled;
+                
+                case RentalOrderStatus.Renting:
+                    return newStatus == RentalOrderStatus.Returned;
+                
+                case RentalOrderStatus.Returned:
+                    return newStatus == RentalOrderStatus.PaymentPending;
+                
+                case RentalOrderStatus.PaymentPending:
+                    return newStatus == RentalOrderStatus.Completed || 
+                           newStatus == RentalOrderStatus.Cancelled;
+                
+                case RentalOrderStatus.Completed:
+                case RentalOrderStatus.Cancelled:
+                    // Không cho phép chuyển từ Completed hoặc Cancelled
+                    return false;
+                
+                default:
+                    return false;
+            }
         }
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id)
         {
