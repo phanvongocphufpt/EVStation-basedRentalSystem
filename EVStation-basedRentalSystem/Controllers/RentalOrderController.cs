@@ -51,7 +51,6 @@ namespace EVStation_basedRentalSystem.Controllers
             var result = await _rentalOrderService.CreateAsync(dto);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-<<<<<<< Updated upstream
         [HttpPut("UpdateStatus")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> UpdateStatus([FromForm] UpdateRentalOrderStatusDTO updateRentalOrderStatusDTO)
@@ -63,8 +62,7 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPut("UpdateTotal")]
-=======
+
 
         [HttpPut("UpdateTotal")]
         [Authorize(Roles = "Admin,Staff")]
@@ -76,24 +74,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpPut("ConfirmTotal")]
->>>>>>> Stashed changes
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)
-        {
-<<<<<<< Updated upstream
-            var result = await _rentalOrderService.UpdateTotalAsync(updateRentalOrderTotalDTO);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
-=======
-            var result = await _rentalOrderService.ConfirmTotalAsync(orderId);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
->>>>>>> Stashed changes
-        }
-
+      
         [HttpPut("ConfirmPayment")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> ConfirmPayment(int orderId)
@@ -102,14 +83,5 @@ namespace EVStation_basedRentalSystem.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpPut("UpdateStatus")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> UpdateStatus([FromBody] UpdateRentalOrderStatusDTO dto)
-        {
-            if (dto == null) return BadRequest("Invalid data.");
-
-            var result = await _rentalOrderService.UpdateStatusAsync(dto);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
-        }
     }
 }

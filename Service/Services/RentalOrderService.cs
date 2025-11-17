@@ -40,7 +40,7 @@ namespace Service.Services
 
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int userId)
         {
-<<<<<<< Updated upstream
+
             var dto = _mapper.Map<RentalOrder>(createRentalOrderDTO);
             var user = await _userRepository.GetByIdAsync(dto.UserId);
             if (user == null)
@@ -103,7 +103,7 @@ namespace Service.Services
             };
             await _paymentRepository.AddAsync(payment);
             return Result<CreateRentalOrderDTO>.Success(createRentalOrderDTO, "Tạo Order thành công!");
-=======
+
             var orders = await _rentalOrderRepository.GetByUserIdAsync(userId);
             var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(orders);
             return Result<IEnumerable<RentalOrderDTO>>.Success(dtos);
@@ -119,12 +119,11 @@ namespace Service.Services
             await _rentalOrderRepository.SaveChangesAsync();
 
             return Result<CreateRentalOrderDTO>.Success(dto, "Tạo order thành công!");
->>>>>>> Stashed changes
         }
 
         public async Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO dto)
         {
-<<<<<<< Updated upstream
+
             var existingOrder = await _rentalOrderRepository.GetByIdAsync(updateRentalOrderTotalDTO.OrderId);
             if (existingOrder == null)
             {
@@ -188,30 +187,7 @@ namespace Service.Services
             await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận thanh toán thành công!");
         }
-        public async Task<Result<UpdateRentalOrderStatusDTO>> UpdateStatusAsync(UpdateRentalOrderStatusDTO updateRentalOrderStatusDTO)
-        {
-            var existingOrder = await _rentalOrderRepository.GetByIdAsync(updateRentalOrderStatusDTO.OrderId);
-            if (existingOrder == null)
-            {
-                return Result<UpdateRentalOrderStatusDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
-            }
-=======
-            // Giữ logic cũ nếu bạn đã có
-            return Result<UpdateRentalOrderTotalDTO>.Success(dto);
-        }
-
-        public async Task<Result<bool>> ConfirmPaymentAsync(int orderId)
-        {
-            // Giữ logic cũ
-            return Result<bool>.Success(true);
-        }
-
-        public async Task<Result<bool>> ConfirmTotalAsync(int orderId)
-        {
-            // Giữ logic cũ
-            return Result<bool>.Success(true);
-        }
-
+      
         // ------------------- MỚI -------------------
         public async Task<Result<UpdateRentalOrderStatusDTO>> UpdateStatusAsync(UpdateRentalOrderStatusDTO dto)
         {
@@ -227,7 +203,6 @@ namespace Service.Services
 
             await _rentalOrderRepository.UpdateAsync(order);
             await _rentalOrderRepository.SaveChangesAsync();
->>>>>>> Stashed changes
 
             return Result<UpdateRentalOrderStatusDTO>.Success(dto, "Cập nhật trạng thái thành công!");
         }

@@ -24,7 +24,7 @@ namespace Repository.Entities
         public double RentPricePerHour { get; set; }
         public double RentPricePerDayWithDriver { get; set; }
         public double RentPricePerHourWithDriver { get; set; }
-        public double DepositAmount { get; set; }
+   
         public string ImageUrl { get; set; }
         public string ImageUrl2 { get; set; }
         public string ImageUrl3 { get; set; }

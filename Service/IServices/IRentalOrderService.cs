@@ -27,11 +27,8 @@ namespace Service.IServices
 
         // Xác nhận thanh toán cho đơn thuê
         Task<Result<bool>> ConfirmPaymentAsync(int orderId);
-<<<<<<< Updated upstream
-=======
 
         // Xác nhận tổng tiền cho đơn thuê
         Task<Result<bool>> ConfirmTotalAsync(int orderId);
->>>>>>> Stashed changes
     }
 }
