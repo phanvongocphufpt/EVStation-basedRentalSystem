@@ -25,16 +25,16 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(payments);
         }
 
-        [HttpGet("byRentalLocation")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> GetRevenueByLocation()
-        {
-            var result = await _paymentService.GetRevenueByLocationAsync();
-            if (!result.IsSuccess)
-                return BadRequest(result.Message);
+        //[HttpGet("byRentalLocation")]
+        //[Authorize(Roles = "Admin,Staff")]
+        //public async Task<IActionResult> GetRevenueByLocation()
+        //{
+        //    var result = await _paymentService.GetRevenueByLocationAsync();
+        //    if (!result.IsSuccess)
+        //        return BadRequest(result.Message);
 
-            return Ok(result.Data);
-        }
+        //    return Ok(result.Data);
+        //}
 
         [HttpGet("GetAllByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
@@ -58,12 +58,12 @@ namespace EVStation_basedRentalSystem.Controllers
 
         [HttpPost("CreateFromOrder")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> CreateFromOrder([FromBody] CreatePaymentWithOrderDTO dto)
+        public async Task<IActionResult> Create([FromBody] CreatePaymentDTO dto)
         {
             if (dto == null)
                 return BadRequest("Invalid data.");
 
-            var result = await _paymentService.CreatePaymentFromOrderAsync(dto);
+            var result = await _paymentService.AddAsync(dto);
             if (!result.IsSuccess)
                 return BadRequest(result.Message);
 
@@ -82,6 +82,13 @@ namespace EVStation_basedRentalSystem.Controllers
                 return BadRequest(result.Message);
 
             return Ok(result.Data);
+        }
+        [HttpPut("ConfirmDepositPayment")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> ConfirmDepositPayment(int orderId)
+        {
+            var result = await _paymentService.ConfirmDepositPaymentAsync(orderId);
+            return Ok(result);
         }
     }
 }

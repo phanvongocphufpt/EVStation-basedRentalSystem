@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251113063835_InitMigration")]
+    [Migration("20251114114454_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -42,9 +42,6 @@ namespace Repository.Context.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<double>("DepositAmount")
-                        .HasColumnType("float");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
@@ -111,7 +108,6 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 350,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositAmount = 5000000.0,
                             ImageUrl = "https://example.com/tesla_model_3.jpg",
                             ImageUrl2 = "https://example.com/tesla_model_3.jpg",
                             ImageUrl3 = "https://example.com/tesla_model_3.jpg",
@@ -134,7 +130,6 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 240,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositAmount = 4000000.0,
                             ImageUrl = "https://example.com/nissan_leaf.jpg",
                             ImageUrl2 = "https://example.com/nissan_leaf.jpg",
                             ImageUrl3 = "https://example.com/nissan_leaf.jpg",
@@ -157,7 +152,6 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 259,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositAmount = 4500000.0,
                             ImageUrl = "https://example.com/chevrolet_bolt_ev.jpg",
                             ImageUrl2 = "https://example.com/chevrolet_bolt_ev.jpg",
                             ImageUrl3 = "https://example.com/chevrolet_bolt_ev.jpg",
@@ -180,7 +174,6 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 153,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositAmount = 5500000.0,
                             ImageUrl = "https://example.com/bmw_i3.jpg",
                             ImageUrl2 = "https://example.com/bmw_i3.jpg",
                             ImageUrl3 = "https://example.com/bmw_i3.jpg",
@@ -387,35 +380,6 @@ namespace Repository.Context.Migrations
                     b.ToTable("CarReturnHistories");
                 });
 
-            modelBuilder.Entity("Repository.Entities.ChatMessage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ReceiverId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SenderId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ChatMessages");
-                });
-
             modelBuilder.Entity("Repository.Entities.CitizenId", b =>
                 {
                     b.Property<int>("Id")
@@ -559,7 +523,6 @@ namespace Repository.Context.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PaymentMethod")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PaymentType")

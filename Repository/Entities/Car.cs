@@ -14,7 +14,6 @@ namespace Repository.Entities
         public int Id { get; set; }
         public string Model { get; set; }
         public string Name { get; set; }
-        public double DepositAmount { get; set; }
         public int Seats { get; set; }
         public string SizeType { get; set; }
         public int TrunkCapacity { get; set; }
@@ -24,7 +23,6 @@ namespace Repository.Entities
         public double RentPricePerHour { get; set; }
         public double RentPricePerDayWithDriver { get; set; }
         public double RentPricePerHourWithDriver { get; set; }
-   
         public string ImageUrl { get; set; }
         public string ImageUrl2 { get; set; }
         public string ImageUrl3 { get; set; }

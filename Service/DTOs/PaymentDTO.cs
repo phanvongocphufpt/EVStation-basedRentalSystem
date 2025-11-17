@@ -10,6 +10,7 @@ namespace Service.DTOs
     public class PaymentDTO
     {
         public int PaymentId { get; set; }
+        public PaymentType PaymentType { get; set; }
         public DateTime PaymentDate { get; set; }
         public double Amount { get; set; }
         public string PaymentMethod { get; set; }
@@ -18,33 +19,23 @@ namespace Service.DTOs
         public string OrderId { get; set; }
         public DateTime OrderDate { get; set; }
     }
-    public class CreatePaymentWithOrderDTO
+    public class CreatePaymentDTO
     {
-        public int OrderId { get; set; }              // Id của RentalOrder
-        public int UserId { get; set; }               // Id của người dùng thanh toán
-        public string PaymentMethod { get; set; }    // Phương thức thanh toán
-        public DateTime? PaymentDate { get; set; }    // Ngày thanh toán
-        public double? Amount { get; set; }           // Số tiền, nếu null lấy từ order
-       
-        public PaymentStatus Status { get; set; }     // Trạng thái thanh toán
-    }
-
-    // DTO trả về kèm thông tin địa điểm
-    public class PaymentWithLocationDTO
-    {
-        public int PaymentId { get; set; }
-        public DateTime PaymentDate { get; set; }
+        public DateTime? PaymentDate { get; set; }
+        public PaymentType PaymentType { get; set; }
         public double Amount { get; set; }
-    public string PaymentMethod { get; set; }
-        public PaymentStatus Status { get; set; }
-        public int UserId { get; set; }
-        public int OrderId { get; set; }
-        public DateTime OrderDate { get; set; }
-        public string RentalLocationName { get; set; }
+        public string? PaymentMethod { get; set; }
+        public string? BillingImageUrl { get; set; }
+        public int? UserId { get; set; }
+        public int? RentalOrderId { get; set; }
     }
     public class UpdatePaymentStatusDTO
     {
         public int Id { get; set; }
         public PaymentStatus Status { get; set; }
+    }
+    public class ConfirmDepositPaymentDTO
+    {
+        public int OrderId { get; set; }
     }
 }

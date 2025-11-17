@@ -13,6 +13,7 @@ namespace Repository.Entities.Enum
         DepositPending,
         Confirmed,
         Renting,
+        Returned,
         PaymentPending,
         Cancelled,
         Completed
