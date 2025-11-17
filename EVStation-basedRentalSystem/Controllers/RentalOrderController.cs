@@ -18,95 +18,74 @@ namespace EVStation_basedRentalSystem.Controllers
             _rentalOrderService = rentalOrderService;
         }
 
-        // GET: api/RentalOrder
-        [HttpGet]
+        [HttpGet("GetAll")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _rentalOrderService.GetAllAsync();
-            return MakeResultActionResult(result);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        // GET: api/RentalOrder/5
-        [HttpGet("{id}")]
+        [HttpGet("GetById")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _rentalOrderService.GetByIdAsync(id);
-            return MakeResultActionResult(result);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        // GET: api/RentalOrder/User/5
-        [HttpGet("User/{userId}")]
+        [HttpGet("GetByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
             var result = await _rentalOrderService.GetByUserIdAsync(userId);
-            return MakeResultActionResult(result);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        // POST: api/RentalOrder
-        [HttpPost]
+        [HttpPost("Create")]
         [Authorize(Roles = "Admin,Staff,Customer")]
-        public async Task<IActionResult> Create([FromBody] CreateRentalOrderDTO createRentalOrderDTO)
+        public async Task<IActionResult> Create([FromBody] CreateRentalOrderDTO dto)
         {
-            var result = await _rentalOrderService.CreateAsync(createRentalOrderDTO);
-            return MakeResultActionResult(result);
+            if (dto == null) return BadRequest("Invalid data.");
+
+            var result = await _rentalOrderService.CreateAsync(dto);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        // PUT: api/RentalOrder/UpdateTotal
         [HttpPut("UpdateTotal")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)
+        public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO dto)
         {
-            var result = await _rentalOrderService.UpdateTotalAsync(updateRentalOrderTotalDTO);
-            return MakeResultActionResult(result);
+            if (dto == null) return BadRequest("Invalid data.");
+
+            var result = await _rentalOrderService.UpdateTotalAsync(dto);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        // PUT: api/RentalOrder/{orderId}/ConfirmTotal
-        [HttpPut("{orderId}/ConfirmTotal")]
+        [HttpPut("ConfirmTotal")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> ConfirmTotal(int orderId)
         {
             var result = await _rentalOrderService.ConfirmTotalAsync(orderId);
-            return MakeResultActionResult(result);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        // PUT: api/RentalOrder/{orderId}/ConfirmPayment
-        [HttpPut("{orderId}/ConfirmPayment")]
+        [HttpPut("ConfirmPayment")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> ConfirmPayment(int orderId)
         {
             var result = await _rentalOrderService.ConfirmPaymentAsync(orderId);
-            return MakeResultActionResult(result);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        // PUT: api/RentalOrder/UpdateStatus
-        // Cập nhật trạng thái order — body là UpdateRentalOrderStatusDTO
         [HttpPut("UpdateStatus")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> UpdateStatus([FromBody] UpdateRentalOrderStatusDTO updateRentalOrderStatusDTO)
+        public async Task<IActionResult> UpdateStatus([FromBody] UpdateRentalOrderStatusDTO dto)
         {
-            var result = await _rentalOrderService.UpdateStatusAsync(updateRentalOrderStatusDTO);
-            return MakeResultActionResult(result);
-        }
+            if (dto == null) return BadRequest("Invalid data.");
 
-        // Helper: chuẩn hóa việc chuyển Result<T> thành IActionResult
-        private IActionResult MakeResultActionResult<T>(Service.Common.Result<T> result)
-        {
-            if (result == null)
-                return StatusCode(500, "Internal error: null result from service.");
-
-            if (result.IsSuccess)
-                return Ok(result);
-
-            // Nếu message chứa từ khóa "không tồn tại" -> NotFound
-            var msg = result.Message?.ToLower() ?? string.Empty;
-            if (msg.Contains("không tồn tại") || msg.Contains("không tìm thấy") || msg.Contains("not found"))
-                return NotFound(result);
-
-            // Mặc định trả BadRequest
-            return BadRequest(result);
+            var result = await _rentalOrderService.UpdateStatusAsync(dto);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
 }
