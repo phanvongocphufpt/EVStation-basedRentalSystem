@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Service.DTOs;
 using Service.IServices;
+using System.Threading.Tasks;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -11,54 +12,46 @@ namespace EVStation_basedRentalSystem.Controllers
     public class RentalOrderController : ControllerBase
     {
         private readonly IRentalOrderService _rentalOrderService;
+
         public RentalOrderController(IRentalOrderService rentalOrderService)
         {
             _rentalOrderService = rentalOrderService;
         }
+
         [HttpGet("GetAll")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _rentalOrderService.GetAllAsync();
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+
         [HttpGet("GetById")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _rentalOrderService.GetByIdAsync(id);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+
         [HttpGet("GetByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
             var result = await _rentalOrderService.GetByUserIdAsync(userId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+
         [HttpPost("Create")]
         [Authorize(Roles = "Admin,Staff,Customer")]
-        public async Task<IActionResult> Create([FromBody] CreateRentalOrderDTO createRentalOrderDTO)
+        public async Task<IActionResult> Create([FromBody] CreateRentalOrderDTO dto)
         {
-            var result = await _rentalOrderService.CreateAsync(createRentalOrderDTO);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
+            if (dto == null) return BadRequest("Invalid data.");
+
+            var result = await _rentalOrderService.CreateAsync(dto);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+<<<<<<< Updated upstream
         [HttpPut("UpdateStatus")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> UpdateStatus([FromForm] UpdateRentalOrderStatusDTO updateRentalOrderStatusDTO)
@@ -71,26 +64,52 @@ namespace EVStation_basedRentalSystem.Controllers
             return BadRequest(result);
         }
         [HttpPut("UpdateTotal")]
+=======
+
+        [HttpPut("UpdateTotal")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO dto)
+        {
+            if (dto == null) return BadRequest("Invalid data.");
+
+            var result = await _rentalOrderService.UpdateTotalAsync(dto);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPut("ConfirmTotal")]
+>>>>>>> Stashed changes
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)
         {
+<<<<<<< Updated upstream
             var result = await _rentalOrderService.UpdateTotalAsync(updateRentalOrderTotalDTO);
             if (result.IsSuccess)
             {
                 return Ok(result);
             }
             return BadRequest(result);
+=======
+            var result = await _rentalOrderService.ConfirmTotalAsync(orderId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+>>>>>>> Stashed changes
         }
+
         [HttpPut("ConfirmPayment")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> ConfirmPayment(int orderId)
         {
             var result = await _rentalOrderService.ConfirmPaymentAsync(orderId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPut("UpdateStatus")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> UpdateStatus([FromBody] UpdateRentalOrderStatusDTO dto)
+        {
+            if (dto == null) return BadRequest("Invalid data.");
+
+            var result = await _rentalOrderService.UpdateStatusAsync(dto);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
 }

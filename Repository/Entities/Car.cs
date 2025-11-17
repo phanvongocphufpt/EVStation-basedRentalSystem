@@ -14,6 +14,7 @@ namespace Repository.Entities
         public int Id { get; set; }
         public string Model { get; set; }
         public string Name { get; set; }
+        public double DepositAmount { get; set; }
         public int Seats { get; set; }
         public string SizeType { get; set; }
         public int TrunkCapacity { get; set; }

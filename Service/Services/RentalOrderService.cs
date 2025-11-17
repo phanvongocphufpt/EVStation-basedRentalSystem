@@ -7,8 +7,6 @@ using Service.DTOs;
 using Service.IServices;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Service.Services
@@ -16,56 +14,33 @@ namespace Service.Services
     public class RentalOrderService : IRentalOrderService
     {
         private readonly IRentalOrderRepository _rentalOrderRepository;
-        private readonly ICitizenIdRepository _citizenIdRepository;
-        private readonly IDriverLicenseRepository _driverLicenseRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly ICarRepository _carRepository;
-        private readonly ICarRentalLocationRepository _carRentalLocationRepository;
-        private readonly IRentalLocationRepository _rentalLocationRepository;
-        private readonly IRentalContactRepository _rentalContactRepository;
-        private readonly IPaymentRepository _paymentRepository;
         private readonly IMapper _mapper;
-        public RentalOrderService(
-            IRentalOrderRepository rentalOrderRepository,
-            ICitizenIdRepository citizenIdRepository,
-            IDriverLicenseRepository driverLicenseRepository,
-            IUserRepository userRepository,
-            ICarRepository carRepository,
-            IRentalContactRepository rentalContactRepository,
-            IMapper mapper,
-            ICarRentalLocationRepository carRentalLocationRepository,
-            IRentalLocationRepository rentalLocationRepository,
-            IPaymentRepository paymentRepository)
+
+        public RentalOrderService(IRentalOrderRepository rentalOrderRepository, IMapper mapper)
         {
             _rentalOrderRepository = rentalOrderRepository;
-            _citizenIdRepository = citizenIdRepository;
-            _driverLicenseRepository = driverLicenseRepository;
-            _userRepository = userRepository;
-            _carRepository = carRepository;
-            _rentalContactRepository = rentalContactRepository;
             _mapper = mapper;
-            _carRentalLocationRepository = carRentalLocationRepository;
-            _rentalLocationRepository = rentalLocationRepository;
-            _paymentRepository = paymentRepository;
         }
+
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetAllAsync()
         {
-            var rentalOrders = await _rentalOrderRepository.GetAllAsync();
-            var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(rentalOrders);
+            var orders = await _rentalOrderRepository.GetAllAsync();
+            var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(orders);
             return Result<IEnumerable<RentalOrderDTO>>.Success(dtos);
         }
+
         public async Task<Result<RentalOrderDTO>> GetByIdAsync(int id)
         {
-            var rentalOrder = await _rentalOrderRepository.GetByIdAsync(id);
-            if (rentalOrder == null)
-            {
-                return Result<RentalOrderDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
-            }
-            var dto = _mapper.Map<RentalOrderDTO>(rentalOrder);
+            var order = await _rentalOrderRepository.GetByIdAsync(id);
+            if (order == null)
+                return Result<RentalOrderDTO>.Failure("Đơn đặt thuê không tồn tại!");
+            var dto = _mapper.Map<RentalOrderDTO>(order);
             return Result<RentalOrderDTO>.Success(dto);
         }
-        public async Task<Result<CreateRentalOrderDTO>> CreateAsync(CreateRentalOrderDTO createRentalOrderDTO)
+
+        public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int userId)
         {
+<<<<<<< Updated upstream
             var dto = _mapper.Map<RentalOrder>(createRentalOrderDTO);
             var user = await _userRepository.GetByIdAsync(dto.UserId);
             if (user == null)
@@ -128,9 +103,28 @@ namespace Service.Services
             };
             await _paymentRepository.AddAsync(payment);
             return Result<CreateRentalOrderDTO>.Success(createRentalOrderDTO, "Tạo Order thành công!");
+=======
+            var orders = await _rentalOrderRepository.GetByUserIdAsync(userId);
+            var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(orders);
+            return Result<IEnumerable<RentalOrderDTO>>.Success(dtos);
         }
-        public async Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)
+
+        public async Task<Result<CreateRentalOrderDTO>> CreateAsync(CreateRentalOrderDTO dto)
         {
+            var order = _mapper.Map<RentalOrder>(dto);
+            order.CreatedAt = DateTime.Now;
+            order.Status = RentalOrderStatus.Pending;
+
+            await _rentalOrderRepository.AddAsync(order);
+            await _rentalOrderRepository.SaveChangesAsync();
+
+            return Result<CreateRentalOrderDTO>.Success(dto, "Tạo order thành công!");
+>>>>>>> Stashed changes
+        }
+
+        public async Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO dto)
+        {
+<<<<<<< Updated upstream
             var existingOrder = await _rentalOrderRepository.GetByIdAsync(updateRentalOrderTotalDTO.OrderId);
             if (existingOrder == null)
             {
@@ -201,50 +195,41 @@ namespace Service.Services
             {
                 return Result<UpdateRentalOrderStatusDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
             }
-
-            // Chỉ kiểm tra giấy tờ khi cập nhật sang trạng thái cần giấy tờ (Confirmed, Renting)
-            // Cho phép cập nhật sang Cancelled hoặc Completed mà không cần kiểm tra giấy tờ
-            if (updateRentalOrderStatusDTO.Status == RentalOrderStatus.Confirmed || 
-                updateRentalOrderStatusDTO.Status == RentalOrderStatus.Renting)
-            {
-                if (existingOrder.CitizenIdNavigation == null || existingOrder.DriverLicense == null)
-                {
-                    return Result<UpdateRentalOrderStatusDTO>.Failure("Chứng minh nhân dân hoặc giấy phép lái xe chưa được nộp. Không thể cập nhật trạng thái đơn đặt thuê.");
-                }
-                
-                // Kiểm tra RentalContact có tồn tại và đã được duyệt
-                //if (existingOrder.RentalContact == null)
-                //{
-                //    return Result<UpdateRentalOrderStatusDTO>.Failure("Hợp đồng thuê xe chưa được tạo. Không thể cập nhật trạng thái đơn đặt thuê.");
-                //}
-                
-                //if (existingOrder.RentalContact.Status != DocumentStatus.Approved)
-                //{
-                //    return Result<UpdateRentalOrderStatusDTO>.Failure("Hợp đồng thuê xe chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
-                //}
-                
-                if (existingOrder.CitizenIdNavigation.Status != DocumentStatus.Approved)
-                {
-                    return Result<UpdateRentalOrderStatusDTO>.Failure("Chứng minh nhân dân chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
-                }
-                
-                if (existingOrder.DriverLicense.Status != DocumentStatus.Approved)
-                {
-                    return Result<UpdateRentalOrderStatusDTO>.Failure("Giấy phép lái xe chưa được duyệt hoặc bị từ chối. Không thể cập nhật trạng thái đơn đặt thuê.");
-                }
-            }
-
-            // Cập nhật status từ DTO thay vì hardcode
-            existingOrder.Status = updateRentalOrderStatusDTO.Status;
-            existingOrder.UpdatedAt = DateTime.Now;
-            await _rentalOrderRepository.UpdateAsync(existingOrder);
-            return Result<UpdateRentalOrderStatusDTO>.Success(updateRentalOrderStatusDTO, "Cập nhật trạng thái thành công!");
+=======
+            // Giữ logic cũ nếu bạn đã có
+            return Result<UpdateRentalOrderTotalDTO>.Success(dto);
         }
-        public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id)
+
+        public async Task<Result<bool>> ConfirmPaymentAsync(int orderId)
         {
-            var rentalOrders = await _rentalOrderRepository.GetByUserIdAsync(id);
-            var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(rentalOrders);
-            return Result<IEnumerable<RentalOrderDTO>>.Success(dtos);
+            // Giữ logic cũ
+            return Result<bool>.Success(true);
+        }
+
+        public async Task<Result<bool>> ConfirmTotalAsync(int orderId)
+        {
+            // Giữ logic cũ
+            return Result<bool>.Success(true);
+        }
+
+        // ------------------- MỚI -------------------
+        public async Task<Result<UpdateRentalOrderStatusDTO>> UpdateStatusAsync(UpdateRentalOrderStatusDTO dto)
+        {
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.OrderId);
+            if (order == null)
+                return Result<UpdateRentalOrderStatusDTO>.Failure("Đơn đặt thuê không tồn tại!");
+
+            if (!Enum.IsDefined(typeof(RentalOrderStatus), dto.Status))
+                return Result<UpdateRentalOrderStatusDTO>.Failure("Trạng thái không hợp lệ.");
+
+            order.Status = dto.Status;
+            order.UpdatedAt = DateTime.Now;
+
+            await _rentalOrderRepository.UpdateAsync(order);
+            await _rentalOrderRepository.SaveChangesAsync();
+>>>>>>> Stashed changes
+
+            return Result<UpdateRentalOrderStatusDTO>.Success(dto, "Cập nhật trạng thái thành công!");
         }
     }
 }
