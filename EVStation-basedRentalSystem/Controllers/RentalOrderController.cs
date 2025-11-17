@@ -79,7 +79,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         [HttpPut("UpdateStatus")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> UpdateStatus([FromBody] UpdateRentalOrderStatusDTO dto)
         {
             if (dto == null) return BadRequest("Invalid data.");
