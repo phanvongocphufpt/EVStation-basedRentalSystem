@@ -49,6 +49,7 @@ namespace Repository.Repositories
         public async Task UpdateAsync(RentalOrder order)
         {
             _context.RentalOrders.Update(order);
+            await _context.SaveChangesAsync();
         }
 
         public async Task SaveChangesAsync()
