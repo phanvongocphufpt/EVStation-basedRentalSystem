@@ -104,7 +104,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return BadRequest(result);
         }
         [HttpDelete("CancelOrder")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> CancelOrder ([FromForm] int orderId)
         {
             var result = await _rentalOrderService.CancelOrderAsync(orderId);
