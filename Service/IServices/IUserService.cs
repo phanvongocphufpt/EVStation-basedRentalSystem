@@ -18,6 +18,7 @@ namespace Service.IServices
         Task<Result<UpdateCustomerNameDTO>> UpdateCustomerNameAsync(UpdateCustomerNameDTO updateUserDTO);
         Task<Result<UpdateCustomerPasswordDTO>> UpdateCustomerPasswordAsync(UpdateCustomerPasswordDTO updateUserDTO);
         Task<Result<UpdateUserActiveStatusDTO>> UpdateUserActiveStatusAsync(UpdateUserActiveStatusDTO updateUserActiveStatusDTO);
+        Task<Result<UpdateStaffRentalLocationDTO>> UpdateStaffRentalLocationAsync(UpdateStaffRentalLocationDTO updateStaffRentalLocationDTO);
         Task DeleteAsync(int id);
     }
 }

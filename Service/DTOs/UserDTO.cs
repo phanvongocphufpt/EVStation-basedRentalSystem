@@ -50,4 +50,10 @@ namespace Service.DTOs
         public int UserId { get; set; }
         public bool IsActive { get; set; }
     }
+    public class UpdateStaffRentalLocationDTO
+    {
+        public int UserId { get; set; }
+        public int RentalLocationId { get; set; }
+    }
 }
+//check

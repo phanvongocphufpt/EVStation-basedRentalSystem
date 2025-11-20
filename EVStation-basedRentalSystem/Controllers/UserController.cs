@@ -76,7 +76,8 @@ namespace EVStation_basedRentalSystem.Controllers
             var result = await _userService.UpdateCustomerPasswordAsync(updateUserDTO);
             return Ok(result);
         }
- [HttpPut("UpdateUserActiveStatus")]
+
+        [HttpPut("UpdateUserActiveStatus")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> UpdateUserActiveStatus([FromBody] UpdateUserActiveStatusDTO updateUserActiveStatusDTO)
         {
@@ -94,6 +95,29 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound(new { message = result.Message ?? "Không tìm thấy người dùng hoặc không thể cập nhật trạng thái." });
 
             return Ok(new { message = result.Message ?? "Cập nhật trạng thái người dùng thành công." });
+        }
+
+        [HttpPut("UpdateStaffRentalLocation")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> UpdateStaffRentalLocation([FromBody] UpdateStaffRentalLocationDTO updateStaffRentalLocationDTO)
+        {
+            if (updateStaffRentalLocationDTO == null)
+                return BadRequest(new { message = "Dữ liệu cập nhật địa điểm cho thuê không được để trống." });
+
+            if (updateStaffRentalLocationDTO.UserId <= 0)
+                return BadRequest(new { message = "Mã người dùng không hợp lệ." });
+
+            if (updateStaffRentalLocationDTO.RentalLocationId <= 0)
+                return BadRequest(new { message = "Mã địa điểm cho thuê không hợp lệ." });
+
+            if (!ModelState.IsValid)
+                return BadRequest(new { message = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.", errors = ModelState });
+
+            var result = await _userService.UpdateStaffRentalLocationAsync(updateStaffRentalLocationDTO);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message ?? "Không tìm thấy nhân viên hoặc không thể cập nhật địa điểm cho thuê." });
+
+            return Ok(new { message = result.Message ?? "Cập nhật địa điểm cho thuê của nhân viên thành công." });
         }
         
         [HttpDelete("{id:guid}")]

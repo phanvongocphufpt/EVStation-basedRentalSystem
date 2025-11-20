@@ -132,6 +132,26 @@ namespace Service.Services
             var statusText = updateUserActiveStatusDTO.IsActive ? "kích hoạt" : "vô hiệu hóa";
             return Result<UpdateUserActiveStatusDTO>.Success(updateUserActiveStatusDTO, $"Cập nhật trạng thái người dùng thành công. Tài khoản đã được {statusText}.");
         }
+        public async Task<Result<UpdateStaffRentalLocationDTO>> UpdateStaffRentalLocationAsync(UpdateStaffRentalLocationDTO updateStaffRentalLocationDTO)
+        {
+            var getUser = await _userRepository.GetByIdAsync(updateStaffRentalLocationDTO.UserId);
+            if (getUser == null)
+            {
+                return Result<UpdateStaffRentalLocationDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id.");
+            }
+            if (!getUser.Role.Equals("Staff"))
+            {
+                return Result<UpdateStaffRentalLocationDTO>.Failure("Chỉ có thể cập nhật địa điểm cho nhân viên (Staff).");
+            }
+            if (updateStaffRentalLocationDTO.RentalLocationId <= 0)
+            {
+                return Result<UpdateStaffRentalLocationDTO>.Failure("Mã địa điểm cho thuê không hợp lệ.");
+            }
+            getUser.RentalLocationId = updateStaffRentalLocationDTO.RentalLocationId;
+            getUser.UpdatedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(getUser);
+            return Result<UpdateStaffRentalLocationDTO>.Success(updateStaffRentalLocationDTO, "Cập nhật địa điểm cho thuê của nhân viên thành công.");
+        }
         public async Task DeleteAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
