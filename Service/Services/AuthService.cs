@@ -122,6 +122,9 @@ namespace Service.Services
 
             user.ConfirmEmailToken = GenerateEmailToken();
             user.IsEmailConfirmed = false;
+            user.CreatedAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.UtcNow;
+            user.IsActive = false;
 
             using (var transaction = await _userRepository.BeginTransactionAsync())
             {

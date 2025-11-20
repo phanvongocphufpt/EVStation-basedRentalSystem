@@ -74,6 +74,7 @@ namespace EVStation_basedRentalSystem.Controllers
                 Email = model.Email,
                 Password = model.Password,
                 FullName = model.FullName
+                
             };
             await _authService.Register(user, model.Password);
 
@@ -82,6 +83,7 @@ namespace EVStation_basedRentalSystem.Controllers
                 UserId = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
+                CreatedAt=user.CreatedAt,
                 Message = "Đăng ký thành công!"
             };
 
