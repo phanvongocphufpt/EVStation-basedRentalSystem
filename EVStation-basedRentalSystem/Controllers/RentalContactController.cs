@@ -20,7 +20,7 @@ namespace EVStation_basedRentalSystem.Controllers
 
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _service.GetAllAsync();
@@ -43,7 +43,7 @@ namespace EVStation_basedRentalSystem.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> Create([FromBody] RentalContactCreateDTO dto)
         {
             if (!ModelState.IsValid)
