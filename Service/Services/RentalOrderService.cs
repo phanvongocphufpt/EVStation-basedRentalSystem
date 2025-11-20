@@ -181,7 +181,6 @@ namespace Service.Services
             existingOrder.DamageFee = updateRentalOrderTotalDTO.DamageFee;
             existingOrder.DamageNotes = updateRentalOrderTotalDTO.DamageNotes;
             existingOrder.UpdatedAt = DateTime.Now;
-            existingOrder.Status = RentalOrderStatus.PaymentPending;
             await _rentalOrderRepository.UpdateAsync(existingOrder);
             return Result<UpdateRentalOrderTotalDTO>.Success(updateRentalOrderTotalDTO, "Cập nhật tổng tiền cho đơn hàng thành công!");
         }
@@ -226,6 +225,8 @@ namespace Service.Services
                     User = order.User,
                 };
                 await _paymentRepository.AddAsync(payment);
+                order.Status = RentalOrderStatus.PaymentPending;
+                await _rentalOrderRepository.UpdateAsync(order);
             }
             else
             {
