@@ -85,6 +85,17 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
             }
+            if (order.Status != RentalOrderStatus.DepositPending)
+            {
+                return Result<bool>.Failure("Đơn hàng không ở trạng thái chờ thanh toán đặt cọc.");
+            }
+            if (order.WithDriver == false)
+            {
+                if (!order.CitizenId.HasValue || !order.DriverLicenseId.HasValue)
+                {
+                    return Result<bool>.Failure("Đơn hàng chưa hoàn tất nộp giấy tờ cần thiết.");
+                }
+            }
             var depositPayment = await _paymentRepository.GetDepositByOrderIdAsync(orderId);
             if (depositPayment == null)
             {

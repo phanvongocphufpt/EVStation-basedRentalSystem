@@ -59,6 +59,17 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
+        [HttpPut("ConfirmDocuments")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> ConfirmDocuments(int orderId)
+        {
+            var result = await _rentalOrderService.ConfirmDocumentAsync(orderId);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
         [HttpPut("UpdateTotal")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)
@@ -92,11 +103,11 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPut("UpdateStatus")]
+        [HttpDelete("CancelOrder")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> UpdateStatus([FromBody] UpdateRentalOrderStatusDTO updateRentalOrderStatusDTO)
+        public async Task<IActionResult> CancelOrder ([FromForm] int orderId)
         {
-            var result = await _rentalOrderService.UpdateStatusAsync(updateRentalOrderStatusDTO);
+            var result = await _rentalOrderService.CancelOrderAsync(orderId);
             if (result.IsSuccess)
             {
                 return Ok(result);

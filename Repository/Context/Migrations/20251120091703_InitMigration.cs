@@ -397,7 +397,8 @@ namespace Repository.Context.Migrations
                     { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 1000000.0, 1400000.0, 45000.0, 60000.0, 5, "Sedan", 1, 425, null },
                     { 2, 240, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", true, false, "Nissan Leaf", "Leaf", 800000.0, 1200000.0, 35000.0, 50000.0, 5, "Hatchback", 1, 435, null },
                     { 3, 259, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", true, false, "Chevrolet Bolt EV", "Bolt EV", 900000.0, 1300000.0, 40000.0, 55000.0, 5, "Hatchback", 1, 478, null },
-                    { 4, 153, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", true, false, "BMW i3", "i3", 1100000.0, 1500000.0, 50000.0, 65000.0, 4, "Hatchback", 1, 260, null }
+                    { 4, 153, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", true, false, "BMW i3", "i3", 1100000.0, 1500000.0, 50000.0, 65000.0, 4, "Hatchback", 1, 260, null },
+                    { 5, 222, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", true, false, "Audi e-tron", "e-tron", 1500000.0, 2000000.0, 70000.0, 90000.0, 5, "SUV", 1, 660, null }
                 });
 
             migrationBuilder.InsertData(
@@ -407,7 +408,8 @@ namespace Repository.Context.Migrations
                 {
                     { 1, "123 Tran Hung Dao St, Ho Chi Minh City", "10.7769,106.7009", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), true, false, "Downtown Rental Location", null },
                     { 2, "456 Nguyen Cuu Phuc St, Ho Chi Minh City", "10.7950,106.6540", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), true, false, "Airport Rental Location", null },
-                    { 3, "789 Le Van Viet St, Ho Chi Minh City", "10.8500,106.7500", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), true, false, "Suburban Rental Location", null }
+                    { 3, "789 Le Van Viet St, Ho Chi Minh City", "10.8500,106.7500", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), true, false, "Suburban Rental Location", null },
+                    { 4, "101 Nguyen Van Cu St, Ho Chi Minh City", "10.7700,106.6800", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), true, false, "City Center Rental Location", null }
                 });
 
             migrationBuilder.InsertData(
@@ -433,7 +435,13 @@ namespace Repository.Context.Migrations
                     { 7, 3, false, 1, 1 },
                     { 8, 4, false, 2, 2 },
                     { 9, 1, false, 3, 4 },
-                    { 10, 2, false, 2, 2 }
+                    { 10, 2, false, 2, 2 },
+                    { 11, 3, false, 3, 3 },
+                    { 12, 4, false, 1, 6 },
+                    { 13, 5, false, 1, 4 },
+                    { 14, 5, false, 2, 5 },
+                    { 15, 5, false, 3, 3 },
+                    { 16, 4, false, 4, 10 }
                 });
 
             migrationBuilder.InsertData(

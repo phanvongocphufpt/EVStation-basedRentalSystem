@@ -62,6 +62,10 @@ namespace Service.Services
             {
                 return Result<CreateDriverLicenseDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của Order.");
             }
+            if (order.WithDriver == true)
+            {
+                return Result<CreateDriverLicenseDTO>.Failure("Order có tài xế, không cần giấy phép lái xe!");
+            }
             if (order.DriverLicense != null)
             {
                 return Result<CreateDriverLicenseDTO>.Failure("Order đã có giấy phép lái xe rồi!");
@@ -82,7 +86,6 @@ namespace Service.Services
             {
                 order.Status = RentalOrderStatus.DocumentsSubmitted;
                 await _rentalOrderRepository.UpdateAsync(order);
-                await _emailService.SendRemindEmail(order.User.Email, order);
             }
             return Result<CreateDriverLicenseDTO>.Success(createDriverLicenseDTO, "Tạo giấy phép lái xe thành công.");
         }
@@ -102,19 +105,14 @@ namespace Service.Services
             existingDriverLicense.UpdatedAt = DateTime.Now;
             await _driverLicenseRepository.UpdateAsync(existingDriverLicense);
             
-            // Reload order để lấy thông tin mới nhất
             order = await _rentalOrderRepository.GetByIdAsync(existingDriverLicense.RentalOrderId);
             
-            // Chuyển sang DepositPending khi cả 2 giấy tờ đều được approve và status là DocumentsSubmitted
             if (order.CitizenId.HasValue && 
-                order.CitizenIdNavigation != null && 
                 order.CitizenIdNavigation.Status == DocumentStatus.Approved && 
                 order.DriverLicense.Status == DocumentStatus.Approved && 
                 order.Status == RentalOrderStatus.DocumentsSubmitted)
             {
-                order.Status = RentalOrderStatus.DepositPending;
-                order.UpdatedAt = DateTime.Now;
-                await _rentalOrderRepository.UpdateAsync(order);
+                await _emailService.SendRemindEmail(order.User.Email, order);
             }
             return Result<UpdateDriverLicenseStatusDTO>.Success(driverLicenseDTO, "Cập nhật trạng thái giấy phép lái xe thành công.");
         }

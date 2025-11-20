@@ -61,9 +61,13 @@ namespace Service.Services
             {
                 return Result<CreateCitizenIdDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của order.");
             }
+            if (order.WithDriver == true)
+            {
+                return Result<CreateCitizenIdDTO>.Failure("Order có tài xế, không cần căn cước công dân!");
+            }
             if (order.CitizenIdNavigation != null)
             {
-                return Result<CreateCitizenIdDTO>.Failure("Order đã có chứng minh nhân dân rồi! Không thể tạo thêm.");
+                return Result<CreateCitizenIdDTO>.Failure("Order đã có căn cước công dân rồi! Không thể tạo thêm.");
             }
             var citizenId = new CitizenId
             {
@@ -82,16 +86,15 @@ namespace Service.Services
             {
                 order.Status = RentalOrderStatus.DocumentsSubmitted;
                 await _rentalOrderRepository.UpdateAsync(order);
-                await _emailService.SendRemindEmail(order.User.Email, order);
             }
-            return Result<CreateCitizenIdDTO>.Success(createCitizenIdDTO, "Tạo chứng minh nhân dân thành công."); 
+            return Result<CreateCitizenIdDTO>.Success(createCitizenIdDTO, "Tạo căn cước công dân thành công."); 
         }
         public async Task<Result<UpdateCitizenIdStatusDTO>> UpdateCitizenIdStatusAsync(UpdateCitizenIdStatusDTO updateCitizenIdStatusDTO)
         {
             var citizenId = await _citizenIdRepository.GetCitizenIdByIdAsync(updateCitizenIdStatusDTO.CitizenIdId);
             if (citizenId == null)
             {
-                return Result<UpdateCitizenIdStatusDTO>.Failure("Chứng minh nhân dân không tồn tại! Kiểm tra lại Id.");
+                return Result<UpdateCitizenIdStatusDTO>.Failure("Căn cước công dân không tồn tại! Kiểm tra lại Id.");
             }
             var order = await _rentalOrderRepository.GetByIdAsync(citizenId.RentalOrderId);
             if (order == null)
@@ -101,39 +104,33 @@ namespace Service.Services
             citizenId.Status = updateCitizenIdStatusDTO.Status;
             citizenId.UpdatedAt = DateTime.Now;
             await _citizenIdRepository.UpdateCitizenIdAsync(citizenId);
-            
-            // Reload order để lấy thông tin mới nhất
+
             order = await _rentalOrderRepository.GetByIdAsync(citizenId.RentalOrderId);
             
-            // Chuyển sang DepositPending khi cả 2 giấy tờ đều được approve và status là DocumentsSubmitted
-            if (order.DriverLicenseId.HasValue && 
-                order.CitizenIdNavigation != null && 
+            if (order.DriverLicenseId.HasValue &&  
                 order.CitizenIdNavigation.Status == DocumentStatus.Approved && 
                 order.DriverLicense.Status == DocumentStatus.Approved && 
                 order.Status == RentalOrderStatus.DocumentsSubmitted)
             {
-                order.Status = RentalOrderStatus.DepositPending;
-                order.UpdatedAt = DateTime.Now;
-                await _rentalOrderRepository.UpdateAsync(order);
+                await _emailService.SendRemindEmail(order.User.Email, order);
             }
-            return Result<UpdateCitizenIdStatusDTO>.Success(updateCitizenIdStatusDTO, "Cập nhật trạng thái chứng minh nhân dân thành công.");
+            return Result<UpdateCitizenIdStatusDTO>.Success(updateCitizenIdStatusDTO, "Cập nhật trạng thái căn cước công dân thành công.");
         }
         public async Task<Result<UpdateCitizenIdInfoDTO>> UpdateCitizenIdInfoAsync(UpdateCitizenIdInfoDTO updateCitizenIdInfoDTO)
         {
             var citizenId = await _citizenIdRepository.GetCitizenIdByIdAsync(updateCitizenIdInfoDTO.Id);
             if (citizenId == null)
             {
-                return Result<UpdateCitizenIdInfoDTO>.Failure("Chứng minh nhân dân không tồn tại! Kiểm tra lại Id.");
+                return Result<UpdateCitizenIdInfoDTO>.Failure("Căn cước công dân không tồn tại! Kiểm tra lại Id.");
             }
             citizenId.Name = updateCitizenIdInfoDTO.Name;
             citizenId.CitizenIdNumber = updateCitizenIdInfoDTO.CitizenIdNumber;
             citizenId.BirthDate = updateCitizenIdInfoDTO.BirthDate;
             citizenId.ImageUrl = updateCitizenIdInfoDTO.ImageUrl;
             citizenId.ImageUrl2 = updateCitizenIdInfoDTO.ImageUrl2;
-            citizenId.Status = DocumentStatus.Pending;
             citizenId.UpdatedAt = DateTime.Now;
             await _citizenIdRepository.UpdateCitizenIdAsync(citizenId);
-            return Result<UpdateCitizenIdInfoDTO>.Success(updateCitizenIdInfoDTO, "Cập nhật thông tin chứng minh nhân dân thành công.");
+            return Result<UpdateCitizenIdInfoDTO>.Success(updateCitizenIdInfoDTO, "Cập nhật thông tin căn cước công dân thành công.");
         }
     }
 }
