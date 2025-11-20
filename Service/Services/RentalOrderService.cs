@@ -293,7 +293,7 @@ namespace Service.Services
             existingOrder.Status = RentalOrderStatus.Cancelled;
             existingOrder.UpdatedAt = DateTime.Now;
             await _rentalOrderRepository.UpdateAsync(existingOrder);
-            return Result<bool>.Success(true, "Cập nhật trạng thái thành công!");
+            return Result<bool>.Success(true, "Hủy đơn thuê thành công!");
         }
         public async Task<Result<bool>> ConfirmDocumentAsync(int orderId)
         {
