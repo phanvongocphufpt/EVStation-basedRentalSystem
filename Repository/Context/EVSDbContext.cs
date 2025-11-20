@@ -133,6 +133,29 @@ namespace Repository.Context
                         UpdatedAt = null,
                         IsActive = true,
                         IsDeleted = false
+                    },
+                    new Car
+                    {
+                        Id = 5,
+                        Model = "Audi e-tron",
+                        Name = "e-tron",
+                        Seats = 5,
+                        SizeType = "SUV",
+                        TrunkCapacity = 660,
+                        BatteryType = "Lithium-Ion",
+                        BatteryDuration = 222,
+                        RentPricePerDay = 1500000,
+                        RentPricePerHour = 70000,
+                        RentPricePerDayWithDriver = 2000000,
+                        RentPricePerHourWithDriver = 90000,
+                        ImageUrl = "https://example.com/audi_e_tron.jpg",
+                        ImageUrl2 = "https://example.com/audi_e_tron.jpg",
+                        ImageUrl3 = "https://example.com/audi_e_tron.jpg",
+                        Status = 1,
+                        CreatedAt = new DateTime(2025, 10, 11),
+                        UpdatedAt = null,
+                        IsActive = true,
+                        IsDeleted = false
                     }
                 );
             });
@@ -233,6 +256,48 @@ namespace Repository.Context
                         CarId = 2,
                         LocationId = 2,
                         Quantity = 2
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 11,
+                        CarId = 3,
+                        LocationId = 3,
+                        Quantity = 3
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 12,
+                        CarId = 4,
+                        LocationId = 1,
+                        Quantity = 6
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 13,
+                        CarId = 5,
+                        LocationId = 1,
+                        Quantity = 4
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 14,
+                        CarId = 5,
+                        LocationId = 2,
+                        Quantity = 5
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 15,
+                        CarId = 5,
+                        LocationId = 3,
+                        Quantity = 3
+                    },
+                    new CarRentalLocation
+                    {
+                        Id = 16,
+                        CarId = 4,
+                        LocationId = 4,
+                        Quantity = 10
                     }
                     );
             });
@@ -351,6 +416,17 @@ namespace Repository.Context
                             Name = "Suburban Rental Location",
                             Address = "789 Le Van Viet St, Ho Chi Minh City",
                             Coordinates = "10.8500,106.7500",
+                            CreatedAt = new DateTime(2025, 10, 11),
+                            UpdatedAt = null,
+                            IsActive = true,
+                            IsDeleted = false
+                        },
+                        new RentalLocation
+                        {
+                            Id = 4,
+                            Name = "City Center Rental Location",
+                            Address = "101 Nguyen Van Cu St, Ho Chi Minh City",
+                            Coordinates = "10.7700,106.6800",
                             CreatedAt = new DateTime(2025, 10, 11),
                             UpdatedAt = null,
                             IsActive = true,

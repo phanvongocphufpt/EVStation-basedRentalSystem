@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251114114454_InitMigration")]
+    [Migration("20251120091703_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -189,6 +189,28 @@ namespace Repository.Context.Migrations
                             SizeType = "Hatchback",
                             Status = 1,
                             TrunkCapacity = 260
+                        },
+                        new
+                        {
+                            Id = 5,
+                            BatteryDuration = 222,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ImageUrl = "https://example.com/audi_e_tron.jpg",
+                            ImageUrl2 = "https://example.com/audi_e_tron.jpg",
+                            ImageUrl3 = "https://example.com/audi_e_tron.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "Audi e-tron",
+                            Name = "e-tron",
+                            RentPricePerDay = 1500000.0,
+                            RentPricePerDayWithDriver = 2000000.0,
+                            RentPricePerHour = 70000.0,
+                            RentPricePerHourWithDriver = 90000.0,
+                            Seats = 5,
+                            SizeType = "SUV",
+                            Status = 1,
+                            TrunkCapacity = 660
                         });
                 });
 
@@ -341,6 +363,54 @@ namespace Repository.Context.Migrations
                             IsDeleted = false,
                             LocationId = 2,
                             Quantity = 2
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CarId = 3,
+                            IsDeleted = false,
+                            LocationId = 3,
+                            Quantity = 3
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CarId = 4,
+                            IsDeleted = false,
+                            LocationId = 1,
+                            Quantity = 6
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CarId = 5,
+                            IsDeleted = false,
+                            LocationId = 1,
+                            Quantity = 4
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CarId = 5,
+                            IsDeleted = false,
+                            LocationId = 2,
+                            Quantity = 5
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CarId = 5,
+                            IsDeleted = false,
+                            LocationId = 3,
+                            Quantity = 3
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CarId = 4,
+                            IsDeleted = false,
+                            LocationId = 4,
+                            Quantity = 10
                         });
                 });
 
@@ -659,6 +729,16 @@ namespace Repository.Context.Migrations
                             IsActive = true,
                             IsDeleted = false,
                             Name = "Suburban Rental Location"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Address = "101 Nguyen Van Cu St, Ho Chi Minh City",
+                            Coordinates = "10.7700,106.6800",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "City Center Rental Location"
                         });
                 });
 

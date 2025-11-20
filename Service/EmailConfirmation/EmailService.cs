@@ -121,7 +121,6 @@ namespace Service.EmailConfirmation
             {
                 throw new ArgumentException("Địa chỉ email không hợp lệ.", nameof(email));
             }
-            // Tạo nội dung email với mã xác nhận (token) thay vì đường link
             var emailSubject = $"[EVRental] Đơn #{rentalOrder.Id} – Cập nhật GPLX & CCCD thành công!";
             var emailBody = $@"
 <p><b>Kính gửi quý khách,</b></p>
@@ -133,9 +132,61 @@ namespace Service.EmailConfirmation
     <p><b>Model:</b> {rentalOrder.Car.Model}</p>
     <p><b>Thời gian thuê:</b> {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} → {rentalOrder.ExpectedReturnTime:dd/MM/yyyy HH:mm}</p>
 <p><br/></p>
-<p>Hẹn gặp quý khách vào ngày {rentalOrder.PickupTime:dd/MM/yyyy HH:mm}.</p>
+<p>Hẹn gặp quý khách vào ngày {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} tại: {rentalOrder.RentalLocation.Address}</p>
 <p>Khi đến, quý khách vui lòng mang theo GPLX, CCCD vật lý để chúng tôi xác minh. </p>
-<p><b>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc là {rentalOrder.Deposit} VNĐ. Tiền cọc này là 20% giá trị của đơn, sẽ được hoàn trả chung với hóa đơn cuối cùng sau khi đã khấu trừ phí vượt mức, hư hại nếu có.</b></p>
+<p><b>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc là {rentalOrder.Deposit} VNĐ. Tiền cọc này là 20% giá trị của đơn, sẽ được hoàn trả chung với hóa đơn cuối cùng sau khi đã khấu trừ phí vượt mức, phí phát sinh và hư hại nếu có.</b></p>
+<p><br/></p>
+<p>Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email.</p>
+<p>Cảm ơn bạn đã sử dụng dịch vụ EVRental!</p>
+Trân trọng,
+Đội ngũ EVRental!
+";
+
+            using var smtpClient = new SmtpClient(_smtpSettings.Server)
+            {
+                Port = _smtpSettings.Port,
+                Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password),
+                EnableSsl = true,
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username),
+                Subject = emailSubject,
+                Body = emailBody,
+                IsBodyHtml = true,
+            };
+
+            mailMessage.To.Add(email);
+
+            try
+            {
+                await smtpClient.SendMailAsync(mailMessage);
+            }
+            catch (SmtpException ex)
+            {
+                Console.WriteLine($"Lỗi khi gửi email: {ex.Message}");
+            }
+        }
+        public async Task SendRemindWithDriverEmail(string email, RentalOrder rentalOrder)
+        {
+            if (string.IsNullOrWhiteSpace(email) || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
+            {
+                throw new ArgumentException("Địa chỉ email không hợp lệ.", nameof(email));
+            }
+            var emailSubject = $"[EVRental] Đơn #{rentalOrder.Id} – Xác nhận đơn thuê thành công!";
+            var emailBody = $@"
+<p><b>Kính gửi quý khách,</b></p>
+
+<p>Thông tin đơn hàng của quý khách là:</p>
+<p><br/></p>
+    <p><b>Mã đơn:</b> <strong>#{rentalOrder.Id}</strong></p>
+    <p><b>Xe:</b> {rentalOrder.Car.Name}</p>
+    <p><b>Model:</b> {rentalOrder.Car.Model}</p>
+    <p><b>Thời gian thuê:</b> {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} → {rentalOrder.ExpectedReturnTime:dd/MM/yyyy HH:mm}</p>
+<p><br/></p>
+<p>Hẹn gặp quý khách vào ngày {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} tại: {rentalOrder.RentalLocation.Address}</p>
+<p><b>Bây giờ, quý khách vui lòng chuẩn bị trước số tiền cọc là {rentalOrder.Deposit} VNĐ. Tiền cọc này là 20% giá trị của đơn, sẽ được hoàn trả chung với hóa đơn cuối cùng sau khi đã khấu trừ phí vượt mức, phí phát sinh và hư hại nếu có.</b></p>
 <p><br/></p>
 <p>Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email.</p>
 <p>Cảm ơn bạn đã sử dụng dịch vụ EVRental!</p>
