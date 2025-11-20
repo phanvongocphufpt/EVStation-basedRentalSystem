@@ -76,7 +76,26 @@ namespace EVStation_basedRentalSystem.Controllers
             var result = await _userService.UpdateCustomerPasswordAsync(updateUserDTO);
             return Ok(result);
         }
+ [HttpPut("UpdateUserActiveStatus")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> UpdateUserActiveStatus([FromBody] UpdateUserActiveStatusDTO updateUserActiveStatusDTO)
+        {
+            if (updateUserActiveStatusDTO == null)
+                return BadRequest(new { message = "Dữ liệu cập nhật trạng thái người dùng không được để trống." });
 
+            if (updateUserActiveStatusDTO.UserId <= 0)
+                return BadRequest(new { message = "Mã người dùng không hợp lệ." });
+
+            if (!ModelState.IsValid)
+                return BadRequest(new { message = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.", errors = ModelState });
+
+            var result = await _userService.UpdateUserActiveStatusAsync(updateUserActiveStatusDTO);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message ?? "Không tìm thấy người dùng hoặc không thể cập nhật trạng thái." });
+
+            return Ok(new { message = result.Message ?? "Cập nhật trạng thái người dùng thành công." });
+        }
+        
         [HttpDelete("{id:guid}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)

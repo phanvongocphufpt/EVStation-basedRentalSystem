@@ -45,4 +45,9 @@ namespace Service.DTOs
         public string oldPassword { get; set; }
         public string newPassword { get; set; }
     }
+    public class UpdateUserActiveStatusDTO
+    {
+        public int UserId { get; set; }
+        public bool IsActive { get; set; }
+    }
 }

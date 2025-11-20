@@ -119,6 +119,19 @@ namespace Service.Services
             await _userRepository.UpdateAsync(getUser);
             return Result<UpdateCustomerPasswordDTO>.Success(updateUserDTO, "Cập nhật mật khẩu khách hàng thành công.");
         }
+        public async Task<Result<UpdateUserActiveStatusDTO>> UpdateUserActiveStatusAsync(UpdateUserActiveStatusDTO updateUserActiveStatusDTO)
+        {
+            var getUser = await _userRepository.GetByIdAsync(updateUserActiveStatusDTO.UserId);
+            if (getUser == null)
+            {
+                return Result<UpdateUserActiveStatusDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id.");
+            }
+            getUser.IsActive = updateUserActiveStatusDTO.IsActive;
+            getUser.UpdatedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(getUser);
+            var statusText = updateUserActiveStatusDTO.IsActive ? "kích hoạt" : "vô hiệu hóa";
+            return Result<UpdateUserActiveStatusDTO>.Success(updateUserActiveStatusDTO, $"Cập nhật trạng thái người dùng thành công. Tài khoản đã được {statusText}.");
+        }
         public async Task DeleteAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
