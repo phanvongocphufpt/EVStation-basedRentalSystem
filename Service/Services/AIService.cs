@@ -27,7 +27,7 @@ namespace Service.Services
             _httpClient.BaseAddress = new Uri("https://generativelanguage.googleapis.com/v1/");
         }
 
-        public async Task<string> GenerateResponseAsync(string prompt, string model = "flash-live", bool shortAnswer = false)
+        public async Task<string> GenerateResponseAsync(string prompt, string model = "flash", bool shortAnswer = false)
         {
             try
             {
@@ -86,7 +86,7 @@ namespace Service.Services
         }
 
 
-        public async Task<string> AnalyzeCarUsageAsync(string model = "flash-live", bool shortAnswer = false)
+        public async Task<string> AnalyzeCarUsageAsync(string model = "flash", bool shortAnswer = false)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace Service.Services
             }
         }
 
-        public async Task<CarUsageAnalysisDTO> AnalyzeCarUsageWithSuggestionsAsync(string model = "flash-live", bool shortAnswer = false)
+        public async Task<CarUsageAnalysisDTO> AnalyzeCarUsageWithSuggestionsAsync(string model = "flash", bool shortAnswer = false)
         {
             try
             {
