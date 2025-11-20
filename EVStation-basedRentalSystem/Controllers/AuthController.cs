@@ -37,7 +37,9 @@ namespace EVStation_basedRentalSystem.Controllers
                 Token = token,
                 UserId = user.Id,
                 Role = user.Role,
-                FullName = user.FullName
+                FullName = user.FullName,
+                isActive=user.IsActive
+                
             });
         }
 
