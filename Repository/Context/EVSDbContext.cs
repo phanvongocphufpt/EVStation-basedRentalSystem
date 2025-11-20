@@ -391,9 +391,9 @@ namespace Repository.Context
                         new RentalLocation
                         {
                             Id = 1,
-                            Name = "Downtown Rental Location",
-                            Address = "123 Tran Hung Dao St, Ho Chi Minh City",
-                            Coordinates = "10.7769,106.7009",
+                            Name = "EVStation Nguyễn Văn Tăng",
+                            Address = "209 Nguyễn Văn Tăng, Long Thạnh Mỹ, Thủ Đức, TP.HCM",
+                            Coordinates = "10.84274, 106.8198",
                             CreatedAt = new DateTime(2025, 10, 11),
                             UpdatedAt = null,
                             IsActive = true,
@@ -402,9 +402,9 @@ namespace Repository.Context
                         new RentalLocation
                         {
                             Id = 2,
-                            Name = "Airport Rental Location",
-                            Address = "456 Nguyen Cuu Phuc St, Ho Chi Minh City",
-                            Coordinates = "10.7950,106.6540",
+                            Name = "EVStation Lê Văn Việt",
+                            Address = "447 Lê Văn Việt, Thủ Đức, TP.HCM",
+                            Coordinates = "10.84529, 106.7933",
                             CreatedAt = new DateTime(2025, 10, 11),
                             UpdatedAt = null,
                             IsActive = true,

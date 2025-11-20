@@ -30,6 +30,11 @@ namespace Repository.Repositories
         {
             return await _context.RentalOrders
                 .Include(x => x.Payments)
+                .Include(x => x.Car)
+                .Include(x => x.RentalLocation)
+                .Include(x => x.User)
+                .Include(x => x.CitizenIdNavigation)
+                .Include(x => x.DriverLicense)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
