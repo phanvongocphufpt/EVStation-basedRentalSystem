@@ -96,15 +96,52 @@ Dễ nhìn, mỗi ý 1 dòng, không dùng *, ** hay markdown.
         [HttpPost("chat")]
         public async Task<IActionResult> Chat([FromBody] Service.DTOs.ChatRequest request)
         {
-
-            var Message = $@"
-Bạn là ChatBot cho  EV rental. chỉ trả lời ngắn gọn khoảng 100 từ ";
             if (string.IsNullOrWhiteSpace(request.Message))
                 return BadRequest(new { error = "Message không được để trống" });
 
             try
             {
-                var reply = await _aiService.GenerateResponseAsync(request.Message, shortAnswer: request.ShortAnswer);
+                // Lấy thông tin về dịch vụ để làm context
+                var cars = await _dbContext.Cars
+                    .Where(c => !c.IsDeleted && c.IsActive)
+                    .Take(5)
+                    .Select(c => new { c.Name, c.Model, c.Seats, c.BatteryDuration, c.RentPricePerDay })
+                    .ToListAsync();
+
+                var rentalLocations = await _dbContext.RentalLocations
+                    .Where(rl => rl.IsActive && !rl.IsDeleted)
+                    .Take(3)
+                    .Select(rl => new { rl.Name, rl.Address })
+                    .ToListAsync();
+
+                // Tạo system prompt với context về EV Rental
+                var systemPrompt = $@"Bạn là ChatBot chuyên tư vấn cho dịch vụ EV Rental - dịch vụ thuê xe điện.
+
+THÔNG TIN VỀ DỊCH VỤ EV RENTAL:
+- Dịch vụ cho thuê xe điện (Electric Vehicle Rental)
+- Cung cấp nhiều loại xe điện với đầy đủ tiện nghi
+- Có nhiều địa điểm cho thuê tại các khu vực khác nhau
+- Hỗ trợ thuê xe có tài xế hoặc tự lái
+- Giá cả hợp lý, dịch vụ chuyên nghiệp
+
+DANH SÁCH XE ĐIỆN:
+{System.Text.Json.JsonSerializer.Serialize(cars)}
+
+ĐỊA ĐIỂM CHO THUÊ:
+{System.Text.Json.JsonSerializer.Serialize(rentalLocations)}
+
+QUY TẮC TRẢ LỜI:
+1. BẮT BUỘC: Mọi câu hỏi của khách hàng, dù về chủ đề gì, bạn PHẢI liên kết và trả lời trong ngữ cảnh của dịch vụ EV Rental
+2. Nếu khách hỏi về chủ đề khác (thời tiết, tin tức, v.v.), hãy chuyển hướng sang giới thiệu dịch vụ EV Rental một cách tự nhiên
+3. Luôn nhiệt tình, thân thiện và chuyên nghiệp
+4. Trả lời ngắn gọn, dễ hiểu, khoảng 100-150 từ
+5. Luôn kết thúc bằng cách mời khách hàng sử dụng dịch vụ hoặc đặt câu hỏi thêm về EV Rental
+
+CÂU HỎI CỦA KHÁCH HÀNG: {request.Message}
+
+Hãy trả lời câu hỏi trên theo quy tắc đã nêu.";
+
+                var reply = await _aiService.GenerateResponseAsync(systemPrompt, shortAnswer: request.ShortAnswer);
                 return Ok(new Service.DTOs.ChatResponse { Reply = reply });
             }
             catch (Exception ex)
