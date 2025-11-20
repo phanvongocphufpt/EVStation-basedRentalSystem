@@ -413,9 +413,9 @@ namespace Repository.Context
                         new RentalLocation
                         {
                             Id = 3,
-                            Name = "Suburban Rental Location",
-                            Address = "789 Le Van Viet St, Ho Chi Minh City",
-                            Coordinates = "10.8500,106.7500",
+                            Name = "EVStation Kha Vạn Cân",
+                            Address = "39634 Kha Vạn Cân, Linh Chiểu, Thủ Đức, TP.HCM",
+                            Coordinates = "10.856468, 106.756518",
                             CreatedAt = new DateTime(2025, 10, 11),
                             UpdatedAt = null,
                             IsActive = true,
@@ -425,8 +425,8 @@ namespace Repository.Context
                         {
                             Id = 4,
                             Name = "City Center Rental Location",
-                            Address = "101 Nguyen Van Cu St, Ho Chi Minh City",
-                            Coordinates = "10.7700,106.6800",
+                            Address = "190 Võ Văn Ngân, Bình Thọ, Thủ Đức, TP.HCM",
+                            Coordinates = "10.850805, 106.763773",
                             CreatedAt = new DateTime(2025, 10, 11),
                             UpdatedAt = null,
                             IsActive = true,
