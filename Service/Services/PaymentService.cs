@@ -119,5 +119,24 @@ namespace Service.Services
             await _paymentRepository.UpdateAsync(payment);
             return Result<UpdatePaymentStatusDTO>.Success(updatePaymentDTO, "Cập nhật trạng thái thanh toán thành công.");
         }
+
+        public async Task<Result<IEnumerable<RevenueByLocationDTO>>> GetRevenueByLocationAsync()
+        {
+            var payments = await _paymentRepository.GetByRentalLocationAsync();
+            
+            // Filter only completed payments and group by rental location
+            var revenueByLocation = payments
+                .Where(p => p.Status == PaymentStatus.Completed && p.RentalOrder?.RentalLocation != null)
+                .GroupBy(p => p.RentalOrder.RentalLocation)
+                .Select(g => new RevenueByLocationDTO
+                {
+                    RentalLocationName = g.Key.Name,
+                    TotalRevenue = g.Sum(p => p.Amount),
+                    PaymentCount = g.Count()
+                })
+                .ToList();
+
+            return Result<IEnumerable<RevenueByLocationDTO>>.Success(revenueByLocation);
+        }
     }
 }

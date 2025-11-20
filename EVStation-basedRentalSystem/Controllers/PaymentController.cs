@@ -25,16 +25,16 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(payments);
         }
 
-        //[HttpGet("byRentalLocation")]
-        //[Authorize(Roles = "Admin,Staff")]
-        //public async Task<IActionResult> GetRevenueByLocation()
-        //{
-        //    var result = await _paymentService.GetRevenueByLocationAsync();
-        //    if (!result.IsSuccess)
-        //        return BadRequest(result.Message);
+        [HttpGet("byRentalLocation")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetRevenueByLocation()
+        {
+            var result = await _paymentService.GetRevenueByLocationAsync();
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
 
-        //    return Ok(result.Data);
-        //}
+            return Ok(result.Data);
+        }
 
         [HttpGet("GetAllByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]

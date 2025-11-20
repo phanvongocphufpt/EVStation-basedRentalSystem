@@ -80,53 +80,8 @@ Dễ nhìn, mỗi ý 1 dòng, không dùng *, ** hay markdown.
         {
             try
             {
-                // Lấy danh sách xe và các đơn thuê liên quan
-                var cars = await _dbContext.Cars
-                    .Where(c => !c.IsDeleted && c.IsActive)
-                    .Select(c => new { c.Id, c.Name })
-                    .ToListAsync();
-
-                var rentalOrders = await _dbContext.RentalOrders
-                    .Where(r => r.Status == Repository.Entities.Enum.RentalOrderStatus.Completed
-                             || r.Status == Repository.Entities.Enum.RentalOrderStatus.Renting)
-                    .ToListAsync();
-
-                if (!cars.Any() || !rentalOrders.Any())
-                    return Ok(new { response = "Chưa có dữ liệu thuê xe để phân tích." });
-
-                // Tính tỷ lệ sử dụng xe
-                var usageData = cars.Select(c =>
-                {
-                    var count = rentalOrders.Count(r => r.CarId == c.Id);
-                    var ratio = cars.Count > 0 ? (double)count / rentalOrders.Count : 0;
-                    return new { c.Name, Rentals = count, UsageRatio = Math.Round(ratio * 100, 2) + "%" };
-                }).OrderByDescending(x => x.Rentals).ToList();
-
-                // Tính giờ cao điểm theo PickupTime
-                var peakHours = rentalOrders
-                    .GroupBy(r => r.PickupTime.Hour)
-                    .Select(g => new { Hour = g.Key, Count = g.Count() })
-                    .OrderByDescending(x => x.Count)
-                    .Take(3)
-                    .ToList();
-
-                var prompt = $@"
-Bạn là chuyên gia phân tích dữ liệu thuê xe.
-Dữ liệu hiện tại:
-
-Tỷ lệ sử dụng xe:
-{System.Text.Json.JsonSerializer.Serialize(usageData)}
-
-Giờ cao điểm thuê xe:
-{System.Text.Json.JsonSerializer.Serialize(peakHours)}
-
-Hãy viết phân tích rõ ràng, dễ đọc, mỗi ý 1 dòng, tối đa 1000 ký tự.
-Không dùng *, ** hay markdown.
-";
-
-                var aiResponse = await _aiService.GenerateResponseAsync(prompt, shortAnswer: true);
-
-                return Ok(new { response = aiResponse });
+                var result = await _aiService.AnalyzeCarUsageWithSuggestionsAsync(shortAnswer: true);
+                return Ok(new { analysis = result.Analysis, suggestions = result.Suggestions });
             }
             catch (Exception ex)
             {

@@ -14,5 +14,10 @@ namespace Service.IServices
         /// Phân tích tỷ lệ sử dụng xe và giờ cao điểm dựa trên dữ liệu trong DB
         /// </summary>
         Task<string> AnalyzeCarUsageAsync(string model = "flash", bool shortAnswer = false);
+
+        /// <summary>
+        /// Phân tích tỷ lệ sử dụng xe và giờ cao điểm với 2 khung: Phân tích và Gợi ý
+        /// </summary>
+        Task<CarUsageAnalysisDTO> AnalyzeCarUsageWithSuggestionsAsync(string model = "flash", bool shortAnswer = false);
     }
 }
