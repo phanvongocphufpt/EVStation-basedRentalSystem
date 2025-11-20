@@ -39,7 +39,7 @@ namespace Service.Services
 
                 if (shortAnswer)
                 {
-                    prompt = "Trả lời ngắn gọn: " + prompt;
+                    prompt = "Trả lời ngắn gọn:khoảng 100 từ " + prompt;
                 }
 
                 var requestBody = new
