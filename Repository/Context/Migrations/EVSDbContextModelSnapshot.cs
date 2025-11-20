@@ -40,9 +40,6 @@ namespace Repository.Context.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<double>("DepositAmount")
-                        .HasColumnType("float");
-
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -108,7 +105,6 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 350,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositAmount = 0.0,
                             ImageUrl = "https://example.com/tesla_model_3.jpg",
                             ImageUrl2 = "https://example.com/tesla_model_3.jpg",
                             ImageUrl3 = "https://example.com/tesla_model_3.jpg",
@@ -131,7 +127,6 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 240,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositAmount = 0.0,
                             ImageUrl = "https://example.com/nissan_leaf.jpg",
                             ImageUrl2 = "https://example.com/nissan_leaf.jpg",
                             ImageUrl3 = "https://example.com/nissan_leaf.jpg",
@@ -154,7 +149,6 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 259,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositAmount = 0.0,
                             ImageUrl = "https://example.com/chevrolet_bolt_ev.jpg",
                             ImageUrl2 = "https://example.com/chevrolet_bolt_ev.jpg",
                             ImageUrl3 = "https://example.com/chevrolet_bolt_ev.jpg",
@@ -177,7 +171,6 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 153,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositAmount = 0.0,
                             ImageUrl = "https://example.com/bmw_i3.jpg",
                             ImageUrl2 = "https://example.com/bmw_i3.jpg",
                             ImageUrl3 = "https://example.com/bmw_i3.jpg",
@@ -200,7 +193,6 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 222,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositAmount = 0.0,
                             ImageUrl = "https://example.com/audi_e_tron.jpg",
                             ImageUrl2 = "https://example.com/audi_e_tron.jpg",
                             ImageUrl3 = "https://example.com/audi_e_tron.jpg",
