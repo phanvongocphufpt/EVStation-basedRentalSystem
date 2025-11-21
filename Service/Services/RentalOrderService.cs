@@ -180,12 +180,13 @@ namespace Service.Services
             existingOrder.ExtraFee = updateRentalOrderTotalDTO.ExtraFee;
             existingOrder.DamageFee = updateRentalOrderTotalDTO.DamageFee;
             existingOrder.DamageNotes = updateRentalOrderTotalDTO.DamageNotes;
+            existingOrder.Status = RentalOrderStatus.PaymentPending;
             existingOrder.UpdatedAt = DateTime.Now;
             existingOrder.Status = RentalOrderStatus.PaymentPending;
             await _rentalOrderRepository.UpdateAsync(existingOrder);
             return Result<UpdateRentalOrderTotalDTO>.Success(updateRentalOrderTotalDTO, "Cập nhật tổng tiền cho đơn hàng thành công!");
         }
-        public async Task<Result<bool>> ConfirmTotalAsync (int orderId)
+        public async Task<Result<bool>> ConfirmTotalAsync(int orderId)
         {
             var order = await _rentalOrderRepository.GetByIdAsync(orderId);
             if (order == null)
@@ -319,7 +320,7 @@ namespace Service.Services
             }
             else if (order.WithDriver == true)
             {
-                    return Result<bool>.Failure("Đơn thuê cùng tài xế nên không cần xác nhận giấy tờ.");
+                return Result<bool>.Failure("Đơn thuê cùng tài xế nên không cần xác nhận giấy tờ.");
             }
             order.Status = RentalOrderStatus.DepositPending;
             order.UpdatedAt = DateTime.Now;

@@ -105,13 +105,23 @@ namespace Service.Services
             citizenId.UpdatedAt = DateTime.Now;
             await _citizenIdRepository.UpdateCitizenIdAsync(citizenId);
 
+            // Reload order với navigation properties để kiểm tra trạng thái cả 2 giấy tờ
             order = await _rentalOrderRepository.GetByIdAsync(citizenId.RentalOrderId);
             
+            // Kiểm tra nếu cả 2 giấy tờ đều được duyệt và order đang ở trạng thái DocumentsSubmitted
             if (order.DriverLicenseId.HasValue &&  
+                order.CitizenIdNavigation != null &&
+                order.DriverLicense != null &&
                 order.CitizenIdNavigation.Status == DocumentStatus.Approved && 
                 order.DriverLicense.Status == DocumentStatus.Approved && 
                 order.Status == RentalOrderStatus.DocumentsSubmitted)
             {
+                // Tự động chuyển trạng thái order sang DepositPending
+                order.Status = RentalOrderStatus.DepositPending;
+                order.UpdatedAt = DateTime.Now;
+                await _rentalOrderRepository.UpdateAsync(order);
+                
+                // Gửi email thông báo
                 await _emailService.SendRemindEmail(order.User.Email, order);
             }
             return Result<UpdateCitizenIdStatusDTO>.Success(updateCitizenIdStatusDTO, "Cập nhật trạng thái căn cước công dân thành công.");

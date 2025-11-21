@@ -16,7 +16,7 @@ namespace EVStation_basedRentalSystem.Controllers
             _rentalOrderService = rentalOrderService;
         }
         [HttpGet("GetAll")]
-        [Authorize(Roles = "Admin,Staff,Customer")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _rentalOrderService.GetAllAsync();
@@ -105,7 +105,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
         [HttpDelete("CancelOrder")]
         [Authorize(Roles = "Admin,Staff,Customer")]
-        public async Task<IActionResult> CancelOrder ([FromForm] int orderId)
+        public async Task<IActionResult> CancelOrder([FromForm] int orderId)
         {
             var result = await _rentalOrderService.CancelOrderAsync(orderId);
             if (result.IsSuccess)

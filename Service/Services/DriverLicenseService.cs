@@ -105,13 +105,23 @@ namespace Service.Services
             existingDriverLicense.UpdatedAt = DateTime.Now;
             await _driverLicenseRepository.UpdateAsync(existingDriverLicense);
             
+            // Reload order với navigation properties để kiểm tra trạng thái cả 2 giấy tờ
             order = await _rentalOrderRepository.GetByIdAsync(existingDriverLicense.RentalOrderId);
             
+            // Kiểm tra nếu cả 2 giấy tờ đều được duyệt và order đang ở trạng thái DocumentsSubmitted
             if (order.CitizenId.HasValue && 
+                order.CitizenIdNavigation != null &&
+                order.DriverLicense != null &&
                 order.CitizenIdNavigation.Status == DocumentStatus.Approved && 
                 order.DriverLicense.Status == DocumentStatus.Approved && 
                 order.Status == RentalOrderStatus.DocumentsSubmitted)
             {
+                // Tự động chuyển trạng thái order sang DepositPending
+                order.Status = RentalOrderStatus.DepositPending;
+                order.UpdatedAt = DateTime.Now;
+                await _rentalOrderRepository.UpdateAsync(order);
+                
+                // Gửi email thông báo
                 await _emailService.SendRemindEmail(order.User.Email, order);
             }
             return Result<UpdateDriverLicenseStatusDTO>.Success(driverLicenseDTO, "Cập nhật trạng thái giấy phép lái xe thành công.");
