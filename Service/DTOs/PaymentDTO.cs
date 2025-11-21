@@ -10,11 +10,11 @@ namespace Service.DTOs
     public class PaymentDTO
     {
         public int PaymentId { get; set; }
-        public PaymentType PaymentType { get; set; }
+        public string PaymentType { get; set; }
         public DateTime PaymentDate { get; set; }
         public double Amount { get; set; }
         public string PaymentMethod { get; set; }
-        public PaymentStatus Status { get; set; }
+        public string Status { get; set; }
         public string UserId { get; set; }
         public string OrderId { get; set; }
         public DateTime OrderDate { get; set; }
