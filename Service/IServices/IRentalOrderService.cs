@@ -11,6 +11,7 @@ namespace Service.IServices
     public interface IRentalOrderService
     {
         Task<Result<IEnumerable<RentalOrderDTO>>> GetAllAsync();
+        Task<Result<IEnumerable<RentalOrderWithDetailsDTO>>> GetOrderByLocationAsync(int locationId);
         Task<Result<RentalOrderDTO>> GetByIdAsync(int id);
         Task<Result<RentalOrderWithDetailsDTO>> GetByIdWithDetailsAsync(int orderId);
         Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id);

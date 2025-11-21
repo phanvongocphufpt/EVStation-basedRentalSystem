@@ -344,5 +344,12 @@ namespace Service.Services
             var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(rentalOrders);
             return Result<IEnumerable<RentalOrderDTO>>.Success(dtos);
         }
+
+        public async Task<Result<IEnumerable<RentalOrderWithDetailsDTO>>> GetOrderByLocationAsync(int locationId)
+        {
+            var rentalOrders = await _rentalOrderRepository.GetOrderByLocationAsync(locationId);
+            var dtos = _mapper.Map<IEnumerable<RentalOrderWithDetailsDTO>>(rentalOrders);
+            return Result<IEnumerable<RentalOrderWithDetailsDTO>>.Success(dtos);
+        }
     }
 }
