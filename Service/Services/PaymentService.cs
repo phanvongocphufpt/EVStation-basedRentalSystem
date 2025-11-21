@@ -17,18 +17,24 @@ namespace Service.Services
         private readonly IPaymentRepository _paymentRepository;
         private readonly IUserRepository _userRepository;
         private readonly IRentalOrderRepository _rentalOrderRepository;
+        private readonly IRentalLocationRepository _rentalLocationRepository;
         private readonly IMapper _mapper;
-        public PaymentService(IPaymentRepository paymentRepository, IMapper mapper, IUserRepository userRepository, IRentalOrderRepository rentalOrderRepository)
+        public PaymentService(IPaymentRepository paymentRepository, IMapper mapper, IUserRepository userRepository, IRentalOrderRepository rentalOrderRepository, IRentalLocationRepository rentalLocationRepository)
         {
             _paymentRepository = paymentRepository;
             _mapper = mapper;
             _userRepository = userRepository;
             _rentalOrderRepository = rentalOrderRepository;
+            _rentalLocationRepository = rentalLocationRepository;
         }
 
         public async Task<Result<CreatePaymentDTO>> AddAsync(CreatePaymentDTO createPaymentDTO)
         {
             var dto = _mapper.Map<Payment>(createPaymentDTO);
+            if (!dto.UserId.HasValue)
+            {
+                return Result<CreatePaymentDTO>.Failure("UserId không được để trống!");
+            }
             var user = await _userRepository.GetByIdAsync(dto.UserId.Value);
             if (user == null)
             {
@@ -127,7 +133,7 @@ namespace Service.Services
             // Filter only completed payments and group by rental location
             var revenueByLocation = payments
                 .Where(p => p.Status == PaymentStatus.Completed && p.RentalOrder?.RentalLocation != null)
-                .GroupBy(p => p.RentalOrder.RentalLocation)
+                .GroupBy(p => p.RentalOrder!.RentalLocation)
                 .Select(g => new RevenueByLocationDTO
                 {
                     RentalLocationName = g.Key.Name,
@@ -137,6 +143,61 @@ namespace Service.Services
                 .ToList();
 
             return Result<IEnumerable<RevenueByLocationDTO>>.Success(revenueByLocation);
+        }
+
+        public async Task<Result<PaymentByLocationDTO>> GetPaymentsByLocationAsync(int rentalLocationId)
+        {
+            // Kiểm tra địa điểm có tồn tại không
+            var location = await _rentalLocationRepository.GetByIdAsync(rentalLocationId);
+            if (location == null)
+            {
+                return Result<PaymentByLocationDTO>.Failure("Địa điểm cho thuê không tồn tại! Kiểm tra lại Id.");
+            }
+
+            // Lấy tất cả payments theo địa điểm
+            var payments = await _paymentRepository.GetByRentalLocationIdAsync(rentalLocationId);
+            
+            // Map sang DTO
+            var paymentDetails = payments.Select(p => new PaymentDetailDTO
+            {
+                PaymentId = p.Id,
+                PaymentType = p.PaymentType,
+                PaymentDate = p.PaymentDate,
+                Amount = p.Amount,
+                PaymentMethod = p.PaymentMethod,
+                BillingImageUrl = p.BillingImageUrl,
+                Status = p.Status,
+                RentalOrderId = p.RentalOrderId,
+                User = p.User != null ? new UserInfoDTO
+                {
+                    UserId = p.User.Id,
+                    Email = p.User.Email,
+                    FullName = p.User.FullName,
+                    Role = p.User.Role
+                } : null,
+                Order = p.RentalOrder != null ? new OrderInfoDTO
+                {
+                    OrderId = p.RentalOrder.Id,
+                    OrderDate = p.RentalOrder.OrderDate,
+                    PickupTime = p.RentalOrder.PickupTime,
+                    ExpectedReturnTime = p.RentalOrder.ExpectedReturnTime,
+                    ActualReturnTime = p.RentalOrder.ActualReturnTime,
+                    Total = p.RentalOrder.Total
+                } : null
+            }).ToList();
+
+            // Map location
+            var locationDTO = _mapper.Map<RentalLocationDTO>(location);
+
+            var result = new PaymentByLocationDTO
+            {
+                Location = locationDTO,
+                Payments = paymentDetails,
+                TotalPayments = paymentDetails.Count,
+                TotalAmount = paymentDetails.Sum(p => p.Amount)
+            };
+
+            return Result<PaymentByLocationDTO>.Success(result);
         }
     }
 }
