@@ -131,9 +131,11 @@ namespace Service.Services
         {
             var payments = await _paymentRepository.GetByRentalLocationAsync();
             
-            // Filter only completed payments and group by rental location
+            // Filter only completed payments, exclude Deposit payments, and group by rental location
             var revenueByLocation = payments
-                .Where(p => p.Status == PaymentStatus.Completed && p.RentalOrder?.RentalLocation != null)
+                .Where(p => p.Status == PaymentStatus.Completed 
+                         && p.PaymentType != PaymentType.Deposit 
+                         && p.RentalOrder?.RentalLocation != null)
                 .GroupBy(p => p.RentalOrder!.RentalLocation)
                 .Select(g => new RevenueByLocationDTO
                 {

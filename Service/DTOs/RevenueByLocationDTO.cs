@@ -11,5 +11,6 @@ namespace Service.DTOs
         public string RentalLocationName { get; set; }
         public double TotalRevenue { get; set; }
         public int PaymentCount { get; set; }
+        
     }
 }
