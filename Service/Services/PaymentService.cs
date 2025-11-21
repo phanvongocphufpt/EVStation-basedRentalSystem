@@ -101,6 +101,7 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Thanh toán đặt cọc không tồn tại cho đơn hàng này.");
             }
+            depositPayment.PaymentDate = DateTime.UtcNow;
             depositPayment.Status = PaymentStatus.Completed;
             await _paymentRepository.UpdateAsync(depositPayment);
             order.Status = RentalOrderStatus.Confirmed;

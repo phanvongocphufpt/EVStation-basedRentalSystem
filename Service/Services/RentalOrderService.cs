@@ -261,6 +261,7 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Không tìm thấy thông tin thanh toán cho đơn đặt thuê này.");
             }
+            payments.PaymentDate = DateTime.Now;
             payments.Status = PaymentStatus.Completed;
             await _paymentRepository.UpdateAsync(payments);
             // Chuyển sang Completed khi thanh toán thành công
