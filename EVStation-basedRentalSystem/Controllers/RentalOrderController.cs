@@ -26,6 +26,17 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
+        [HttpGet("GetByLocation")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetByLocation(int locationId)
+        {
+            var result = await _rentalOrderService.GetOrderByLocationAsync(locationId);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
         [HttpGet("GetById")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetById(int id)

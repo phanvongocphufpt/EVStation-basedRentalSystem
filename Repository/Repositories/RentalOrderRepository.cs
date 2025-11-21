@@ -25,6 +25,14 @@ namespace Repository.Repositories
                 .Include(x => x.Payments)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<RentalOrder>> GetOrderByLocationAsync(int locationId)
+        {
+            return await _context.RentalOrders.Where(x => x.RentalLocationId == locationId)
+                .Include(x => x.Payments)
+                .Include(x => x.Car)
+                .Include(x => x.RentalLocation)
+                .ToListAsync();
+        }
 
         public async Task<RentalOrder?> GetByIdAsync(int id)
         {
