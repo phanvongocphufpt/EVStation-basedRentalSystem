@@ -67,6 +67,16 @@ namespace Service.Services
             var dto = _mapper.Map<RentalOrderDTO>(rentalOrder);
             return Result<RentalOrderDTO>.Success(dto);
         }
+        public async Task<Result<RentalOrderWithDetailsDTO>> GetByIdWithDetailsAsync(int orderId)
+        {
+            var rentalOrder = await _rentalOrderRepository.GetByIdAsync(orderId);
+            if (rentalOrder == null)
+            {
+                return Result<RentalOrderWithDetailsDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
+            }
+            var dto = _mapper.Map<RentalOrderWithDetailsDTO>(rentalOrder);
+            return Result<RentalOrderWithDetailsDTO>.Success(dto);
+        }
         public async Task<Result<CreateRentalOrderDTO>> CreateAsync(CreateRentalOrderDTO createRentalOrderDTO)
         {
             var dto = _mapper.Map<RentalOrder>(createRentalOrderDTO);

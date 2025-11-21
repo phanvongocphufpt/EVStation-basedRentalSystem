@@ -12,6 +12,7 @@ namespace Service.IServices
     {
         Task<Result<IEnumerable<RentalOrderDTO>>> GetAllAsync();
         Task<Result<RentalOrderDTO>> GetByIdAsync(int id);
+        Task<Result<RentalOrderWithDetailsDTO>> GetByIdWithDetailsAsync(int orderId);
         Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id);
         Task<Result<CreateRentalOrderDTO>> CreateAsync(CreateRentalOrderDTO createRentalOrderDTO);
         Task<Result<bool>> CancelOrderAsync(int orderId);
