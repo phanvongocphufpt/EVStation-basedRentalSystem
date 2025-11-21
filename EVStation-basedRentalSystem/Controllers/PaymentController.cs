@@ -36,16 +36,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(result.Data);
         }
 
-        [HttpGet("GetByLocation/{rentalLocationId}")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> GetPaymentsByLocation(int rentalLocationId)
-        {
-            var result = await _paymentService.GetPaymentsByLocationAsync(rentalLocationId);
-            if (!result.IsSuccess)
-                return BadRequest(result.Message);
-
-            return Ok(result.Data);
-        }
+      
 
         [HttpGet("GetAllByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]

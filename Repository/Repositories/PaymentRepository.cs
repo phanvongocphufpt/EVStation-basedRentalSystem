@@ -31,18 +31,7 @@ namespace Repository.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Payment>> GetByRentalLocationIdAsync(int rentalLocationId)
-        {
-            return await _context.Payments
-                .Include(p => p.User)                      // load user info
-                .Include(p => p.RentalOrder)               // load order
-                    .ThenInclude(ro => ro!.RentalLocation)  // load location
-                .Include(p => p.RentalOrder)               // load order details
-                    .ThenInclude(ro => ro!.Car)             // load car info (optional)
-                .Where(p => p.RentalOrder != null && p.RentalOrder.RentalLocationId == rentalLocationId)
-                .OrderByDescending(p => p.PaymentDate)
-                .ToListAsync();
-        }
+      
 
         public async Task<Payment?> GetByIdAsync(int id)
         {
