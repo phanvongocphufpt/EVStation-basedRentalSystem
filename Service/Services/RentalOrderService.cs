@@ -21,9 +21,7 @@ namespace Service.Services
         private readonly IDriverLicenseRepository _driverLicenseRepository;
         private readonly IUserRepository _userRepository;
         private readonly ICarRepository _carRepository;
-        private readonly ICarRentalLocationRepository _carRentalLocationRepository;
         private readonly IRentalLocationRepository _rentalLocationRepository;
-        private readonly IRentalContactRepository _rentalContactRepository;
         private readonly IPaymentRepository _paymentRepository;
         private readonly IMapper _mapper;
         private readonly EmailService _emailService;
@@ -33,9 +31,7 @@ namespace Service.Services
             IDriverLicenseRepository driverLicenseRepository,
             IUserRepository userRepository,
             ICarRepository carRepository,
-            IRentalContactRepository rentalContactRepository,
             IMapper mapper,
-            ICarRentalLocationRepository carRentalLocationRepository,
             IRentalLocationRepository rentalLocationRepository,
             IPaymentRepository paymentRepository, EmailService emailService)
         {
@@ -44,9 +40,7 @@ namespace Service.Services
             _driverLicenseRepository = driverLicenseRepository;
             _userRepository = userRepository;
             _carRepository = carRepository;
-            _rentalContactRepository = rentalContactRepository;
             _mapper = mapper;
-            _carRentalLocationRepository = carRentalLocationRepository;
             _rentalLocationRepository = rentalLocationRepository;
             _paymentRepository = paymentRepository;
             _emailService = emailService;
@@ -95,23 +89,18 @@ namespace Service.Services
             {
                 return Result<CreateRentalOrderDTO>.Failure("Địa điểm thuê xe không tồn tại! Kiểm tra lại Id của địa điểm.");
             }
-            var carRentalLocation = await _carRentalLocationRepository.GetByCarAndLocationIdAsync(dto.CarId, dto.RentalLocationId);
-            if (carRentalLocation == null || carRentalLocation.Quantity == 0)
-            {
-                return Result<CreateRentalOrderDTO>.Failure("Xe không có sẵn tại địa điểm thuê xe đã chọn.");
-            }
+
             var subtotalDays = (dto.ExpectedReturnTime - dto.PickupTime).TotalDays;
             if (subtotalDays <= 0)
                 return Result<CreateRentalOrderDTO>.Failure("Thời gian trả xe phải lớn hơn thời gian nhận xe.");
             var subTotal = dto.WithDriver
                             ? subtotalDays * car.RentPricePerDayWithDriver
                             : subtotalDays * car.RentPricePerDay;
-            var deposit = Math.Round(subTotal * 0.2, 0);
+            var deposit = car.DepositPercent;
             if (createRentalOrderDTO.WithDriver == true)
             {
                 var order = new RentalOrder
                 {
-                    PhoneNumber = dto.PhoneNumber,
                     PickupTime = dto.PickupTime,
                     ExpectedReturnTime = dto.ExpectedReturnTime,
                     WithDriver = true,
@@ -144,7 +133,6 @@ namespace Service.Services
             {
                 var order = new RentalOrder
                 {
-                    PhoneNumber = dto.PhoneNumber,
                     PickupTime = dto.PickupTime,
                     ExpectedReturnTime = dto.ExpectedReturnTime,
                     WithDriver = false,
@@ -190,12 +178,11 @@ namespace Service.Services
             existingOrder.ExtraFee = updateRentalOrderTotalDTO.ExtraFee;
             existingOrder.DamageFee = updateRentalOrderTotalDTO.DamageFee;
             existingOrder.DamageNotes = updateRentalOrderTotalDTO.DamageNotes;
-            existingOrder.Status = RentalOrderStatus.PaymentPending;
             existingOrder.UpdatedAt = DateTime.Now;
             await _rentalOrderRepository.UpdateAsync(existingOrder);
             return Result<UpdateRentalOrderTotalDTO>.Success(updateRentalOrderTotalDTO, "Cập nhật tổng tiền cho đơn hàng thành công!");
         }
-        public async Task<Result<bool>> ConfirmTotalAsync(int orderId)
+        public async Task<Result<bool>> ConfirmTotalAsync (int orderId)
         {
             var order = await _rentalOrderRepository.GetByIdAsync(orderId);
             if (order == null)
@@ -308,37 +295,37 @@ namespace Service.Services
             await _rentalOrderRepository.UpdateAsync(existingOrder);
             return Result<bool>.Success(true, "Hủy đơn thuê thành công!");
         }
-        public async Task<Result<bool>> ConfirmDocumentAsync(int orderId)
-        {
-            var order = await _rentalOrderRepository.GetByIdAsync(orderId);
-            if (order == null)
-            {
-                return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
-            }
-            if (order.WithDriver == false)
-            {
-                if (!order.CitizenId.HasValue || !order.DriverLicenseId.HasValue)
-                {
-                    return Result<bool>.Failure("Chưa có đủ thông tin giấy tờ cần thiết để xác nhận giấy tờ đơn đặt thuê này.");
-                }
-                if (order.CitizenIdNavigation.Status != DocumentStatus.Approved)
-                {
-                    return Result<bool>.Failure("Giấy CMND/CCCD chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
-                }
-                if (order.DriverLicense.Status != DocumentStatus.Approved)
-                {
-                    return Result<bool>.Failure("Giấy phép lái xe chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
-                }
-            }
-            else if (order.WithDriver == true)
-            {
-                return Result<bool>.Failure("Đơn thuê cùng tài xế nên không cần xác nhận giấy tờ.");
-            }
-            order.Status = RentalOrderStatus.DepositPending;
-            order.UpdatedAt = DateTime.Now;
-            await _rentalOrderRepository.UpdateAsync(order);
-            return Result<bool>.Success(true, "Xác nhận giấy tờ thành công!");
-        }
+        //public async Task<Result<bool>> ConfirmDocumentAsync(int orderId)
+        //{
+        //    var order = await _rentalOrderRepository.GetByIdAsync(orderId);
+        //    if (order == null)
+        //    {
+        //        return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
+        //    }
+        //    if (order.WithDriver == false)
+        //    {
+        //        if (!order.CitizenId.HasValue || !order.DriverLicenseId.HasValue)
+        //        {
+        //            return Result<bool>.Failure("Chưa có đủ thông tin giấy tờ cần thiết để xác nhận giấy tờ đơn đặt thuê này.");
+        //        }
+        //        if (order.CitizenIdNavigation.Status != DocumentStatus.Approved)
+        //        {
+        //            return Result<bool>.Failure("Giấy CMND/CCCD chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
+        //        }
+        //        if (order.DriverLicense.Status != DocumentStatus.Approved)
+        //        {
+        //            return Result<bool>.Failure("Giấy phép lái xe chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
+        //        }
+        //    }
+        //    else if (order.WithDriver == true)
+        //    {
+        //            return Result<bool>.Failure("Đơn thuê cùng tài xế nên không cần xác nhận giấy tờ.");
+        //    }
+        //    order.Status = RentalOrderStatus.DepositPending;
+        //    order.UpdatedAt = DateTime.Now;
+        //    await _rentalOrderRepository.UpdateAsync(order);
+        //    return Result<bool>.Success(true, "Xác nhận giấy tờ thành công!");
+        //}
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id)
         {
             var rentalOrders = await _rentalOrderRepository.GetByUserIdAsync(id);

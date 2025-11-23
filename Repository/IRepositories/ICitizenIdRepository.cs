@@ -11,7 +11,7 @@ namespace Repository.IRepositories
     {
         Task<IEnumerable<CitizenId>> GetAllCitizenIdsAsync();
         Task<CitizenId?> GetCitizenIdByIdAsync(int id);
-        Task<CitizenId?> GetCitizenIdsByOrderIdAsync(int Id);
+        Task<CitizenId?> GetCitizenIdsByUserIdAsync(int Id);
         Task AddCitizenIdAsync(CitizenId citizenId);
         Task UpdateCitizenIdAsync(CitizenId citizenId);
         Task DeleteCitizenIdAsync(CitizenId citizenId);
