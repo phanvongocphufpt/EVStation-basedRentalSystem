@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.Common.VNPay.Model;
+using Service.Common.VNPay.VnPayServices;
 using Service.DTOs;
 using Service.IServices;
 
@@ -11,10 +13,11 @@ namespace EVStation_basedRentalSystem.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
-
-        public PaymentController(IPaymentService paymentService)
+        private readonly IVnPayService _vnPayService;
+        public PaymentController(IPaymentService paymentService, IVnPayService vnPayService)
         {
             _paymentService = paymentService;
+            _vnPayService = vnPayService;
         }
 
         [HttpGet("GetAll")]
@@ -90,5 +93,12 @@ namespace EVStation_basedRentalSystem.Controllers
             var result = await _paymentService.ConfirmDepositPaymentAsync(orderId);
             return Ok(result);
         }
+        public IActionResult CreatePaymentUrlVnpay(PaymentInformationModel model)
+        {
+            var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
+
+            return Redirect(url);
+        }
+
     }
 }

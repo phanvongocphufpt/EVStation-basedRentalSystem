@@ -20,6 +20,6 @@ namespace Service.IServices
         Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO);
         Task<Result<bool>> ConfirmPaymentAsync(int orderId);
         Task<Result<bool>> ConfirmTotalAsync(int orderId);
-        Task<Result<bool>> ConfirmDocumentAsync(int orderId);
+        //Task<Result<bool>> ConfirmDocumentAsync(int orderId);
     }
 }

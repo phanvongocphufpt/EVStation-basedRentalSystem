@@ -81,17 +81,6 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPut("ConfirmDocuments")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> ConfirmDocuments(int orderId)
-        {
-            var result = await _rentalOrderService.ConfirmDocumentAsync(orderId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
-        }
         [HttpPut("UpdateTotal")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)

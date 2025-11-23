@@ -18,6 +18,8 @@ namespace Repository.Entities
         public string? PaymentMethod { get; set; }
         public string? BillingImageUrl { get; set; }
         public PaymentStatus Status { get; set; }
+        public string? TxnRef { get; set; }
+        public string? TransactionNo { get; set; }
         public int? UserId { get; set; }
         public int? RentalOrderId { get; set; }
         public User? User { get; set; }
