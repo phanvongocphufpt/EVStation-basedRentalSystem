@@ -1,4 +1,5 @@
 ﻿using Repository.Entities.Enum;
+using Service.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,9 +52,29 @@ namespace Service.DTOs
         public int? RentalOrderId { get; set; }
         public UserInfoDTO? User { get; set; }
         public OrderInfoDTO? Order { get; set; }
+
+        // ===== Bổ sung MoMo =====
+        public string? MomoOrderId { get; set; }
+        public string? MomoRequestId { get; set; }
+        public string? MomoPartnerCode { get; set; }
+        public long? MomoTransId { get; set; }
+        public int? MomoResultCode { get; set; }
+        public string? MomoPayType { get; set; }
+        public string? MomoMessage { get; set; }
+        public string? MomoSignature { get; set; }
     }
 
-    public class UserInfoDTO
+    // Nếu muốn tạo DTO gửi về client khi tạo payment MoMo:
+    public class CreateMomoPaymentResponseDTO
+    {
+        public string MomoPayUrl { get; set; } = string.Empty; // URL để redirect user quét/đăng nhập MoMo
+        public string MomoOrderId { get; set; } = string.Empty;
+        public string MomoRequestId { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty; // Pending / Success / Failed
+    }
+}
+
+public class UserInfoDTO
     {
         public int UserId { get; set; }
         public string Email { get; set; }
@@ -78,4 +99,4 @@ namespace Service.DTOs
         public int TotalPayments { get; set; }
         public double TotalAmount { get; set; }
     }
-}
+

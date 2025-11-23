@@ -25,18 +25,77 @@ namespace Service.Mapper
                 .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => src.UpdatedAt));
             CreateMap<CreateStaffUserDTO, User>();
 
-            //Payment Mappings
+            // Payment Mappings
             CreateMap<Payment, PaymentDTO>()
                 .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.PaymentDate, opt => opt.MapFrom(src => src.PaymentDate))
-                .ForMember(dest => dest.PaymentType, otp => otp.MapFrom(src => src.PaymentType.ToString()))
+                .ForMember(dest => dest.PaymentDate, opt => opt.MapFrom(src => src.PaymentDate ?? DateTime.MinValue))
+                .ForMember(dest => dest.PaymentType, opt => opt.MapFrom(src => src.PaymentType.ToString()))
                 .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod ?? string.Empty))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId.HasValue ? src.UserId.Value.ToString() : string.Empty))
+                .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.RentalOrderId.HasValue ? src.RentalOrderId.Value.ToString() : string.Empty))
+                .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(src => src.RentalOrder != null ? src.RentalOrder.OrderDate : DateTime.MinValue));
+
+            // Payment to PaymentDetailDTO mapping (includes MoMo fields)
+            CreateMap<Payment, PaymentDetailDTO>()
+                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.PaymentType, opt => opt.MapFrom(src => src.PaymentType))
+                .ForMember(dest => dest.PaymentDate, opt => opt.MapFrom(src => src.PaymentDate))
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
                 .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.RentalOrder.User.Id))
-                .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.RentalOrder.Id))
-                .ForMember(dest => dest.OrderDate, otp => otp.MapFrom(src => src.RentalOrder.OrderDate));
-            CreateMap<CreatePaymentDTO, Payment>();
+                .ForMember(dest => dest.BillingImageUrl, opt => opt.MapFrom(src => src.BillingImageUrl))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.RentalOrderId, opt => opt.MapFrom(src => src.RentalOrderId))
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User != null ? new UserInfoDTO
+                {
+                    UserId = src.User.Id,
+                    Email = src.User.Email,
+                    FullName = src.User.FullName,
+                    Role = src.User.Role
+                } : null))
+                .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.RentalOrder != null ? new OrderInfoDTO
+                {
+                    OrderId = src.RentalOrder.Id,
+                    OrderDate = src.RentalOrder.OrderDate,
+                    PickupTime = src.RentalOrder.PickupTime,
+                    ExpectedReturnTime = src.RentalOrder.ExpectedReturnTime,
+                    ActualReturnTime = src.RentalOrder.ActualReturnTime,
+                    Total = src.RentalOrder.Total
+                } : null))
+                // ===== Map MoMo fields =====
+                .ForMember(dest => dest.MomoOrderId, opt => opt.MapFrom(src => src.MomoOrderId))
+                .ForMember(dest => dest.MomoRequestId, opt => opt.MapFrom(src => src.MomoRequestId))
+                .ForMember(dest => dest.MomoPartnerCode, opt => opt.MapFrom(src => src.MomoPartnerCode))
+                .ForMember(dest => dest.MomoTransId, opt => opt.MapFrom(src => src.MomoTransId))
+                .ForMember(dest => dest.MomoResultCode, opt => opt.MapFrom(src => src.MomoResultCode))
+                .ForMember(dest => dest.MomoPayType, opt => opt.MapFrom(src => src.MomoPayType))
+                .ForMember(dest => dest.MomoMessage, opt => opt.MapFrom(src => src.MomoMessage))
+                .ForMember(dest => dest.MomoSignature, opt => opt.MapFrom(src => src.MomoSignature));
+
+            // Mapping từ CreatePaymentDTO → Payment
+            CreateMap<CreatePaymentDTO, Payment>()
+                .ForMember(dest => dest.PaymentDate, opt => opt.MapFrom(src => src.PaymentDate ?? DateTime.Now))
+                .ForMember(dest => dest.PaymentType, opt => opt.MapFrom(src => src.PaymentType))
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
+                .ForMember(dest => dest.BillingImageUrl, opt => opt.MapFrom(src => src.BillingImageUrl))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.RentalOrderId, opt => opt.MapFrom(src => src.RentalOrderId))
+                // Ignore các trường MoMo và các trường khác không có trong CreatePaymentDTO
+                .ForMember(dest => dest.MomoOrderId, opt => opt.Ignore())
+                .ForMember(dest => dest.MomoRequestId, opt => opt.Ignore())
+                .ForMember(dest => dest.MomoPartnerCode, opt => opt.Ignore())
+                .ForMember(dest => dest.MomoTransId, opt => opt.Ignore())
+                .ForMember(dest => dest.MomoResultCode, opt => opt.Ignore())
+                .ForMember(dest => dest.MomoPayType, opt => opt.Ignore())
+                .ForMember(dest => dest.MomoMessage, opt => opt.Ignore())
+                .ForMember(dest => dest.MomoSignature, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.RentalOrder, opt => opt.Ignore());
+
 
             //RentalLocation Mappings
             CreateMap<RentalLocation, RentalLocationDTO>()

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Service.DTOs;
 using Service.IServices;
+using Newtonsoft.Json.Linq;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -36,8 +37,6 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(result.Data);
         }
 
-      
-
         [HttpGet("GetAllByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAllCustomerPayment(int userId)
@@ -56,7 +55,6 @@ namespace EVStation_basedRentalSystem.Controllers
 
             return Ok(payment.Data);
         }
-
 
         [HttpPost("CreateFromOrder")]
         [Authorize(Roles = "Admin,Staff")]
@@ -85,12 +83,53 @@ namespace EVStation_basedRentalSystem.Controllers
 
             return Ok(result.Data);
         }
+
         [HttpPut("ConfirmDepositPayment")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> ConfirmDepositPayment(int orderId)
         {
             var result = await _paymentService.ConfirmDepositPaymentAsync(orderId);
             return Ok(result);
+        }
+
+        // ============================
+        // MoMo endpoints
+        // ============================
+
+        // 1. Tạo MoMo payment → trả về payUrl để redirect frontend
+        [HttpPost("CreateMomoPayment")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> CreateMomoPayment([FromQuery] int rentalOrderId, [FromQuery] int userId, [FromQuery] double amount)
+        {
+            var result = await _paymentService.CreateMomoPaymentAsync(rentalOrderId, userId, amount);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
+        }
+
+        // 2. Nhận IPN từ MoMo
+        [HttpPost("MomoIPN")]
+        [AllowAnonymous] // IPN gọi từ MoMo, không cần auth
+        public async Task<IActionResult> MomoIpn([FromBody] JObject payload)
+        {
+            var result = await _paymentService.ProcessMomoIpnAsync(payload);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
+        }
+
+        // 3. Lấy payment theo MomoOrderId
+        [HttpGet("GetByMomoOrderId")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> GetByMomoOrderId([FromQuery] string momoOrderId)
+        {
+            var result = await _paymentService.GetPaymentByMomoOrderIdAsync(momoOrderId);
+            if (!result.IsSuccess)
+                return NotFound(result.Message);
+
+            return Ok(result.Data);
         }
     }
 }

@@ -6,12 +6,13 @@ using Microsoft.OpenApi.Models;
 using Repository.Context;
 using Repository.IRepositories;
 using Repository.Repositories;
+using Service.Configurations;
 using Service.EmailConfirmation;
 using Service.IServices;
 using Service.Mapper;
 using Service.Services;
-using System.Text;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Text;
 
 
 
@@ -123,6 +124,8 @@ builder.Services.AddScoped<ICarDeliveryHistoryService, CarDeliveryHistoryService
 builder.Services.AddScoped<ICarReturnHistoryService, CarReturnHistoryService>();
 builder.Services.AddHttpClient<IAIService, AIService>();
 
+builder.Services.Configure<MomoSettings>(
+    builder.Configuration.GetSection("MomoSettings"));
 
 //Others
 builder.Services.Configure<SmtpSettings>(smtpSettings);
