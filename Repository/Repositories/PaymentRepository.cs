@@ -26,12 +26,10 @@ namespace Repository.Repositories
         public async Task<IEnumerable<Payment>> GetByRentalLocationAsync()
         {
             return await _context.Payments
-                .Include(p => p.RentalOrder)               // load order
-                    .ThenInclude(ro => ro!.RentalLocation)  // load location
+                .Include(p => p.RentalOrder)   
+                    .ThenInclude(ro => ro.RentalLocation)
                 .ToListAsync();
         }
-
-      
 
         public async Task<Payment?> GetByIdAsync(int id)
         {
@@ -58,6 +56,12 @@ namespace Repository.Repositories
         {
             _context.Payments.Update(payment);
             await _context.SaveChangesAsync();
+        }
+        public async Task<Payment?> GetByTxnRefAsync(string txnRef)
+        {
+            return await _context.Payments
+                .Include(p => p.RentalOrder)
+                .FirstOrDefaultAsync(p => p.TxnRef == txnRef);
         }
         public async Task<IDbContextTransaction> BeginTransactionAsync()
         {

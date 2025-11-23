@@ -38,44 +38,12 @@ namespace Service.DTOs
     {
         public int OrderId { get; set; }
     }
-
-    public class PaymentDetailDTO
+    public class PaymentCallbackResult
     {
-        public int PaymentId { get; set; }
-        public PaymentType PaymentType { get; set; }
-        public DateTime? PaymentDate { get; set; }
-        public double Amount { get; set; }
-        public string? PaymentMethod { get; set; }
-        public string? BillingImageUrl { get; set; }
-        public PaymentStatus Status { get; set; }
-        public int? RentalOrderId { get; set; }
-        public UserInfoDTO? User { get; set; }
-        public OrderInfoDTO? Order { get; set; }
-    }
-
-    public class UserInfoDTO
-    {
-        public int UserId { get; set; }
-        public string Email { get; set; }
-        public string FullName { get; set; }
-        public string Role { get; set; }
-    }
-
-    public class OrderInfoDTO
-    {
-        public int OrderId { get; set; }
-        public DateTime OrderDate { get; set; }
-        public DateTime PickupTime { get; set; }
-        public DateTime ExpectedReturnTime { get; set; }
-        public DateTime? ActualReturnTime { get; set; }
-        public double? Total { get; set; }
-    }
-
-    public class PaymentByLocationDTO
-    {
-        public RentalLocationDTO? Location { get; set; }
-        public List<PaymentDetailDTO> Payments { get; set; } = new List<PaymentDetailDTO>();
-        public int TotalPayments { get; set; }
-        public double TotalAmount { get; set; }
+        public bool IsSuccess { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string? OrderId { get; set; }
+        public string? TransactionNo { get; set; }
+        public string? VnPayResponseCode { get; set; } = string.Empty;
     }
 }

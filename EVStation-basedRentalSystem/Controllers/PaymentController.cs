@@ -95,12 +95,12 @@ namespace EVStation_basedRentalSystem.Controllers
             var result = await _paymentService.ConfirmDepositPaymentAsync(orderId);
             return Ok(result);
         }
-        public IActionResult CreatePaymentUrlVnpay(PaymentInformationModel model)
-        {
-            var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
+        //public IActionResult CreatePaymentUrlVnpay(PaymentInformationModel model)
+        //{
+        //    var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
 
-            return Redirect(url);
-        }
+        //    return Redirect(url);
+        //}
 
     }
 }
