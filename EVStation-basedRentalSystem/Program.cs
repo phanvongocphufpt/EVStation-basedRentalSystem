@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Repository.Context;
 using Repository.IRepositories;
 using Repository.Repositories;
+using Service.BackgroundServices;
 using Service.Configurations;
 using Service.EmailConfirmation;
 using Service.IServices;
@@ -126,6 +128,9 @@ builder.Services.AddHttpClient<IAIService, AIService>();
 
 builder.Services.Configure<MomoSettings>(
     builder.Configuration.GetSection("MomoSettings"));
+
+// Background Services
+builder.Services.AddHostedService<PaymentTimeoutService>();
 
 //Others
 builder.Services.Configure<SmtpSettings>(smtpSettings);
