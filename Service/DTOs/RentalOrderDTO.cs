@@ -60,7 +60,14 @@ namespace Service.DTOs
         public bool WithDriver { get; set; }
         public int UserId { get; set; }
         public int CarId { get; set; }
-        public int RentalLocationId { get; set; }
+    }
+    public class CreateRentalOrderResponseDTO
+    {
+        public int OrderId { get; set; }
+        public double SubTotal { get; set; }
+        public double DepositAmount { get; set; }
+        public string VnpayPaymentUrl { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
     }
     public class UpdateRentalOrderTotalDTO
     {

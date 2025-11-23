@@ -9,9 +9,8 @@ namespace Repository.Entities.Enum
     public enum RentalOrderStatus
     {
         Pending,
-        DocumentsSubmitted,
-        DepositPending,
-        Confirmed,
+        DepositConfirmed,
+        DocumentConfirmed,
         Renting,
         Returned,
         PaymentPending,

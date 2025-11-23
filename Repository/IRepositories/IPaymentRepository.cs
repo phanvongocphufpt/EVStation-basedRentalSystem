@@ -18,6 +18,7 @@ namespace Repository.IRepositories
         Task<Payment?> GetOrderPaymentByOrderIdAsync(int orderId);
         Task AddAsync(Payment payment);
         Task UpdateAsync(Payment payment);
+        Task<Payment?> GetByTxnRefAsync(string txnRef);
         Task<IDbContextTransaction> BeginTransactionAsync();
     }
 }

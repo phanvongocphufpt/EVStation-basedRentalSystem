@@ -85,10 +85,6 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
             }
-            if (order.Status != RentalOrderStatus.DepositPending)
-            {
-                return Result<bool>.Failure("Đơn hàng không ở trạng thái chờ thanh toán đặt cọc.");
-            }
             var depositPayment = await _paymentRepository.GetDepositByOrderIdAsync(orderId);
             if (depositPayment == null)
             {
@@ -97,7 +93,7 @@ namespace Service.Services
             depositPayment.PaymentDate = DateTime.UtcNow;
             depositPayment.Status = PaymentStatus.Completed;
             await _paymentRepository.UpdateAsync(depositPayment);
-            order.Status = RentalOrderStatus.Confirmed;
+            order.Status = RentalOrderStatus.DepositConfirmed;
             await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận thanh toán đặt cọc thành công.");
         }
