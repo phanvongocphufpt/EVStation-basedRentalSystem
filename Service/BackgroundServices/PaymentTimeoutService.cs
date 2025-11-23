@@ -61,9 +61,9 @@ namespace Service.BackgroundServices
                 var allPayments = await paymentRepository.GetAllAsync();
                 var now = DateTime.UtcNow;
 
-                // Filter payments MoMo đang Pending và đã quá 15 phút
+                // Filter payments MoMo và PayOS đang Pending và đã quá timeout
                 var expiredPayments = allPayments
-                    .Where(p => p.PaymentMethod == "MoMo" 
+                    .Where(p => (p.PaymentMethod == "MoMo" || p.PaymentMethod == "PayOS")
                              && p.Status == PaymentStatus.Pending
                              && p.PaymentDate.HasValue
                              && (now - p.PaymentDate.Value) > _timeoutDuration
@@ -72,7 +72,8 @@ namespace Service.BackgroundServices
 
                 if (expiredPayments.Any())
                 {
-                    _logger.LogInformation("Tìm thấy {Count} payment MoMo đã quá thời hạn 10 phút", expiredPayments.Count);
+                    _logger.LogInformation("Tìm thấy {Count} payment (MoMo/PayOS) đã quá thời hạn {Timeout} phút", 
+                        expiredPayments.Count, _timeoutDuration.TotalMinutes);
 
                     foreach (var payment in expiredPayments)
                     {
@@ -95,7 +96,17 @@ namespace Service.BackgroundServices
                             {
                                 // Cập nhật payment status thành Failed
                                 payment.Status = PaymentStatus.Failed;
-                                payment.MomoMessage = "Payment timeout - Tự động hủy sau 10 phút";
+                                
+                                // Set message tùy theo payment method
+                                if (payment.PaymentMethod == "MoMo")
+                                {
+                                    payment.MomoMessage = $"Payment timeout - Tự động hủy sau {_timeoutDuration.TotalMinutes} phút";
+                                }
+                                else if (payment.PaymentMethod == "PayOS")
+                                {
+                                    payment.MomoMessage = $"Payment timeout - Tự động hủy sau {_timeoutDuration.TotalMinutes} phút"; // Tái sử dụng field
+                                }
+                                
                                 await paymentRepository.UpdateAsync(payment);
 
                                 // Hủy order
@@ -104,8 +115,8 @@ namespace Service.BackgroundServices
                                 await rentalOrderRepository.UpdateAsync(order);
 
                                 _logger.LogInformation(
-                                    "Đã tự động hủy order {OrderId} và payment {PaymentId} do quá thời hạn thanh toán MoMo (10 phút)",
-                                    order.Id, payment.Id);
+                                    "Đã tự động hủy order {OrderId} và payment {PaymentId} do quá thời hạn thanh toán {PaymentMethod} ({Timeout} phút)",
+                                    order.Id, payment.Id, payment.PaymentMethod, _timeoutDuration.TotalMinutes);
                             }
                             else
                             {

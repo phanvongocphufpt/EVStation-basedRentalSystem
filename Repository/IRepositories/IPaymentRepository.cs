@@ -30,6 +30,9 @@ namespace Repository.IRepositories
         // Lấy payment theo MomoOrderId
         Task<Payment?> GetByMomoOrderIdAsync(string momoOrderId);
 
+        // Lấy payment theo PayOSOrderCode
+        Task<Payment?> GetByPayOSOrderCodeAsync(int orderCode);
+
         // Lấy payment theo trạng thái thành công/failed
         Task<IEnumerable<Payment>> GetByStatusAsync(PaymentStatus status);
 
@@ -41,5 +44,7 @@ namespace Repository.IRepositories
 
         // Transaction support
         Task<IDbContextTransaction> BeginTransactionAsync();
+        Task<Payment?> GetLatestPaymentByOrderIdAsync(int orderId);
+
     }
 }

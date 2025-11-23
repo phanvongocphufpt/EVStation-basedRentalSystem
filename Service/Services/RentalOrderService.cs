@@ -106,7 +106,7 @@ namespace Service.Services
             var subTotal = dto.WithDriver
                             ? subtotalDays * car.RentPricePerDayWithDriver
                             : subtotalDays * car.RentPricePerDay;
-            var deposit = Math.Round(subTotal * 0.2, 0);
+            var deposit = (decimal)Math.Round(subTotal * 0.2, 0);
             if (createRentalOrderDTO.WithDriver == true)
             {
                 var order = new RentalOrder
@@ -116,7 +116,7 @@ namespace Service.Services
                     ExpectedReturnTime = dto.ExpectedReturnTime,
                     WithDriver = true,
                     SubTotal = subTotal,
-                    Deposit = deposit,
+                    Deposit = (double)deposit,
                     UserId = user.Id,
                     User = user,
                     CarId = car.Id,
@@ -130,7 +130,8 @@ namespace Service.Services
                 var payment = new Payment
                 {
                     PaymentType = PaymentType.Deposit,
-                    Amount = deposit,
+                    Amount = deposit, // deposit đã là decimal
+                    Gateway = PaymentGateway.Cash,
                     PaymentMethod = "Direct",
                     Status = PaymentStatus.Pending,
                     UserId = order.UserId,
@@ -149,7 +150,7 @@ namespace Service.Services
                     ExpectedReturnTime = dto.ExpectedReturnTime,
                     WithDriver = false,
                     SubTotal = subTotal,
-                    Deposit = deposit,
+                    Deposit = (double)deposit,
                     UserId = user.Id,
                     User = user,
                     CarId = car.Id,
@@ -163,7 +164,8 @@ namespace Service.Services
                 var payment = new Payment
                 {
                     PaymentType = PaymentType.Deposit,
-                    Amount = deposit,
+                    Amount = deposit, // deposit đã là decimal
+                    Gateway = PaymentGateway.Cash,
                     PaymentMethod = "Direct",
                     Status = PaymentStatus.Pending,
                     UserId = order.UserId,
@@ -209,11 +211,12 @@ namespace Service.Services
             var total = order.Total;
             if (total.HasValue && total.Value < 0)
             {
-                var refundAmount = -total.Value;
+                var refundAmount = (decimal)(-total.Value);
                 var payment = new Payment
                 {
                     PaymentType = PaymentType.RefundPayment,
                     Amount = refundAmount,
+                    Gateway = PaymentGateway.Cash,
                     PaymentMethod = "Direct",
                     Status = PaymentStatus.Pending,
                     UserId = order.UserId,
@@ -224,11 +227,12 @@ namespace Service.Services
             }
             else if (total.HasValue && total.Value > 0)
             {
-                var paymentAmount = total.Value;
+                var paymentAmount = (decimal)total.Value;
                 var payment = new Payment
                 {
                     PaymentType = PaymentType.OrderPayment,
                     Amount = paymentAmount,
+                    Gateway = PaymentGateway.Cash,
                     PaymentMethod = "Direct",
                     Status = PaymentStatus.Pending,
                     UserId = order.UserId,
@@ -295,12 +299,14 @@ namespace Service.Services
                     {
                         PaymentType = PaymentType.RefundPayment,
                         Amount = payment.Amount,
+                        Gateway = PaymentGateway.Cash,
                         PaymentMethod = "Direct",
                         Status = PaymentStatus.Pending,
                         UserId = existingOrder.UserId,
                         RentalOrderId = existingOrder.Id,
                         User = existingOrder.User,
                     };
+                    await _paymentRepository.AddAsync(refundPayment);
                 }
             }
             existingOrder.Status = RentalOrderStatus.Cancelled;
@@ -321,11 +327,11 @@ namespace Service.Services
                 {
                     return Result<bool>.Failure("Chưa có đủ thông tin giấy tờ cần thiết để xác nhận giấy tờ đơn đặt thuê này.");
                 }
-                if (order.CitizenIdNavigation.Status != DocumentStatus.Approved)
+                if (order.CitizenIdNavigation != null && order.CitizenIdNavigation.Status != DocumentStatus.Approved)
                 {
                     return Result<bool>.Failure("Giấy CMND/CCCD chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
                 }
-                if (order.DriverLicense.Status != DocumentStatus.Approved)
+                if (order.DriverLicense != null && order.DriverLicense.Status != DocumentStatus.Approved)
                 {
                     return Result<bool>.Failure("Giấy phép lái xe chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
                 }

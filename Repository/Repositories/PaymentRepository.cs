@@ -82,11 +82,24 @@ namespace Repository.Repositories
                 .FirstOrDefaultAsync(p => p.MomoOrderId == momoOrderId);
         }
 
+        public async Task<Payment?> GetByPayOSOrderCodeAsync(int orderCode)
+        {
+            return await _context.Payments
+                .FirstOrDefaultAsync(p => p.PayOSOrderCode == orderCode);
+        }
+
         public async Task<IEnumerable<Payment>> GetByStatusAsync(PaymentStatus status)
         {
             return await _context.Payments
                 .Where(p => p.Status == status)
                 .ToListAsync();
+        }
+        public async Task<Payment?> GetLatestPaymentByOrderIdAsync(int orderId)
+        {
+            return await _context.Payments
+                .Where(p => p.RentalOrderId == orderId)
+                .OrderByDescending(p => p.Id)
+                .FirstOrDefaultAsync();
         }
     }
 }

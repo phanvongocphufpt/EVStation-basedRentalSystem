@@ -6,12 +6,14 @@ using Repository.Entities.Enum;
 using Repository.IRepositories;
 using Service.Common;
 using Service.Common.Momo;
+using Service.Common.PayOS;
 using Service.Configurations;
 using Service.DTOs;
 using Service.IServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Service.Services
@@ -25,6 +27,8 @@ namespace Service.Services
         private readonly IMapper _mapper;
         private readonly MomoSettings _momoSettings;
         private readonly MomoHelper _momoHelper;
+        private readonly PayOSSettings _payOSSettings;
+        private readonly PayOSHelper _payOSHelper;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
@@ -32,7 +36,8 @@ namespace Service.Services
             IUserRepository userRepository,
             IRentalOrderRepository rentalOrderRepository,
             IRentalLocationRepository rentalLocationRepository,
-            IOptions<MomoSettings> momoSettings)
+            IOptions<MomoSettings> momoSettings,
+            IOptions<PayOSSettings> payOSSettings)
         {
             _paymentRepository = paymentRepository;
             _mapper = mapper;
@@ -41,6 +46,8 @@ namespace Service.Services
             _rentalLocationRepository = rentalLocationRepository;
             _momoSettings = momoSettings.Value;
             _momoHelper = new MomoHelper(_momoSettings);
+            _payOSSettings = payOSSettings.Value;
+            _payOSHelper = new PayOSHelper(_payOSSettings);
         }
 
         // ========================
@@ -57,10 +64,25 @@ namespace Service.Services
             if (user == null)
                 return Result<CreatePaymentDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id của người dùng.");
 
+            // Determine Gateway based on PaymentMethod
+            PaymentGateway gateway = PaymentGateway.Cash;
+            if (!string.IsNullOrEmpty(dto.PaymentMethod))
+            {
+                var method = dto.PaymentMethod.ToLower();
+                if (method.Contains("momo"))
+                    gateway = PaymentGateway.MoMo;
+                else if (method.Contains("payos"))
+                    gateway = PaymentGateway.PayOS;
+                else if (method.Contains("bank") || method.Contains("transfer"))
+                    gateway = PaymentGateway.BankTransfer;
+            }
+
             var payment = new Payment
             {
                 PaymentDate = dto.PaymentDate,
-                Amount = dto.Amount,
+                PaymentType = dto.PaymentType,
+                Amount = (decimal)dto.Amount,
+                Gateway = gateway,
                 PaymentMethod = dto.PaymentMethod,
                 Status = dto.Status,
                 UserId = user.Id,
@@ -146,13 +168,12 @@ namespace Service.Services
 
             var revenueByLocation = payments
                 .Where(p => p.Status == PaymentStatus.Completed
-                         && p.PaymentType != PaymentType.Deposit
                          && p.RentalOrder?.RentalLocation != null)
                 .GroupBy(p => p.RentalOrder!.RentalLocation)
                 .Select(g => new RevenueByLocationDTO
                 {
                     RentalLocationName = g.Key.Name,
-                    TotalRevenue = g.Sum(p => p.Amount),
+                    TotalRevenue = (double)g.Sum(p => p.Amount),
                     PaymentCount = g.Count()
                 })
                 .ToList();
@@ -175,7 +196,8 @@ namespace Service.Services
             var payment = new Payment
             {
                 PaymentType = PaymentType.OrderPayment,
-                Amount = amount,
+                Amount = (decimal)amount,
+                Gateway = PaymentGateway.MoMo,
                 Status = PaymentStatus.Pending,
                 UserId = userId,
                 RentalOrderId = rentalOrderId,
@@ -293,5 +315,178 @@ namespace Service.Services
             var dto = _mapper.Map<PaymentDetailDTO>(payment);
             return Result<PaymentDetailDTO>.Success(dto);
         }
+
+        // ========================
+        // PayOS Integration
+        // ========================
+
+        public async Task<Result<CreatePayOSPaymentResponseDTO>> CreatePayOSPaymentAsync(int rentalOrderId, int userId, double amount)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            var order = await _rentalOrderRepository.GetByIdAsync(rentalOrderId);
+
+            if (user == null || order == null)
+                return Result<CreatePayOSPaymentResponseDTO>.Failure("Người dùng hoặc đơn hàng không tồn tại.");
+
+            var payment = new Payment
+            {
+                PaymentType = PaymentType.OrderPayment,
+                Amount = (decimal)amount,
+                Gateway = PaymentGateway.PayOS,
+                Status = PaymentStatus.Pending,
+                UserId = userId,
+                RentalOrderId = rentalOrderId,
+                PaymentMethod = "PayOS",
+                PaymentDate = DateTime.UtcNow
+            };
+            await _paymentRepository.AddAsync(payment);
+
+            // Tạo orderCode unique
+            var timestamp = (int)(DateTime.UtcNow.Ticks % 1000);
+            long orderCodeLong = (long)payment.Id * 1000 + timestamp;
+            int orderCode = (orderCodeLong > int.MaxValue || orderCodeLong <= 0)
+                ? Math.Abs((int)(DateTime.UtcNow.Ticks % int.MaxValue)) + 1
+                : (int)orderCodeLong;
+
+            // PayOS giới hạn description tối đa 25 ký tự
+            // Tạo description ngắn gọn: "Đơn hàng #48" hoặc "ĐH #48 - Tên"
+            var description = $"ĐH #{rentalOrderId}";
+            if (description.Length + user.FullName.Length + 3 <= 25) // +3 cho " - "
+            {
+                description = $"ĐH #{rentalOrderId} - {user.FullName}";
+            }
+            // Đảm bảo không vượt quá 25 ký tự
+            if (description.Length > 25)
+            {
+                description = description.Substring(0, 25);
+            }
+            var amountLong = (long)Math.Round(amount);
+
+            if (amountLong < 1000)
+                return Result<CreatePayOSPaymentResponseDTO>.Failure("Số tiền tối thiểu là 1,000 VND");
+            if (amountLong > 50000000)
+                return Result<CreatePayOSPaymentResponseDTO>.Failure("Số tiền tối đa là 50,000,000 VND");
+
+            var payOSResponse = await _payOSHelper.CreatePaymentLinkAsync(
+                orderCode: orderCode,
+                amount: amountLong,
+                description: description,
+                returnUrl: _payOSSettings.RedirectUrl,
+                cancelUrl: _payOSSettings.RedirectUrl + "?cancel=true"
+            );
+
+            // ===============================
+            // Cập nhật Payment với field mới
+            // ===============================
+            payment.PayOSOrderCode = orderCode;
+            payment.PayOSCheckoutUrl = payOSResponse.CheckoutUrl;
+            payment.PayOSQrCode = payOSResponse.QrCode;
+            payment.MomoMessage = payOSResponse.Desc; // Tái sử dụng field này để lưu message PayOS
+            payment.Status = payOSResponse.Code == 0 ? PaymentStatus.Pending : PaymentStatus.Failed;
+            await _paymentRepository.UpdateAsync(payment);
+
+            if (payOSResponse.Code != 0)
+            {
+                // Log chi tiết lỗi
+                System.Diagnostics.Debug.WriteLine("=== PayOS Payment Creation Failed ===");
+                System.Diagnostics.Debug.WriteLine($"Code: {payOSResponse.Code}");
+                System.Diagnostics.Debug.WriteLine($"Desc: {payOSResponse.Desc}");
+                System.Diagnostics.Debug.WriteLine($"OrderCode: {orderCode}");
+                System.Diagnostics.Debug.WriteLine($"Amount: {amountLong}");
+                System.Diagnostics.Debug.WriteLine("=====================================");
+                
+                return Result<CreatePayOSPaymentResponseDTO>.Failure(
+                    $"Tạo payment PayOS thất bại (Code: {payOSResponse.Code}): {payOSResponse.Desc}"
+                );
+            }
+
+            var response = new CreatePayOSPaymentResponseDTO
+            {
+                OrderCode = orderCode,
+                CheckoutUrl = payOSResponse.CheckoutUrl,
+                QrCode = payOSResponse.QrCode,
+                Status = payment.Status == PaymentStatus.Pending ? "Pending" : "Failed"
+            };
+
+            return Result<CreatePayOSPaymentResponseDTO>.Success(response);
+        }
+
+        public async Task<Result<bool>> ProcessPayOSIpnAsync(object payload)
+        {
+            var data = payload as JObject;
+            if (data == null) return Result<bool>.Failure("Payload PayOS không hợp lệ.");
+
+            int orderCode = data["data"]?["orderCode"]?.ToObject<int>() ?? 0;
+            string code = data["code"]?.ToString() ?? "";
+            string desc = data["desc"]?.ToString() ?? "";
+
+            if (orderCode == 0)
+                return Result<bool>.Failure("OrderCode không hợp lệ.");
+
+            var payment = await _paymentRepository.GetByPayOSOrderCodeAsync(orderCode);
+            if (payment == null)
+                return Result<bool>.Failure("Payment không tồn tại.");
+
+            // Flatten data for checksum verification
+            var parameters = new Dictionary<string, object>();
+            foreach (var prop in data.Properties())
+            {
+                if (prop.Name != "signature" && prop.Value != null)
+                {
+                    if (prop.Name == "data" && prop.Value.Type == JTokenType.Object)
+                    {
+                        foreach (var inner in ((JObject)prop.Value).Properties())
+                            parameters[inner.Name] = inner.Value;
+                    }
+                    else
+                    {
+                        parameters[prop.Name] = prop.Value;
+                    }
+                }
+            }
+
+            string signature = data["signature"]?.ToString() ?? "";
+            // VerifySignature nhận Dictionary<string, object>
+            bool isValid = _payOSHelper.VerifySignature(parameters, signature);
+            if (!isValid) return Result<bool>.Failure("Checksum PayOS không hợp lệ.");
+
+            // Update payment
+            payment.PayOSChecksum = signature;
+            payment.MomoMessage = desc; // Tái sử dụng field này để lưu message PayOS
+            if (code == "00")
+            {
+                payment.Status = PaymentStatus.Completed;
+                payment.PayOSTransactionId = data["data"]?["transactionId"]?.ToString();
+                payment.PayOSAccountNumber = data["data"]?["accountNumber"]?.ToString();
+            }
+            else
+            {
+                payment.Status = PaymentStatus.Failed;
+            }
+
+            // Cập nhật order nếu cần
+            if (code == "00" && payment.RentalOrderId.HasValue)
+            {
+                var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId.Value);
+                if (order != null && order.Status == RentalOrderStatus.Confirmed)
+                {
+                    // order.Status = RentalOrderStatus.Paid; // tùy cần thiết
+                    // await _rentalOrderRepository.UpdateAsync(order);
+                }
+            }
+
+            await _paymentRepository.UpdateAsync(payment);
+            return Result<bool>.Success(true);
+        }
+
+        public async Task<Result<PaymentDetailDTO>> GetPaymentByPayOSOrderCodeAsync(int orderCode)
+        {
+            var payment = await _paymentRepository.GetByPayOSOrderCodeAsync(orderCode);
+            if (payment == null) return Result<PaymentDetailDTO>.Failure("Payment không tồn tại.");
+
+            var dto = _mapper.Map<PaymentDetailDTO>(payment);
+            return Result<PaymentDetailDTO>.Success(dto);
+        }
     }
 }
+

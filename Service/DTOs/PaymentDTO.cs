@@ -62,6 +62,14 @@ namespace Service.DTOs
         public string? MomoPayType { get; set; }
         public string? MomoMessage { get; set; }
         public string? MomoSignature { get; set; }
+
+        // ===== Bổ sung PayOS =====
+        public int? PayOSOrderCode { get; set; }
+        public string? PayOSTransactionId { get; set; }
+        public string? PayOSAccountNumber { get; set; }
+        public string? PayOSChecksum { get; set; }
+        public string? PayOSCheckoutUrl { get; set; }
+        public string? PayOSQrCode { get; set; }
     }
 
     // Nếu muốn tạo DTO gửi về client khi tạo payment MoMo:
@@ -70,6 +78,15 @@ namespace Service.DTOs
         public string MomoPayUrl { get; set; } = string.Empty; // URL để redirect user quét/đăng nhập MoMo
         public string MomoOrderId { get; set; } = string.Empty;
         public string MomoRequestId { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty; // Pending / Success / Failed
+    }
+
+    // DTO cho PayOS payment response
+    public class CreatePayOSPaymentResponseDTO
+    {
+        public string CheckoutUrl { get; set; } = string.Empty; // URL để redirect user thanh toán
+        public string QrCode { get; set; } = string.Empty; // QR Code để quét
+        public int OrderCode { get; set; } // PayOS order code
         public string Status { get; set; } = string.Empty; // Pending / Success / Failed
     }
 }

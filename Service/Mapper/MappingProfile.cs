@@ -71,7 +71,16 @@ namespace Service.Mapper
                 .ForMember(dest => dest.MomoResultCode, opt => opt.MapFrom(src => src.MomoResultCode))
                 .ForMember(dest => dest.MomoPayType, opt => opt.MapFrom(src => src.MomoPayType))
                 .ForMember(dest => dest.MomoMessage, opt => opt.MapFrom(src => src.MomoMessage))
-                .ForMember(dest => dest.MomoSignature, opt => opt.MapFrom(src => src.MomoSignature));
+                .ForMember(dest => dest.MomoSignature, opt => opt.MapFrom(src => src.MomoSignature))
+// ===== Map PayOS fields =====
+// Bổ sung ignore các trường PayOS
+.ForMember(dest => dest.PayOSOrderCode, opt => opt.Ignore())
+.ForMember(dest => dest.PayOSTransactionId, opt => opt.Ignore())
+.ForMember(dest => dest.PayOSAccountNumber, opt => opt.Ignore())
+.ForMember(dest => dest.PayOSChecksum, opt => opt.Ignore())
+.ForMember(dest => dest.PayOSCheckoutUrl, opt => opt.Ignore())
+.ForMember(dest => dest.PayOSQrCode, opt => opt.Ignore());
+
 
             // Mapping từ CreatePaymentDTO → Payment
             CreateMap<CreatePaymentDTO, Payment>()
@@ -197,7 +206,7 @@ namespace Service.Mapper
     .ForMember(dest => dest.CitizenId, opt => opt.MapFrom(src => src.CitizenId))
     .ForMember(dest => dest.DriverLicenseId, opt => opt.MapFrom(src => src.DriverLicenseId))
     .ForMember(dest => dest.RentalContactId, opt => opt.MapFrom(src => src.RentalContactId))
-    .ForMember(dest => dest.Payments,opt => opt.MapFrom(src => src.Payments));
+    .ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments));
             CreateMap<CreateRentalOrderDTO, RentalOrder>();
             //feedback mappings
             CreateMap<Feedback, FeedbackDTO>()
@@ -210,18 +219,18 @@ namespace Service.Mapper
 
             CreateMap<UpdateFeedbackDTO, Feedback>()
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now));
-        
-        //Rental Contact Mappings
-        CreateMap<RentalContact, RentalContactDTO>()
-                .ForMember(dest => dest.RentalOrderId, opt => opt.MapFrom(src => src.RentalOrderId))
-                .ForMember(dest => dest.RentalDate, opt => opt.MapFrom(src => src.RentalDate))
-                .ForMember(dest => dest.RentalPeriod, opt => opt.MapFrom(src => src.RentalPeriod))
-                .ForMember(dest => dest.ReturnDate, opt => opt.MapFrom(src => src.ReturnDate))
-                .ForMember(dest => dest.TerminationClause, opt => opt.MapFrom(src => src.TerminationClause))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.LesseeId, opt => opt.MapFrom(src => src.LesseeId))
-                .ForMember(dest => dest.LessorId, opt => opt.MapFrom(src => src.LessorId))
-                .ReverseMap();
+
+            //Rental Contact Mappings
+            CreateMap<RentalContact, RentalContactDTO>()
+                    .ForMember(dest => dest.RentalOrderId, opt => opt.MapFrom(src => src.RentalOrderId))
+                    .ForMember(dest => dest.RentalDate, opt => opt.MapFrom(src => src.RentalDate))
+                    .ForMember(dest => dest.RentalPeriod, opt => opt.MapFrom(src => src.RentalPeriod))
+                    .ForMember(dest => dest.ReturnDate, opt => opt.MapFrom(src => src.ReturnDate))
+                    .ForMember(dest => dest.TerminationClause, opt => opt.MapFrom(src => src.TerminationClause))
+                    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                    .ForMember(dest => dest.LesseeId, opt => opt.MapFrom(src => src.LesseeId))
+                    .ForMember(dest => dest.LessorId, opt => opt.MapFrom(src => src.LessorId))
+                    .ReverseMap();
             CreateMap<RentalContactCreateDTO, RentalContact>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // tránh map ID thủ công
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(_ => false));

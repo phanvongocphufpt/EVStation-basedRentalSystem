@@ -12,52 +12,50 @@ namespace Repository.Entities
         // Ngày thanh toán
         public DateTime? PaymentDate { get; set; }
 
-        // Loại hình thanh toán (Tiền mặt / Chuyển khoản / MoMo...)
+        // Loại thanh toán: Deposit / OrderPayment / RefundPayment
         public PaymentType PaymentType { get; set; }
 
         // Số tiền giao dịch
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
 
-        // Phương thức (Ví dụ: "MoMo Wallet", "Cash", "Bank Transfer")
+        // Phương thức tổng thể: Cash / Bank / MoMo / PayOS
+        public PaymentGateway Gateway { get; set; }
+
+        // Chi tiết phương thức: momo_wallet, qrcode, banking, cash...
         public string? PaymentMethod { get; set; }
+
+        // Trạng thái: Success / Failed / Pending
+        public PaymentStatus Status { get; set; }
 
         // Ảnh hóa đơn (nếu có)
         public string? BillingImageUrl { get; set; }
 
-        // Trạng thái (Success / Failed / Pending)
-        public PaymentStatus Status { get; set; }
-
-        //---------------------------------------------
-        // BỔ SUNG DÙNG CHO MOMO PAYMENT GATEWAY
-        //---------------------------------------------
-
-        // ID đơn hàng gửi sang MoMo
+        // -----------------------------
+        // MOMO PAYMENT INFORMATION
+        // -----------------------------
         public string? MomoOrderId { get; set; }
-
-        // Request ID (duy nhất)
         public string? MomoRequestId { get; set; }
-
-        // Partner code của Merchant
         public string? MomoPartnerCode { get; set; }
-
-        // Mã giao dịch MoMo
         public long? MomoTransId { get; set; }
-
-        // ResultCode (0 = thành công)
         public int? MomoResultCode { get; set; }
-
-        // payType (momo_wallet, qrcode,…)
         public string? MomoPayType { get; set; }
-
-        // Mô tả MoMo trả về
         public string? MomoMessage { get; set; }
-
-        // Chữ ký để verify
         public string? MomoSignature { get; set; }
 
-        //---------------------------------------------
+        // -----------------------------
+        // PAYOS PAYMENT INFORMATION
+        // -----------------------------
+        public int? PayOSOrderCode { get; set; }
+        public string? PayOSTransactionId { get; set; }
+        public string? PayOSAccountNumber { get; set; }
+        public string? PayOSChecksum { get; set; }
+        public string? PayOSCheckoutUrl { get; set; }
+        public string? PayOSQrCode { get; set; }
+        public string? PayOSStatus { get; set; } // paid, pending, cancel, expired
+
+        // -----------------------------
         // Khóa ngoại
-        //---------------------------------------------
+        // -----------------------------
         public int? UserId { get; set; }
         public int? RentalOrderId { get; set; }
 

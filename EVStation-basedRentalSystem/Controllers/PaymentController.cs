@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using Service.DTOs;
 using Service.IServices;
 using Newtonsoft.Json.Linq;
@@ -130,6 +131,60 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound(result.Message);
 
             return Ok(result.Data);
+        }
+        // ========================
+        // PayOS Endpoints
+        // ========================
+
+        // 1. Tạo PayOS payment
+        [HttpPost("CreatePayOSPayment")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> CreatePayOSPayment([FromQuery] int rentalOrderId, [FromQuery] int userId, [FromQuery] double amount)
+        {
+            var result = await _paymentService.CreatePayOSPaymentAsync(rentalOrderId, userId, amount);
+
+            if (!result.IsSuccess)
+            {
+                // Optional: log thất bại nếu cần
+                // _logger.LogWarning("Tạo PayOS payment thất bại: {Message}", result.Message);
+                return BadRequest(new { success = false, message = result.Message });
+            }
+
+            // Trả về object chuẩn
+            return Ok(new { success = true, data = result.Data });
+        }
+
+        // 2. Nhận IPN từ PayOS
+        [HttpPost("PayOSIPN")]
+        [AllowAnonymous] // IPN gọi từ PayOS, không cần auth
+        public async Task<IActionResult> PayOSIpn([FromBody] JObject payload)
+        {
+            var result = await _paymentService.ProcessPayOSIpnAsync(payload);
+
+            if (!result.IsSuccess)
+            {
+                // Optional: log thất bại
+                // _logger.LogWarning("IPN PayOS thất bại: {Message}", result.Message);
+                return BadRequest(new { success = false, message = result.Message });
+            }
+
+            // PayOS thường yêu cầu trả về 200 để xác nhận nhận IPN
+            return Ok(new { success = true, data = result.Data });
+        }
+
+        // 3. Lấy payment theo PayOSOrderCode
+        [HttpGet("GetByPayOSOrderCode")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> GetByPayOSOrderCode([FromQuery] int orderCode)
+        {
+            var result = await _paymentService.GetPaymentByPayOSOrderCodeAsync(orderCode);
+
+            if (!result.IsSuccess)
+            {
+                return NotFound(new { success = false, message = result.Message });
+            }
+
+            return Ok(new { success = true, data = result.Data });
         }
     }
 }

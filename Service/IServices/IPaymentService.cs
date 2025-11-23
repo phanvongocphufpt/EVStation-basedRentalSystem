@@ -18,19 +18,14 @@ namespace Service.IServices
 
         // ===== MoMo Integration =====
 
-        /// <summary>
-        /// Tạo thanh toán MoMo (trả về payUrl để redirect user)
-        /// </summary>
         Task<Result<CreateMomoPaymentResponseDTO>> CreateMomoPaymentAsync(int rentalOrderId, int userId, double amount);
-
-        /// <summary>
-        /// Xử lý IPN từ MoMo (server-to-server)
-        /// </summary>
         Task<Result<bool>> ProcessMomoIpnAsync(object payload); // payload có thể là JObject hoặc Dictionary
-
-        /// <summary>
-        /// Lấy payment theo MomoOrderId (dùng khi nhận IPN)
-        /// </summary>
         Task<Result<PaymentDetailDTO>> GetPaymentByMomoOrderIdAsync(string momoOrderId);
+
+        // ===== PayOS Integration =====
+
+        Task<Result<CreatePayOSPaymentResponseDTO>> CreatePayOSPaymentAsync(int rentalOrderId, int userId, double amount);
+        Task<Result<bool>> ProcessPayOSIpnAsync(object payload);
+        Task<Result<PaymentDetailDTO>> GetPaymentByPayOSOrderCodeAsync(int orderCode);
     }
 }

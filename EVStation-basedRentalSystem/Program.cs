@@ -129,6 +129,9 @@ builder.Services.AddHttpClient<IAIService, AIService>();
 builder.Services.Configure<MomoSettings>(
     builder.Configuration.GetSection("MomoSettings"));
 
+builder.Services.Configure<PayOSSettings>(
+    builder.Configuration.GetSection("PayOSSettings"));
+
 // Background Services
 builder.Services.AddHostedService<PaymentTimeoutService>();
 
