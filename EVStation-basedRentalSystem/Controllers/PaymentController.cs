@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using Service.DTOs;
 using Service.IServices;
-using Newtonsoft.Json.Linq;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -182,6 +181,30 @@ namespace EVStation_basedRentalSystem.Controllers
             if (!result.IsSuccess)
             {
                 return NotFound(new { success = false, message = result.Message });
+            }
+
+            return Ok(new { success = true, data = result.Data });
+        }
+
+        // ========================
+        // Unified Payment Gateway
+        // ========================
+
+        /// <summary>
+        /// Tạo payment với gateway được chọn (MoMo, PayOS, Cash, BankTransfer)
+        /// </summary>
+        [HttpPost("vCreatePaymentWithGateway")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> CreatePaymentWithGateway([FromBody] CreatePaymentRequestDTO request)
+        {
+            if (request == null)
+                return BadRequest(new { success = false, message = "Request không hợp lệ." });
+
+            var result = await _paymentService.CreatePaymentAsync(request);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { success = false, message = result.Message });
             }
 
             return Ok(new { success = true, data = result.Data });

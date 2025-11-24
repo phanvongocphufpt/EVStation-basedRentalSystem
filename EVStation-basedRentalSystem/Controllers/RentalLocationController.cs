@@ -31,8 +31,8 @@
                 return Ok(Users);
             }
             [HttpGet("GetById")]
-
-            public async Task<IActionResult> GetById(int id)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetById(int id)
             {
                 var user = await _rentalLocationService.GetByIdAsync(id);
                 if (user == null)

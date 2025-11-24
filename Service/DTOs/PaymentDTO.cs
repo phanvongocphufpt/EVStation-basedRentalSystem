@@ -89,6 +89,34 @@ namespace Service.DTOs
         public int OrderCode { get; set; } // PayOS order code
         public string Status { get; set; } = string.Empty; // Pending / Success / Failed
     }
+
+    // DTO để chọn payment gateway
+    public class CreatePaymentRequestDTO
+    {
+        public int RentalOrderId { get; set; }
+        public int UserId { get; set; }
+        public double Amount { get; set; }
+        public PaymentGateway Gateway { get; set; } // MoMo, PayOS, Cash, BankTransfer
+    }
+
+    // DTO response tổng hợp cho tất cả payment gateway
+    public class CreatePaymentResponseDTO
+    {
+        public PaymentGateway Gateway { get; set; }
+        public string Status { get; set; } = string.Empty; // Pending / Success / Failed
+        
+        // MoMo specific
+        public string? MomoPayUrl { get; set; }
+        public string? MomoOrderId { get; set; }
+        public string? MomoRequestId { get; set; }
+        
+        // PayOS specific
+        public string? PayOSCheckoutUrl { get; set; }
+        public string? PayOSQrCode { get; set; }
+        public int? PayOSOrderCode { get; set; }
+        
+        // Cash/BankTransfer - không cần thông tin gì thêm
+    }
 }
 
 public class UserInfoDTO

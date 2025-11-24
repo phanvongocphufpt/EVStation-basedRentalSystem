@@ -27,5 +27,12 @@ namespace Service.IServices
         Task<Result<CreatePayOSPaymentResponseDTO>> CreatePayOSPaymentAsync(int rentalOrderId, int userId, double amount);
         Task<Result<bool>> ProcessPayOSIpnAsync(object payload);
         Task<Result<PaymentDetailDTO>> GetPaymentByPayOSOrderCodeAsync(int orderCode);
+
+        // ===== Unified Payment Gateway =====
+
+        /// <summary>
+        /// Tạo payment với gateway được chọn (MoMo, PayOS, Cash, BankTransfer)
+        /// </summary>
+        Task<Result<CreatePaymentResponseDTO>> CreatePaymentAsync(CreatePaymentRequestDTO request);
     }
 }
