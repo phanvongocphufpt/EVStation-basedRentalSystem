@@ -20,6 +20,9 @@ namespace Repository.IRepositories
 
         // Lấy payment theo rental location (nếu cần)
         Task<IEnumerable<Payment>> GetByRentalLocationAsync();
+        
+        // Lấy revenue by location (tối ưu - chỉ select fields cần thiết)
+        Task<IEnumerable<(string LocationName, decimal TotalRevenue, int PaymentCount)>> GetRevenueByLocationAsync();
 
         // Lấy deposit của order
         Task<Payment?> GetDepositByOrderIdAsync(int orderId);
@@ -45,6 +48,9 @@ namespace Repository.IRepositories
         // Transaction support
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task<Payment?> GetLatestPaymentByOrderIdAsync(int orderId);
+        
+        // Lấy payment Pending theo orderId và amount
+        Task<Payment?> GetPendingPaymentByOrderIdAndAmountAsync(int orderId, decimal amount);
 
     }
 }

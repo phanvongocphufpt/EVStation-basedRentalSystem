@@ -17,14 +17,14 @@ namespace EVStation_basedRentalSystem.Controllers
             _userService = userService;
         }
         [HttpGet("GetAll")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAllUser()
         {
             var Users = await _userService.GetAllAsync();
             return Ok(Users);
         }
         [HttpGet("GetById")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff.Customer")]
         public async Task<IActionResult> GetById(int id)
         {
             var user = await _userService.GetByIdAsync(id);
@@ -63,6 +63,20 @@ namespace EVStation_basedRentalSystem.Controllers
                 return BadRequest("Invalid data.");
 
             var result = await _userService.UpdateCustomerNameAsync(updateUserDTO);
+            return Ok(result);
+        }
+
+        [HttpPut("UpdateCustomerProfile")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> UpdateCustomerProfile([FromBody] UpdateCustomerProfileDTO updateProfileDTO)
+        {
+            if (updateProfileDTO == null)
+                return BadRequest("Invalid data.");
+
+            var result = await _userService.UpdateCustomerProfileAsync(updateProfileDTO);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+
             return Ok(result);
         }
 

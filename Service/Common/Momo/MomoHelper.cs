@@ -110,20 +110,69 @@ namespace Service.Common.Momo
                     
                     if (response.IsSuccessStatusCode)
                     {
-                        // Parse response từ MoMo (có thể có format khác)
+                        // ✅ DEBUG: Log raw response từ MoMo
+                        System.Diagnostics.Debug.WriteLine("========== MoMo CreatePayment Response ==========");
+                        System.Diagnostics.Debug.WriteLine($"Response Status: {response.StatusCode}");
+                        System.Diagnostics.Debug.WriteLine($"Response Content: {responseContent}");
+                        
+                        // Parse response từ MoMo
                         var jsonDoc = JsonDocument.Parse(responseContent);
                         var root = jsonDoc.RootElement;
                         
+                        // ✅ Parse tất cả các field theo tài liệu MoMo
                         var result = new MomoPaymentResponse
                         {
-                            ResultCode = root.TryGetProperty("resultCode", out var resultCodeEl) ? resultCodeEl.GetInt32() : -1,
-                            Message = root.TryGetProperty("message", out var messageEl) ? messageEl.GetString() ?? "" : "",
-                            PayUrl = root.TryGetProperty("payUrl", out var payUrlEl) ? payUrlEl.GetString() ?? "" : "",
-                            OrderId = root.TryGetProperty("orderId", out var orderIdEl) ? orderIdEl.GetString() ?? "" : "",
-                            RequestId = root.TryGetProperty("requestId", out var requestIdEl) ? requestIdEl.GetString() ?? "" : "",
-                            Amount = root.TryGetProperty("amount", out var amountEl) ? amountEl.GetInt64() : 0,
-                            Signature = root.TryGetProperty("signature", out var signatureEl) ? signatureEl.GetString() ?? "" : ""
+                            PartnerCode = root.TryGetProperty("partnerCode", out var partnerCodeEl) 
+                                ? partnerCodeEl.GetString() ?? "" 
+                                : "",
+                            RequestId = root.TryGetProperty("requestId", out var requestIdEl) 
+                                ? requestIdEl.GetString() ?? "" 
+                                : "",
+                            OrderId = root.TryGetProperty("orderId", out var orderIdEl) 
+                                ? orderIdEl.GetString() ?? "" 
+                                : "",
+                            Amount = root.TryGetProperty("amount", out var amountEl) 
+                                ? (amountEl.ValueKind == System.Text.Json.JsonValueKind.String 
+                                    ? long.Parse(amountEl.GetString() ?? "0") 
+                                    : amountEl.GetInt64())
+                                : 0,
+                            ResponseTime = root.TryGetProperty("responseTime", out var responseTimeEl) 
+                                ? responseTimeEl.GetInt64() 
+                                : 0,
+                            Message = root.TryGetProperty("message", out var messageEl) 
+                                ? messageEl.GetString() ?? "" 
+                                : "",
+                            ResultCode = root.TryGetProperty("resultCode", out var resultCodeEl) 
+                                ? resultCodeEl.GetInt32() 
+                                : -1,
+                            PayUrl = root.TryGetProperty("payUrl", out var payUrlEl) 
+                                ? payUrlEl.GetString() ?? "" 
+                                : "",
+                            Deeplink = root.TryGetProperty("deeplink", out var deeplinkEl) 
+                                ? deeplinkEl.GetString() ?? "" 
+                                : "",
+                            QrCodeUrl = root.TryGetProperty("qrCodeUrl", out var qrCodeUrlEl) 
+                                ? qrCodeUrlEl.GetString() ?? "" 
+                                : "",
+                            Signature = root.TryGetProperty("signature", out var signatureEl) 
+                                ? signatureEl.GetString() ?? "" 
+                                : ""
                         };
+                        
+                        // ✅ DEBUG: Log parsed response
+                        System.Diagnostics.Debug.WriteLine("Parsed Response:");
+                        System.Diagnostics.Debug.WriteLine($"  - PartnerCode: {result.PartnerCode}");
+                        System.Diagnostics.Debug.WriteLine($"  - RequestId: {result.RequestId}");
+                        System.Diagnostics.Debug.WriteLine($"  - OrderId: {result.OrderId}");
+                        System.Diagnostics.Debug.WriteLine($"  - Amount: {result.Amount}");
+                        System.Diagnostics.Debug.WriteLine($"  - ResponseTime: {result.ResponseTime}");
+                        System.Diagnostics.Debug.WriteLine($"  - Message: {result.Message}");
+                        System.Diagnostics.Debug.WriteLine($"  - ResultCode: {result.ResultCode}");
+                        System.Diagnostics.Debug.WriteLine($"  - PayUrl: {result.PayUrl}");
+                        System.Diagnostics.Debug.WriteLine($"  - Deeplink: {result.Deeplink}");
+                        System.Diagnostics.Debug.WriteLine($"  - QrCodeUrl: {result.QrCodeUrl}");
+                        System.Diagnostics.Debug.WriteLine($"  - Signature: {result.Signature}");
+                        System.Diagnostics.Debug.WriteLine("=============================================");
                         
                         return result;
                     }
@@ -149,22 +198,115 @@ namespace Service.Common.Momo
 
         /// <summary>
         /// Verify signature từ MoMo IPN callback
+        /// Theo tài liệu MoMo: signature được tạo từ các field được sort theo thứ tự a-z:
+        /// accessKey=$accessKey&amount=$amount&extraData=$extraData&message=$message&orderId=$orderId
+        /// &orderInfo=$orderInfo&orderType=$orderType&partnerCode=$partnerCode&payType=$payType
+        /// &requestId=$requestId&responseTime=$responseTime&resultCode=$resultCode&transId=$transId
         /// </summary>
         public bool VerifySignature(Dictionary<string, string> parameters, string signature)
         {
-            var calculatedSignature = CreateSignature(parameters);
-            return calculatedSignature.Equals(signature, StringComparison.OrdinalIgnoreCase);
+            try
+            {
+                // Tạo dictionary mới bao gồm accessKey
+                var allParams = new Dictionary<string, string>(parameters)
+                {
+                    { "accessKey", _settings.AccessKey }
+                };
+
+                // Sắp xếp parameters theo key (alphabetical order) như tài liệu MoMo yêu cầu
+                var sortedParams = new SortedDictionary<string, string>(allParams);
+                var queryString = new StringBuilder();
+
+                bool isFirst = true;
+                foreach (var param in sortedParams)
+                {
+                    if (!string.IsNullOrEmpty(param.Value))
+                    {
+                        if (!isFirst)
+                        {
+                            queryString.Append("&");
+                        }
+                        queryString.Append($"{param.Key}={param.Value}");
+                        isFirst = false;
+                    }
+                }
+
+                // Tạo HMAC SHA256 với SecretKey
+                using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_settings.SecretKey)))
+                {
+                    var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(queryString.ToString()));
+                    var calculatedSignature = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                    return calculatedSignature.Equals(signature, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 
+    /// <summary>
+    /// Response từ MoMo API khi tạo payment request
+    /// Theo tài liệu MoMo: https://developers.momo.vn/v3/docs/payment/api/wallet-online/php-sdk
+    /// </summary>
     public class MomoPaymentResponse
     {
-        public int ResultCode { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public string PayUrl { get; set; } = string.Empty;
-        public string OrderId { get; set; } = string.Empty;
+        /// <summary>
+        /// Thông tin tích hợp (partnerCode)
+        /// </summary>
+        public string PartnerCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Giống với yêu cầu ban đầu (requestId)
+        /// </summary>
         public string RequestId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Mã đơn hàng của đối tác (orderId)
+        /// </summary>
+        public string OrderId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Giống với số tiền yêu cầu ban đầu (amount)
+        /// </summary>
         public long Amount { get; set; }
+
+        /// <summary>
+        /// Thời gian trả kết quả thanh toán về đối tác (responseTime) - Định dạng: timestamp
+        /// </summary>
+        public long ResponseTime { get; set; }
+
+        /// <summary>
+        /// Mô tả lỗi, ngôn ngữ dựa trên lang (message)
+        /// </summary>
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Result Code (resultCode)
+        /// 0 = Thành công
+        /// Khác 0 = Thất bại
+        /// </summary>
+        public int ResultCode { get; set; }
+
+        /// <summary>
+        /// URL để chuyển từ trang mua hàng của đối tác sang trang thanh toán của MoMo (payUrl)
+        /// </summary>
+        public string PayUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Deep link để mở app MoMo (deeplink) - nếu có
+        /// </summary>
+        public string Deeplink { get; set; } = string.Empty;
+
+        /// <summary>
+        /// QR Code URL để quét thanh toán (qrCodeUrl) - nếu có
+        /// </summary>
+        public string QrCodeUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Signature từ MoMo (nếu có)
+        /// </summary>
         public string Signature { get; set; } = string.Empty;
     }
 }

@@ -111,13 +111,78 @@ namespace EVStation_basedRentalSystem.Controllers
         // 2. Nhận IPN từ MoMo
         [HttpPost("MomoIPN")]
         [AllowAnonymous] // IPN gọi từ MoMo, không cần auth
-        public async Task<IActionResult> MomoIpn([FromBody] JObject payload)
+        public async Task<IActionResult> MomoIpn()
         {
-            var result = await _paymentService.ProcessMomoIpnAsync(payload);
-            if (!result.IsSuccess)
-                return BadRequest(result.Message);
+            try
+            {
+                // ✅ DEBUG: Log request info
+                System.Diagnostics.Debug.WriteLine("========== MoMo IPN Controller ==========");
+                System.Diagnostics.Debug.WriteLine($"Request Method: {Request.Method}");
+                System.Diagnostics.Debug.WriteLine($"Request Path: {Request.Path}");
+                System.Diagnostics.Debug.WriteLine($"Content-Type: {Request.ContentType}");
+                
+                // ✅ Đọc raw body và parse thủ công để tránh lỗi với System.Text.Json
+                string rawBody;
+                using (var reader = new StreamReader(Request.Body, System.Text.Encoding.UTF8, leaveOpen: true))
+                {
+                    rawBody = await reader.ReadToEndAsync();
+                    Request.Body.Position = 0; // Reset stream position
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"Raw Body: {rawBody}");
+                
+                if (string.IsNullOrWhiteSpace(rawBody))
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ Payload is null or empty!");
+                    // Log và trả về 200 để MoMo không retry
+                    return Ok(new { success = false, message = "Payload null or empty" });
+                }
 
-            return Ok(result.Data);
+                // Parse JSON string thành JObject
+                JObject payload;
+                try
+                {
+                    payload = JObject.Parse(rawBody);
+                }
+                catch (Exception parseEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Failed to parse JSON: {parseEx.Message}");
+                    return Ok(new { success = false, message = $"Invalid JSON format: {parseEx.Message}" });
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Parsed Payload: {payload?.ToString() ?? "null"}");
+
+                if (payload == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ Parsed payload is null!");
+                    return Ok(new { success = false, message = "Failed to parse payload" });
+                }
+
+                var result = await _paymentService.ProcessMomoIpnAsync(payload);
+                
+                // ✅ QUAN TRỌNG: Luôn trả về 200 OK để MoMo không retry
+                // Log lỗi nhưng vẫn trả về 200 để tránh MoMo gửi lại callback
+                if (!result.IsSuccess)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ ProcessMomoIpnAsync failed: {result.Message}");
+                    // Có thể log vào database hoặc file log ở đây
+                    return Ok(new { success = false, message = result.Message });
+                }
+
+                System.Diagnostics.Debug.WriteLine("✅ MoMo IPN processed successfully!");
+                System.Diagnostics.Debug.WriteLine("========================================");
+                return Ok(new { success = true, data = result.Data });
+            }
+            catch (Exception ex)
+            {
+                // ✅ DEBUG: Log exception chi tiết
+                System.Diagnostics.Debug.WriteLine($"❌ Exception in MomoIpn: {ex.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"Message: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+                // Log exception và trả về 200 để MoMo không retry
+                // _logger.LogError(ex, "Lỗi không mong đợi khi xử lý MoMo IPN");
+                return Ok(new { success = false, message = ex.Message });
+            }
         }
 
         // 3. Lấy payment theo MomoOrderId
@@ -156,19 +221,78 @@ namespace EVStation_basedRentalSystem.Controllers
         // 2. Nhận IPN từ PayOS
         [HttpPost("PayOSIPN")]
         [AllowAnonymous] // IPN gọi từ PayOS, không cần auth
-        public async Task<IActionResult> PayOSIpn([FromBody] JObject payload)
+        public async Task<IActionResult> PayOSIpn()
         {
-            var result = await _paymentService.ProcessPayOSIpnAsync(payload);
-
-            if (!result.IsSuccess)
+            try
             {
-                // Optional: log thất bại
-                // _logger.LogWarning("IPN PayOS thất bại: {Message}", result.Message);
-                return BadRequest(new { success = false, message = result.Message });
-            }
+                // ✅ DEBUG: Log request info
+                System.Diagnostics.Debug.WriteLine("========== PayOS IPN Controller ==========");
+                System.Diagnostics.Debug.WriteLine($"Request Method: {Request.Method}");
+                System.Diagnostics.Debug.WriteLine($"Request Path: {Request.Path}");
+                System.Diagnostics.Debug.WriteLine($"Content-Type: {Request.ContentType}");
+                
+                // ✅ Đọc raw body và parse thủ công để tránh lỗi với System.Text.Json
+                string rawBody;
+                using (var reader = new StreamReader(Request.Body, System.Text.Encoding.UTF8, leaveOpen: true))
+                {
+                    rawBody = await reader.ReadToEndAsync();
+                    Request.Body.Position = 0; // Reset stream position
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"Raw Body: {rawBody}");
+                
+                if (string.IsNullOrWhiteSpace(rawBody))
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ Payload is null or empty!");
+                    // Log và trả về 200 để PayOS không retry
+                    return Ok(new { success = false, message = "Payload null or empty" });
+                }
 
-            // PayOS thường yêu cầu trả về 200 để xác nhận nhận IPN
-            return Ok(new { success = true, data = result.Data });
+                // Parse JSON string thành JObject
+                JObject payload;
+                try
+                {
+                    payload = JObject.Parse(rawBody);
+                }
+                catch (Exception parseEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Failed to parse JSON: {parseEx.Message}");
+                    return Ok(new { success = false, message = $"Invalid JSON format: {parseEx.Message}" });
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Parsed Payload: {payload?.ToString() ?? "null"}");
+
+                if (payload == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ Parsed payload is null!");
+                    return Ok(new { success = false, message = "Failed to parse payload" });
+                }
+
+                var result = await _paymentService.ProcessPayOSIpnAsync(payload);
+
+                // ✅ QUAN TRỌNG: PayOS yêu cầu trả về 200 OK để xác nhận nhận IPN
+                // Log lỗi nhưng vẫn trả về 200 để tránh PayOS gửi lại callback
+                if (!result.IsSuccess)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ ProcessPayOSIpnAsync failed: {result.Message}");
+                    // Có thể log vào database hoặc file log ở đây
+                    return Ok(new { success = false, message = result.Message });
+                }
+
+                System.Diagnostics.Debug.WriteLine("✅ PayOS IPN processed successfully!");
+                System.Diagnostics.Debug.WriteLine("========================================");
+                return Ok(new { success = true, data = result.Data });
+            }
+            catch (Exception ex)
+            {
+                // ✅ DEBUG: Log exception chi tiết
+                System.Diagnostics.Debug.WriteLine($"❌ Exception in PayOSIpn: {ex.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"Message: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+                // Log exception và trả về 200 để PayOS không retry
+                // _logger.LogError(ex, "Lỗi không mong đợi khi xử lý PayOS IPN");
+                return Ok(new { success = false, message = ex.Message });
+            }
         }
 
         // 3. Lấy payment theo PayOSOrderCode
@@ -228,6 +352,23 @@ namespace EVStation_basedRentalSystem.Controllers
             }
 
             return Ok(new { success = true, data = result.Data });
+        }
+
+        /// <summary>
+        /// Kiểm tra và cập nhật payment status (dùng khi callback chưa được gọi)
+        /// </summary>
+        [HttpPost("CheckPaymentStatus/{paymentId}")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> CheckPaymentStatus(int paymentId)
+        {
+            var result = await _paymentService.CheckAndUpdatePaymentStatusAsync(paymentId);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { success = false, message = result.Message });
+            }
+
+            return Ok(new { success = true, message = "Payment status đã được kiểm tra." });
         }
     }
 }

@@ -80,6 +80,10 @@ namespace Service.Services
             getUser.Password = updateUserDTO.Password;
             getUser.PasswordHash = passwordHash;
             getUser.FullName = updateUserDTO.FullName;
+            getUser.DateOfBirth = updateUserDTO.DateOfBirth;
+            getUser.Address = updateUserDTO.Address;
+            getUser.Occupation = updateUserDTO.Occupation;
+            getUser.UpdatedAt = DateTime.UtcNow;
             await _userRepository.UpdateAsync(getUser);
             return Result<UpdateUserDTO>.Success(updateUserDTO, "Cập nhật thông tin người dùng thành công.");
         }
@@ -95,8 +99,29 @@ namespace Service.Services
                 return Result<UpdateCustomerNameDTO>.Failure("Chỉ có thể cập nhật tên cho khách hàng.");
             }
             getUser.FullName = updateUserDTO.FullName;
+            getUser.UpdatedAt = DateTime.UtcNow;
             await _userRepository.UpdateAsync(getUser);
             return Result<UpdateCustomerNameDTO>.Success(updateUserDTO, "Cập nhật tên khách hàng thành công.");
+        }
+
+        public async Task<Result<UpdateCustomerProfileDTO>> UpdateCustomerProfileAsync(UpdateCustomerProfileDTO updateProfileDTO)
+        {
+            var getUser = await _userRepository.GetByIdAsync(updateProfileDTO.UserId);
+            if (getUser == null)
+            {
+                return Result<UpdateCustomerProfileDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id.");
+            }
+            if (!getUser.Role.Equals("Customer"))
+            {
+                return Result<UpdateCustomerProfileDTO>.Failure("Chỉ có thể cập nhật thông tin cho khách hàng.");
+            }
+            getUser.FullName = updateProfileDTO.FullName;
+            getUser.DateOfBirth = updateProfileDTO.DateOfBirth;
+            getUser.Address = updateProfileDTO.Address;
+            getUser.Occupation = updateProfileDTO.Occupation;
+            getUser.UpdatedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(getUser);
+            return Result<UpdateCustomerProfileDTO>.Success(updateProfileDTO, "Cập nhật thông tin cá nhân thành công.");
         }
         public async Task<Result<UpdateCustomerPasswordDTO>> UpdateCustomerPasswordAsync(UpdateCustomerPasswordDTO updateUserDTO)
         {

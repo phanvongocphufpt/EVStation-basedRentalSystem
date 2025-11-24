@@ -65,7 +65,7 @@ namespace Service.DTOs
     }
     public class CreateRentalOrderDTO
     {
-        public string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; } // Optional - có thể lấy từ User nếu không có
         public DateTime PickupTime { get; set; }
         public DateTime ExpectedReturnTime { get; set; }
         public bool WithDriver { get; set; }

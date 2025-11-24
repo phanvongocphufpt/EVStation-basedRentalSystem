@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using Repository.Entities;
@@ -29,6 +30,7 @@ namespace Service.Services
         private readonly MomoHelper _momoHelper;
         private readonly PayOSSettings _payOSSettings;
         private readonly PayOSHelper _payOSHelper;
+        private readonly ILogger<PaymentService> _logger;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
@@ -37,7 +39,8 @@ namespace Service.Services
             IRentalOrderRepository rentalOrderRepository,
             IRentalLocationRepository rentalLocationRepository,
             IOptions<MomoSettings> momoSettings,
-            IOptions<PayOSSettings> payOSSettings)
+            IOptions<PayOSSettings> payOSSettings,
+            ILogger<PaymentService> logger)
         {
             _paymentRepository = paymentRepository;
             _mapper = mapper;
@@ -48,6 +51,7 @@ namespace Service.Services
             _momoHelper = new MomoHelper(_momoSettings);
             _payOSSettings = payOSSettings.Value;
             _payOSHelper = new PayOSHelper(_payOSSettings);
+            _logger = logger;
         }
 
         // ========================
@@ -164,17 +168,15 @@ namespace Service.Services
 
         public async Task<Result<IEnumerable<RevenueByLocationDTO>>> GetRevenueByLocationAsync()
         {
-            var payments = await _paymentRepository.GetByRentalLocationAsync();
+            // ✅ Tối ưu: Query trực tiếp trong database thay vì load tất cả vào memory
+            var revenueData = await _paymentRepository.GetRevenueByLocationAsync();
 
-            var revenueByLocation = payments
-                .Where(p => p.Status == PaymentStatus.Completed
-                         && p.RentalOrder?.RentalLocation != null)
-                .GroupBy(p => p.RentalOrder!.RentalLocation)
-                .Select(g => new RevenueByLocationDTO
+            var revenueByLocation = revenueData
+                .Select(x => new RevenueByLocationDTO
                 {
-                    RentalLocationName = g.Key.Name,
-                    TotalRevenue = (double)g.Sum(p => p.Amount),
-                    PaymentCount = g.Count()
+                    RentalLocationName = x.LocationName,
+                    TotalRevenue = (double)x.TotalRevenue,
+                    PaymentCount = x.PaymentCount
                 })
                 .ToList();
 
@@ -193,18 +195,45 @@ namespace Service.Services
             if (user == null || order == null)
                 return Result<CreateMomoPaymentResponseDTO>.Failure("Người dùng hoặc đơn hàng không tồn tại.");
 
-            var payment = new Payment
+            // ✅ Tìm payment Deposit hoặc payment Pending với amount = deposit, nếu có thì update thay vì tạo mới
+            Payment payment;
+            var existingDepositPayment = await _paymentRepository.GetDepositByOrderIdAsync(rentalOrderId);
+            
+            // Nếu không tìm thấy payment Deposit, tìm payment Pending có amount = deposit amount
+            if (existingDepositPayment == null && order != null && order.Deposit.HasValue)
             {
-                PaymentType = PaymentType.OrderPayment,
-                Amount = (decimal)amount,
-                Gateway = PaymentGateway.MoMo,
-                Status = PaymentStatus.Pending,
-                UserId = userId,
-                RentalOrderId = rentalOrderId,
-                PaymentMethod = "MoMo",
-                PaymentDate = DateTime.UtcNow
-            };
-            await _paymentRepository.AddAsync(payment);
+                existingDepositPayment = await _paymentRepository.GetPendingPaymentByOrderIdAndAmountAsync(
+                    rentalOrderId, 
+                    (decimal)order.Deposit.Value
+                );
+            }
+            
+            if (existingDepositPayment != null && existingDepositPayment.Status == PaymentStatus.Pending)
+            {
+                // Update payment Deposit hiện có với thông tin MoMo
+                payment = existingDepositPayment;
+                payment.Gateway = PaymentGateway.MoMo;
+                payment.PaymentMethod = "MoMo";
+                payment.Amount = (decimal)amount;
+                payment.PaymentType = PaymentType.Deposit; // ✅ Đảm bảo PaymentType = Deposit
+                await _paymentRepository.UpdateAsync(payment);
+            }
+            else
+            {
+                // Nếu không có payment Deposit, tạo payment mới với PaymentType = Deposit
+                payment = new Payment
+                {
+                    PaymentType = PaymentType.Deposit, // ✅ Giữ PaymentType = Deposit
+                    Amount = (decimal)amount,
+                    Gateway = PaymentGateway.MoMo,
+                    Status = PaymentStatus.Pending,
+                    UserId = userId,
+                    RentalOrderId = rentalOrderId,
+                    PaymentMethod = "MoMo"
+                    // Không set PaymentDate khi tạo, chỉ set khi thanh toán thành công
+                };
+                await _paymentRepository.AddAsync(payment);
+            }
 
             // Tạo dữ liệu request gửi MoMo
             var orderId = Guid.NewGuid().ToString();
@@ -225,6 +254,18 @@ namespace Service.Services
                 return Result<CreateMomoPaymentResponseDTO>.Failure("Số tiền tối đa là 50,000,000 VND");
             }
 
+            // ✅ DEBUG: Log trước khi gửi request đến MoMo
+            _logger.LogInformation("========== MoMo CreatePayment Request ==========");
+            _logger.LogInformation("PaymentId: {PaymentId}, RentalOrderId: {RentalOrderId}, UserId: {UserId}",
+                payment.Id, rentalOrderId, userId);
+            _logger.LogInformation("Request Details:");
+            _logger.LogInformation("  - OrderId: {OrderId}", orderId);
+            _logger.LogInformation("  - RequestId: {RequestId}", requestId);
+            _logger.LogInformation("  - Amount: {Amount} VND", amountLong);
+            _logger.LogInformation("  - OrderInfo: {OrderInfo}", orderInfo);
+            _logger.LogInformation("  - PartnerCode: {PartnerCode}", _momoSettings.PartnerCode);
+            _logger.LogInformation("  - Endpoint: {Endpoint}", _momoSettings.Endpoint);
+
             // Gửi request đến MoMo để lấy payUrl
             var momoResponse = await _momoHelper.CreatePaymentRequestAsync(
                 orderId: orderId,
@@ -234,78 +275,277 @@ namespace Service.Services
                 extraData: $"rentalOrderId={rentalOrderId}&userId={userId}"
             );
 
-            // Cập nhật payment với thông tin MoMo
-            payment.MomoOrderId = orderId;
-            payment.MomoRequestId = requestId;
-            payment.MomoPartnerCode = _momoSettings.PartnerCode;
+            // ✅ DEBUG: Log response từ MoMo
+            _logger.LogInformation("========== MoMo CreatePayment Response ==========");
+            _logger.LogInformation("Response Details:");
+            _logger.LogInformation("  - PartnerCode: {PartnerCode}", momoResponse.PartnerCode);
+            _logger.LogInformation("  - RequestId: {RequestId}", momoResponse.RequestId);
+            _logger.LogInformation("  - OrderId: {OrderId}", momoResponse.OrderId);
+            _logger.LogInformation("  - Amount: {Amount}", momoResponse.Amount);
+            _logger.LogInformation("  - ResponseTime: {ResponseTime} (timestamp)", momoResponse.ResponseTime);
+            _logger.LogInformation("  - Message: {Message}", momoResponse.Message);
+            _logger.LogInformation("  - ResultCode: {ResultCode}", momoResponse.ResultCode);
+            _logger.LogInformation("  - PayUrl: {PayUrl}", momoResponse.PayUrl);
+            _logger.LogInformation("  - Deeplink: {Deeplink}", momoResponse.Deeplink);
+            _logger.LogInformation("  - QrCodeUrl: {QrCodeUrl}", momoResponse.QrCodeUrl);
+            _logger.LogInformation("  - Signature: {Signature}", momoResponse.Signature);
+
+            // Cập nhật payment với thông tin MoMo từ response
+            payment.MomoOrderId = momoResponse.OrderId; // ✅ Sử dụng OrderId từ response (có thể khác với orderId gửi đi)
+            payment.MomoRequestId = momoResponse.RequestId; // ✅ Sử dụng RequestId từ response
+            payment.MomoPartnerCode = momoResponse.PartnerCode; // ✅ Sử dụng PartnerCode từ response
             payment.MomoMessage = momoResponse.Message;
             payment.MomoResultCode = momoResponse.ResultCode;
             payment.Status = momoResponse.ResultCode == 0 ? PaymentStatus.Pending : PaymentStatus.Failed;
+            
+            // ✅ DEBUG: Log payment trước khi update
+            _logger.LogInformation("Payment trước khi update:");
+            _logger.LogInformation("  - Status: {Status}", payment.Status);
+            _logger.LogInformation("  - MomoOrderId: {MomoOrderId}", payment.MomoOrderId);
+            _logger.LogInformation("  - MomoRequestId: {MomoRequestId}", payment.MomoRequestId);
+            _logger.LogInformation("  - MomoResultCode: {MomoResultCode}", payment.MomoResultCode);
+            
             await _paymentRepository.UpdateAsync(payment);
+            
+            _logger.LogInformation("✅ Đã cập nhật payment vào database");
+            _logger.LogInformation("=============================================");
 
             if (momoResponse.ResultCode != 0)
             {
+                _logger.LogError("❌ Tạo payment MoMo thất bại! ResultCode: {ResultCode}, Message: {Message}",
+                    momoResponse.ResultCode, momoResponse.Message);
                 return Result<CreateMomoPaymentResponseDTO>.Failure($"Tạo payment MoMo thất bại: {momoResponse.Message}");
             }
 
             var response = new CreateMomoPaymentResponseDTO
             {
-                MomoOrderId = orderId,
-                MomoRequestId = requestId,
+                MomoOrderId = momoResponse.OrderId, // ✅ Sử dụng OrderId từ response
+                MomoRequestId = momoResponse.RequestId, // ✅ Sử dụng RequestId từ response
                 MomoPayUrl = momoResponse.PayUrl,
+                MomoDeeplink = momoResponse.Deeplink, // ✅ Deep link để mở app MoMo
+                MomoQrCodeUrl = momoResponse.QrCodeUrl, // ✅ QR Code URL để quét thanh toán
                 Status = payment.Status == PaymentStatus.Pending ? "Pending" : "Failed"
             };
 
+            _logger.LogInformation("✅ Tạo payment MoMo thành công!");
+            _logger.LogInformation("  - PayUrl: {PayUrl}", momoResponse.PayUrl);
+            _logger.LogInformation("  - Deeplink: {Deeplink}", momoResponse.Deeplink);
+            _logger.LogInformation("  - QrCodeUrl: {QrCodeUrl}", momoResponse.QrCodeUrl);
             return Result<CreateMomoPaymentResponseDTO>.Success(response);
         }
 
         public async Task<Result<bool>> ProcessMomoIpnAsync(object payload)
         {
-            var data = payload as JObject;
-            if (data == null) return Result<bool>.Failure("Payload MoMo không hợp lệ.");
-
-            string momoOrderId = data["orderId"]?.ToString() ?? "";
-            int resultCode = data["resultCode"]?.ToObject<int>() ?? -1;
-            string signature = data["signature"]?.ToString() ?? "";
-
-            var payment = await _paymentRepository.GetByMomoOrderIdAsync(momoOrderId);
-            if (payment == null) return Result<bool>.Failure("Payment không tồn tại.");
-
-            // Verify signature từ MoMo
-            var parameters = new Dictionary<string, string>();
-            foreach (var prop in data.Properties())
+            try
             {
-                if (prop.Name != "signature" && prop.Value != null)
+                // ✅ DEBUG: Log toàn bộ payload nhận được
+                _logger.LogInformation("========== MoMo IPN CALLBACK START ==========");
+                _logger.LogInformation("MoMo IPN Raw Payload: {Payload}", payload?.ToString() ?? "null");
+                
+                var data = payload as JObject;
+                if (data == null)
                 {
-                    parameters[prop.Name] = prop.Value.ToString();
+                    _logger.LogWarning("MoMo IPN: Payload không hợp lệ. Payload: {Payload}", payload?.ToString() ?? "null");
+                    return Result<bool>.Failure("Payload MoMo không hợp lệ.");
                 }
+
+                // ✅ DEBUG: Log từng field trong payload
+                _logger.LogInformation("MoMo IPN Payload Fields:");
+                foreach (var prop in data.Properties())
+                {
+                    _logger.LogInformation("  - {Key} = {Value}", prop.Name, prop.Value?.ToString() ?? "null");
+                }
+
+                string momoOrderId = data["orderId"]?.ToString() ?? "";
+                int resultCode = data["resultCode"]?.ToObject<int>() ?? -1;
+                string signature = data["signature"]?.ToString() ?? "";
+                string message = data["message"]?.ToString() ?? "";
+                string orderType = data["orderType"]?.ToString() ?? "";
+                long? transId = data["transId"]?.ToObject<long>();
+                string payType = data["payType"]?.ToString() ?? "";
+                long? amount = data["amount"]?.ToObject<long>();
+                string partnerCode = data["partnerCode"]?.ToString() ?? "";
+                string requestId = data["requestId"]?.ToString() ?? "";
+                long? responseTime = data["responseTime"]?.ToObject<long>();
+                string extraData = data["extraData"]?.ToString() ?? "";
+                string orderInfo = data["orderInfo"]?.ToString() ?? "";
+
+                _logger.LogInformation("MoMo IPN Parsed Data:");
+                _logger.LogInformation("  - MomoOrderId: {MomoOrderId}", momoOrderId);
+                _logger.LogInformation("  - ResultCode: {ResultCode}", resultCode);
+                _logger.LogInformation("  - Message: {Message}", message);
+                _logger.LogInformation("  - Signature: {Signature}", signature);
+                _logger.LogInformation("  - OrderType: {OrderType}", orderType);
+                _logger.LogInformation("  - TransId: {TransId}", transId);
+                _logger.LogInformation("  - PayType: {PayType}", payType);
+                _logger.LogInformation("  - Amount: {Amount}", amount);
+                _logger.LogInformation("  - PartnerCode: {PartnerCode}", partnerCode);
+                _logger.LogInformation("  - RequestId: {RequestId}", requestId);
+                _logger.LogInformation("  - ResponseTime: {ResponseTime}", responseTime);
+                _logger.LogInformation("  - ExtraData: {ExtraData}", extraData);
+                _logger.LogInformation("  - OrderInfo: {OrderInfo}", orderInfo);
+
+                if (string.IsNullOrEmpty(momoOrderId))
+                {
+                    _logger.LogWarning("MoMo IPN: MomoOrderId trống");
+                    return Result<bool>.Failure("MomoOrderId không hợp lệ.");
+                }
+
+                // ✅ DEBUG: Log trước khi tìm payment
+                _logger.LogInformation("MoMo IPN: Đang tìm payment với MomoOrderId={MomoOrderId}", momoOrderId);
+                
+                var payment = await _paymentRepository.GetByMomoOrderIdAsync(momoOrderId);
+                if (payment == null)
+                {
+                    _logger.LogWarning("MoMo IPN: ❌ Không tìm thấy payment với MomoOrderId={MomoOrderId}", momoOrderId);
+                    _logger.LogWarning("MoMo IPN: Có thể payment chưa được tạo hoặc MomoOrderId không khớp");
+                    return Result<bool>.Failure("Payment không tồn tại.");
+                }
+                
+                // ✅ DEBUG: Log thông tin payment tìm được
+                _logger.LogInformation("MoMo IPN: ✅ Tìm thấy payment:");
+                _logger.LogInformation("  - PaymentId: {PaymentId}", payment.Id);
+                _logger.LogInformation("  - Current Status: {Status}", payment.Status);
+                _logger.LogInformation("  - Amount: {Amount}", payment.Amount);
+                _logger.LogInformation("  - PaymentType: {PaymentType}", payment.PaymentType);
+                _logger.LogInformation("  - RentalOrderId: {RentalOrderId}", payment.RentalOrderId);
+                _logger.LogInformation("  - UserId: {UserId}", payment.UserId);
+
+                // Kiểm tra xem payment đã được xử lý chưa (tránh xử lý trùng)
+                if (payment.Status == PaymentStatus.Completed && resultCode == 0)
+                {
+                    _logger.LogInformation("MoMo IPN: Payment {PaymentId} đã được xử lý thành công trước đó. MomoOrderId={MomoOrderId}",
+                        payment.Id, momoOrderId);
+                    return Result<bool>.Success(true); // Trả về success để MoMo không gửi lại
+                }
+
+                // ✅ DEBUG: Verify signature từ MoMo
+                _logger.LogInformation("MoMo IPN: Bắt đầu verify signature...");
+                
+                // Theo tài liệu MoMo, signature được tạo từ các field: accessKey, amount, extraData, message, 
+                // orderId, orderInfo, orderType, partnerCode, payType, requestId, responseTime, resultCode, transId
+                var parameters = new Dictionary<string, string>();
+                foreach (var prop in data.Properties())
+                {
+                    // Chỉ lấy các field cần thiết cho signature verification (theo tài liệu MoMo)
+                    if (prop.Name != "signature" && prop.Value != null)
+                    {
+                        // Chuyển đổi giá trị thành string
+                        string value = prop.Value.Type == Newtonsoft.Json.Linq.JTokenType.Null 
+                            ? "" 
+                            : prop.Value.ToString();
+                        parameters[prop.Name] = value;
+                    }
+                }
+                
+                _logger.LogInformation("MoMo IPN: Parameters để verify signature ({Count} fields):", parameters.Count);
+                foreach (var param in parameters.OrderBy(p => p.Key))
+                {
+                    _logger.LogInformation("  - {Key} = {Value}", param.Key, param.Value);
+                }
+                _logger.LogInformation("MoMo IPN: Signature từ callback: {Signature}", signature);
+                
+                bool isValid = _momoHelper.VerifySignature(parameters, signature);
+                if (!isValid)
+                {
+                    _logger.LogError("MoMo IPN: ❌ Chữ ký KHÔNG hợp lệ!");
+                    _logger.LogError("MoMo IPN: PaymentId={PaymentId}, MomoOrderId={MomoOrderId}", 
+                        payment.Id, momoOrderId);
+                    _logger.LogError("MoMo IPN: Signature từ callback: {Signature}", signature);
+                    _logger.LogError("MoMo IPN: Parameters: {Parameters}", 
+                        string.Join(", ", parameters.OrderBy(p => p.Key).Select(p => $"{p.Key}={p.Value}")));
+                    return Result<bool>.Failure("Chữ ký MoMo không hợp lệ.");
+                }
+                
+                _logger.LogInformation("MoMo IPN: ✅ Signature verification thành công!");
+
+                // ✅ DEBUG: Cập nhật payment với thông tin từ MoMo
+                _logger.LogInformation("MoMo IPN: Bắt đầu cập nhật payment...");
+                _logger.LogInformation("MoMo IPN: Payment trước khi update - Status: {OldStatus}, PaymentDate: {OldPaymentDate}",
+                    payment.Status, payment.PaymentDate);
+                
+                payment.MomoResultCode = resultCode;
+                payment.MomoMessage = message;
+                payment.MomoSignature = signature;
+                payment.MomoTransId = transId;
+                payment.MomoPayType = payType;
+                payment.Status = resultCode == 0 ? PaymentStatus.Completed : PaymentStatus.Failed;
+                
+                // ✅ Set PaymentDate khi thanh toán thành công
+                if (resultCode == 0)
+                {
+                    var paymentDate = DateTimeHelper.GetVietnamTime();
+                    payment.PaymentDate = paymentDate;
+                    _logger.LogInformation("MoMo IPN: ✅ Thanh toán thành công! Set PaymentDate = {PaymentDate}", paymentDate);
+                }
+                else
+                {
+                    _logger.LogWarning("MoMo IPN: ⚠️ Thanh toán thất bại! ResultCode = {ResultCode}, Message = {Message}", 
+                        resultCode, message);
+                }
+                
+                _logger.LogInformation("MoMo IPN: Payment sau khi update - Status: {NewStatus}, PaymentDate: {NewPaymentDate}",
+                    payment.Status, payment.PaymentDate);
+
+                // ✅ QUAN TRỌNG: Nếu thanh toán deposit thành công, tự động cập nhật order status
+                if (resultCode == 0 && payment.RentalOrderId.HasValue)
+                {
+                    try
+                    {
+                        var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId.Value);
+                        if (order != null && (payment.PaymentType == PaymentType.Deposit || (order.Deposit.HasValue && order.Deposit.Value > 0 && payment.Amount == (decimal)order.Deposit.Value)))
+                        {
+                            // Cập nhật status khi thanh toán deposit thành công (trừ khi đã Completed hoặc Cancelled)
+                            if (order.Status != RentalOrderStatus.Completed && order.Status != RentalOrderStatus.Cancelled)
+                            {
+                                // Với WithDriver = true: sau khi deposit thanh toán thành công, chuyển sang DepositPending (2)
+                                // Với WithDriver = false: chuyển sang DocumentsSubmitted (1) để user nộp giấy tờ
+                                if (order.WithDriver == true)
+                                {
+                                    order.Status = RentalOrderStatus.DepositPending;
+                                }
+                                else
+                                {
+                                    order.Status = RentalOrderStatus.DocumentsSubmitted;
+                                }
+                                order.UpdatedAt = DateTimeHelper.GetVietnamTime();
+                                await _rentalOrderRepository.UpdateAsync(order);
+                                
+                                _logger.LogInformation("MoMo IPN: Đã cập nhật order {OrderId} status thành {Status} sau khi deposit thành công",
+                                    order.Id, order.Status);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "MoMo IPN: Lỗi khi cập nhật order status. PaymentId={PaymentId}, OrderId={OrderId}",
+                            payment.Id, payment.RentalOrderId);
+                        // Không throw để payment vẫn được cập nhật
+                    }
+                }
+
+                // ✅ DEBUG: Lưu payment vào database
+                _logger.LogInformation("MoMo IPN: Đang lưu payment vào database...");
+                await _paymentRepository.UpdateAsync(payment);
+                _logger.LogInformation("MoMo IPN: ✅ Đã lưu payment vào database thành công!");
+                
+                _logger.LogInformation("========== MoMo IPN CALLBACK SUCCESS ==========");
+                _logger.LogInformation("MoMo IPN: Đã xử lý thành công. PaymentId={PaymentId}, Status={Status}, ResultCode={ResultCode}",
+                    payment.Id, payment.Status, resultCode);
+                
+                return Result<bool>.Success(true);
             }
-            
-            bool isValid = _momoHelper.VerifySignature(parameters, signature);
-            if (!isValid) return Result<bool>.Failure("Chữ ký MoMo không hợp lệ.");
-
-            // Cập nhật payment với thông tin từ MoMo
-            payment.MomoResultCode = resultCode;
-            payment.MomoMessage = data["message"]?.ToString();
-            payment.MomoSignature = signature;
-            payment.MomoTransId = data["transId"]?.ToObject<long>();
-            payment.MomoPayType = data["payType"]?.ToString();
-            payment.Status = resultCode == 0 ? PaymentStatus.Completed : PaymentStatus.Failed;
-
-            // Nếu thanh toán thành công, cập nhật order status
-            if (resultCode == 0 && payment.RentalOrderId.HasValue)
+            catch (Exception ex)
             {
-                var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId.Value);
-                if (order != null && order.Status == RentalOrderStatus.Confirmed)
-                {
-                    // Có thể cập nhật order status nếu cần
-                    // order.Status = RentalOrderStatus.Paid;
-                    // await _rentalOrderRepository.UpdateAsync(order);
-                }
+                _logger.LogError(ex, "========== MoMo IPN CALLBACK ERROR ==========");
+                _logger.LogError(ex, "MoMo IPN: ❌ Lỗi không mong đợi khi xử lý callback");
+                _logger.LogError(ex, "MoMo IPN: Exception Type: {ExceptionType}", ex.GetType().Name);
+                _logger.LogError(ex, "MoMo IPN: Exception Message: {Message}", ex.Message);
+                _logger.LogError(ex, "MoMo IPN: Stack Trace: {StackTrace}", ex.StackTrace);
+                _logger.LogError(ex, "MoMo IPN: Payload: {Payload}", payload?.ToString() ?? "null");
+                _logger.LogError(ex, "=============================================");
+                return Result<bool>.Failure($"Lỗi xử lý callback MoMo: {ex.Message}");
             }
-
-            await _paymentRepository.UpdateAsync(payment);
-            return Result<bool>.Success(true);
         }
 
         public async Task<Result<PaymentDetailDTO>> GetPaymentByMomoOrderIdAsync(string momoOrderId)
@@ -328,18 +568,45 @@ namespace Service.Services
             if (user == null || order == null)
                 return Result<CreatePayOSPaymentResponseDTO>.Failure("Người dùng hoặc đơn hàng không tồn tại.");
 
-            var payment = new Payment
+            // ✅ Tìm payment Deposit hoặc payment Pending với amount = deposit, nếu có thì update thay vì tạo mới
+            Payment payment;
+            var existingDepositPayment = await _paymentRepository.GetDepositByOrderIdAsync(rentalOrderId);
+            
+            // Nếu không tìm thấy payment Deposit, tìm payment Pending có amount = deposit amount
+            if (existingDepositPayment == null && order != null && order.Deposit.HasValue)
             {
-                PaymentType = PaymentType.OrderPayment,
-                Amount = (decimal)amount,
-                Gateway = PaymentGateway.PayOS,
-                Status = PaymentStatus.Pending,
-                UserId = userId,
-                RentalOrderId = rentalOrderId,
-                PaymentMethod = "PayOS",
-                PaymentDate = DateTime.UtcNow
-            };
-            await _paymentRepository.AddAsync(payment);
+                existingDepositPayment = await _paymentRepository.GetPendingPaymentByOrderIdAndAmountAsync(
+                    rentalOrderId, 
+                    (decimal)order.Deposit.Value
+                );
+            }
+            
+            if (existingDepositPayment != null && existingDepositPayment.Status == PaymentStatus.Pending)
+            {
+                // Update payment Deposit hiện có với thông tin PayOS
+                payment = existingDepositPayment;
+                payment.Gateway = PaymentGateway.PayOS;
+                payment.PaymentMethod = "PayOS";
+                payment.Amount = (decimal)amount;
+                payment.PaymentType = PaymentType.Deposit; // ✅ Đảm bảo PaymentType = Deposit
+                await _paymentRepository.UpdateAsync(payment);
+            }
+            else
+            {
+                // Nếu không có payment Deposit, tạo payment mới với PaymentType = Deposit
+                payment = new Payment
+                {
+                    PaymentType = PaymentType.Deposit, // ✅ Giữ PaymentType = Deposit
+                    Amount = (decimal)amount,
+                    Gateway = PaymentGateway.PayOS,
+                    Status = PaymentStatus.Pending,
+                    UserId = userId,
+                    RentalOrderId = rentalOrderId,
+                    PaymentMethod = "PayOS"
+                    // Không set PaymentDate khi tạo, chỉ set khi thanh toán thành công
+                };
+                await _paymentRepository.AddAsync(payment);
+            }
 
             // Tạo orderCode unique
             var timestamp = (int)(DateTime.UtcNow.Ticks % 1000);
@@ -413,70 +680,136 @@ namespace Service.Services
 
         public async Task<Result<bool>> ProcessPayOSIpnAsync(object payload)
         {
-            var data = payload as JObject;
-            if (data == null) return Result<bool>.Failure("Payload PayOS không hợp lệ.");
-
-            int orderCode = data["data"]?["orderCode"]?.ToObject<int>() ?? 0;
-            string code = data["code"]?.ToString() ?? "";
-            string desc = data["desc"]?.ToString() ?? "";
-
-            if (orderCode == 0)
-                return Result<bool>.Failure("OrderCode không hợp lệ.");
-
-            var payment = await _paymentRepository.GetByPayOSOrderCodeAsync(orderCode);
-            if (payment == null)
-                return Result<bool>.Failure("Payment không tồn tại.");
-
-            // Flatten data for checksum verification
-            var parameters = new Dictionary<string, object>();
-            foreach (var prop in data.Properties())
+            try
             {
-                if (prop.Name != "signature" && prop.Value != null)
+                var data = payload as JObject;
+                if (data == null)
                 {
-                    if (prop.Name == "data" && prop.Value.Type == JTokenType.Object)
+                    _logger.LogWarning("PayOS IPN: Payload không hợp lệ. Payload: {Payload}", payload?.ToString() ?? "null");
+                    return Result<bool>.Failure("Payload PayOS không hợp lệ.");
+                }
+
+                int orderCode = data["data"]?["orderCode"]?.ToObject<int>() ?? 0;
+                string code = data["code"]?.ToString() ?? "";
+                string desc = data["desc"]?.ToString() ?? "";
+
+                _logger.LogInformation("PayOS IPN nhận được: OrderCode={OrderCode}, Code={Code}, Desc={Desc}",
+                    orderCode, code, desc);
+
+                if (orderCode == 0)
+                {
+                    _logger.LogWarning("PayOS IPN: OrderCode không hợp lệ");
+                    return Result<bool>.Failure("OrderCode không hợp lệ.");
+                }
+
+                var payment = await _paymentRepository.GetByPayOSOrderCodeAsync(orderCode);
+                if (payment == null)
+                {
+                    _logger.LogWarning("PayOS IPN: Không tìm thấy payment với OrderCode={OrderCode}", orderCode);
+                    return Result<bool>.Failure("Payment không tồn tại.");
+                }
+
+                // Kiểm tra xem payment đã được xử lý chưa (tránh xử lý trùng)
+                if (payment.Status == PaymentStatus.Completed && code == "00")
+                {
+                    _logger.LogInformation("PayOS IPN: Payment {PaymentId} đã được xử lý thành công trước đó. OrderCode={OrderCode}",
+                        payment.Id, orderCode);
+                    return Result<bool>.Success(true); // Trả về success để PayOS không gửi lại
+                }
+
+                // Flatten data for checksum verification
+                var parameters = new Dictionary<string, object>();
+                foreach (var prop in data.Properties())
+                {
+                    if (prop.Name != "signature" && prop.Value != null)
                     {
-                        foreach (var inner in ((JObject)prop.Value).Properties())
-                            parameters[inner.Name] = inner.Value;
-                    }
-                    else
-                    {
-                        parameters[prop.Name] = prop.Value;
+                        if (prop.Name == "data" && prop.Value.Type == JTokenType.Object)
+                        {
+                            foreach (var inner in ((JObject)prop.Value).Properties())
+                                parameters[inner.Name] = inner.Value;
+                        }
+                        else
+                        {
+                            parameters[prop.Name] = prop.Value;
+                        }
                     }
                 }
-            }
 
-            string signature = data["signature"]?.ToString() ?? "";
-            // VerifySignature nhận Dictionary<string, object>
-            bool isValid = _payOSHelper.VerifySignature(parameters, signature);
-            if (!isValid) return Result<bool>.Failure("Checksum PayOS không hợp lệ.");
-
-            // Update payment
-            payment.PayOSChecksum = signature;
-            payment.MomoMessage = desc; // Tái sử dụng field này để lưu message PayOS
-            if (code == "00")
-            {
-                payment.Status = PaymentStatus.Completed;
-                payment.PayOSTransactionId = data["data"]?["transactionId"]?.ToString();
-                payment.PayOSAccountNumber = data["data"]?["accountNumber"]?.ToString();
-            }
-            else
-            {
-                payment.Status = PaymentStatus.Failed;
-            }
-
-            // Cập nhật order nếu cần
-            if (code == "00" && payment.RentalOrderId.HasValue)
-            {
-                var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId.Value);
-                if (order != null && order.Status == RentalOrderStatus.Confirmed)
+                string signature = data["signature"]?.ToString() ?? "";
+                // VerifySignature nhận Dictionary<string, object>
+                bool isValid = _payOSHelper.VerifySignature(parameters, signature);
+                if (!isValid)
                 {
-                    // order.Status = RentalOrderStatus.Paid; // tùy cần thiết
-                    // await _rentalOrderRepository.UpdateAsync(order);
+                    _logger.LogError("PayOS IPN: Checksum không hợp lệ. PaymentId={PaymentId}, OrderCode={OrderCode}",
+                        payment.Id, orderCode);
+                    return Result<bool>.Failure("Checksum PayOS không hợp lệ.");
                 }
-            }
 
-            await _paymentRepository.UpdateAsync(payment);
-            return Result<bool>.Success(true);
+                // Update payment
+                payment.PayOSChecksum = signature;
+                payment.MomoMessage = desc; // Tái sử dụng field này để lưu message PayOS
+                if (code == "00")
+                {
+                    payment.Status = PaymentStatus.Completed;
+                    payment.PaymentDate = DateTimeHelper.GetVietnamTime(); // ✅ Set PaymentDate khi thanh toán thành công
+                    payment.PayOSTransactionId = data["data"]?["transactionId"]?.ToString();
+                    payment.PayOSAccountNumber = data["data"]?["accountNumber"]?.ToString();
+                }
+                else
+                {
+                    payment.Status = PaymentStatus.Failed;
+                }
+
+                // ✅ QUAN TRỌNG: Nếu thanh toán deposit thành công, tự động cập nhật order status
+                if (code == "00" && payment.RentalOrderId.HasValue)
+                {
+                    try
+                    {
+                        var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId.Value);
+                        if (order != null && (payment.PaymentType == PaymentType.Deposit || (order.Deposit.HasValue && order.Deposit.Value > 0 && payment.Amount == (decimal)order.Deposit.Value)))
+                        {
+                            // Cập nhật status khi thanh toán deposit thành công (trừ khi đã Completed hoặc Cancelled)
+                            if (order.Status != RentalOrderStatus.Completed && order.Status != RentalOrderStatus.Cancelled)
+                            {
+                                // Với WithDriver = true: sau khi deposit thanh toán thành công, chuyển sang DepositPending (2)
+                                // Với WithDriver = false: chuyển sang DocumentsSubmitted (1) để user nộp giấy tờ
+                                if (order.WithDriver == true)
+                                {
+                                    order.Status = RentalOrderStatus.DepositPending;
+                                }
+                                else
+                                {
+                                    order.Status = RentalOrderStatus.DocumentsSubmitted;
+                                }
+                                order.UpdatedAt = DateTimeHelper.GetVietnamTime();
+                                await _rentalOrderRepository.UpdateAsync(order);
+                                
+                                _logger.LogInformation("PayOS IPN: Đã cập nhật order {OrderId} status thành {Status} sau khi deposit thành công",
+                                    order.Id, order.Status);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "PayOS IPN: Lỗi khi cập nhật order status. PaymentId={PaymentId}, OrderId={OrderId}",
+                            payment.Id, payment.RentalOrderId);
+                        // Không throw để payment vẫn được cập nhật
+                    }
+                }
+
+                await _paymentRepository.UpdateAsync(payment);
+                
+                _logger.LogInformation("PayOS IPN: Đã xử lý thành công. PaymentId={PaymentId}, Status={Status}, Code={Code}",
+                    payment.Id, payment.Status, code);
+                
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "PayOS IPN: Lỗi không mong đợi khi xử lý callback. Payload: {Payload}",
+                    payload?.ToString() ?? "null");
+                return Result<bool>.Failure($"Lỗi xử lý callback PayOS: {ex.Message}");
+            }
         }
 
         public async Task<Result<PaymentDetailDTO>> GetPaymentByPayOSOrderCodeAsync(int orderCode)
@@ -486,6 +819,49 @@ namespace Service.Services
 
             var dto = _mapper.Map<PaymentDetailDTO>(payment);
             return Result<PaymentDetailDTO>.Success(dto);
+        }
+
+        /// <summary>
+        /// Kiểm tra và cập nhật payment status (dùng khi callback chưa được gọi)
+        /// </summary>
+        public async Task<Result<bool>> CheckAndUpdatePaymentStatusAsync(int paymentId)
+        {
+            try
+            {
+                var payment = await _paymentRepository.GetByIdAsync(paymentId);
+                if (payment == null)
+                {
+                    _logger.LogWarning("CheckPaymentStatus: Payment {PaymentId} không tồn tại", paymentId);
+                    return Result<bool>.Failure("Payment không tồn tại.");
+                }
+
+                // Nếu payment đã Completed hoặc Failed, không cần check
+                if (payment.Status == PaymentStatus.Completed || payment.Status == PaymentStatus.Failed)
+                {
+                    _logger.LogInformation("CheckPaymentStatus: Payment {PaymentId} đã có status {Status}", 
+                        paymentId, payment.Status);
+                    return Result<bool>.Success(true);
+                }
+
+                // Chỉ check cho MoMo và PayOS payments
+                if (payment.Gateway != PaymentGateway.MoMo && payment.Gateway != PaymentGateway.PayOS)
+                {
+                    return Result<bool>.Failure("Chỉ có thể check status cho MoMo và PayOS payments.");
+                }
+
+                // TODO: Có thể thêm logic để query status từ MoMo/PayOS API ở đây
+                // Hiện tại chỉ log và trả về thông báo
+                _logger.LogInformation("CheckPaymentStatus: Payment {PaymentId} đang ở trạng thái {Status}. " +
+                    "Vui lòng kiểm tra callback URL hoặc manually update payment status nếu user đã thanh toán thành công.",
+                    paymentId, payment.Status);
+
+                return Result<bool>.Failure("Không thể tự động check payment status. Vui lòng kiểm tra callback URL hoặc manually update payment status.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CheckPaymentStatus: Lỗi khi check payment {PaymentId}", paymentId);
+                return Result<bool>.Failure($"Lỗi khi check payment status: {ex.Message}");
+            }
         }
 
         // ========================

@@ -76,6 +76,8 @@ namespace Service.DTOs
     public class CreateMomoPaymentResponseDTO
     {
         public string MomoPayUrl { get; set; } = string.Empty; // URL để redirect user quét/đăng nhập MoMo
+        public string MomoDeeplink { get; set; } = string.Empty; // Deep link để mở app MoMo
+        public string MomoQrCodeUrl { get; set; } = string.Empty; // QR Code URL để quét thanh toán
         public string MomoOrderId { get; set; } = string.Empty;
         public string MomoRequestId { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty; // Pending / Success / Failed

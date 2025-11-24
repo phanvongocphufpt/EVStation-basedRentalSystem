@@ -73,18 +73,29 @@ namespace EVStation_basedRentalSystem.Controllers
             {
                 Email = model.Email,
                 Password = model.Password,
-                FullName = model.FullName
-                
+                FullName = model.FullName,
+                DateOfBirth = model.DateOfBirth,
+                Address = model.Address,
+                Occupation = model.Occupation
             };
-            await _authService.Register(user, model.Password);
+            
+            var result = await _authService.Register(user, model.Password);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Message });
+            }
 
             var response = new
             {
                 UserId = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
-                CreatedAt=user.CreatedAt,
-                Message = "Đăng ký thành công!"
+                DateOfBirth = user.DateOfBirth,
+                Address = user.Address,
+                Occupation = user.Occupation,
+                CreatedAt = user.CreatedAt,
+                Message = result.Data?.Message ?? "Đăng ký thành công! Vui lòng kiểm tra email để xác nhận."
             };
 
             return Ok(response);

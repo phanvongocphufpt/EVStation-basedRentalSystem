@@ -12,6 +12,9 @@ namespace Service.DTOs
             public int UserId { get; set; }
             public string Email { get; set; }
             public string FullName { get; set; }
+            public DateTime? DateOfBirth { get; set; } // Ngày sinh
+            public string? Address { get; set; } // Địa chỉ
+            public string? Occupation { get; set; } // Nghề nghiệp
             public int? RentalLocationId { get; set; }
             public string Role { get; set; } // 1. Customer, 2. Staff, 3. Admin
             public bool IsActive { get; set; }
@@ -33,11 +36,24 @@ namespace Service.DTOs
         public string Email { get; set; }
         public string Password { get; set; }
         public string FullName { get; set; }
+        public DateTime? DateOfBirth { get; set; } // Ngày sinh
+        public string? Address { get; set; } // Địa chỉ
+        public string? Occupation { get; set; } // Nghề nghiệp
     }
     public class UpdateCustomerNameDTO
     {
         public int UserId { get; set; }
         public string FullName { get; set; }
+    }
+
+    // DTO để cập nhật thông tin cá nhân của customer
+    public class UpdateCustomerProfileDTO
+    {
+        public int UserId { get; set; }
+        public string FullName { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? Address { get; set; }
+        public string? Occupation { get; set; }
     }
     public class UpdateCustomerPasswordDTO
     {

@@ -11,5 +11,8 @@ namespace Repository.Entities.Model
         public string Email { get; set; }
         public string Password { get; set; }
         public string FullName { get; set; }
+        public DateTime? DateOfBirth { get; set; } // Ngày sinh
+        public string? Address { get; set; } // Địa chỉ
+        public string? Occupation { get; set; } // Nghề nghiệp
     }
 }

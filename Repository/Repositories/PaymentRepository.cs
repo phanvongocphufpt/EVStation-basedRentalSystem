@@ -31,6 +31,41 @@ namespace Repository.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<(string LocationName, decimal TotalRevenue, int PaymentCount)>> GetRevenueByLocationAsync()
+        {
+            return await _context.Payments
+                .Where(p => p.Status == PaymentStatus.Completed && p.RentalOrderId.HasValue)
+                .Join(
+                    _context.RentalOrders,
+                    payment => payment.RentalOrderId,
+                    order => order.Id,
+                    (payment, order) => new { payment, order }
+                )
+                .Join(
+                    _context.RentalLocations,
+                    x => x.order.RentalLocationId,
+                    location => location.Id,
+                    (x, location) => new
+                    {
+                        LocationName = location.Name,
+                        Amount = x.payment.Amount
+                    }
+                )
+                .GroupBy(x => x.LocationName)
+                .Select(g => new
+                {
+                    LocationName = g.Key,
+                    TotalRevenue = g.Sum(x => x.Amount),
+                    PaymentCount = g.Count()
+                })
+                .Select(x => new ValueTuple<string, decimal, int>(
+                    x.LocationName ?? "Unknown",
+                    x.TotalRevenue,
+                    x.PaymentCount
+                ))
+                .ToListAsync();
+        }
+
         public async Task<Payment?> GetByIdAsync(int id)
         {
             return await _context.Payments.FindAsync(id);
@@ -99,6 +134,15 @@ namespace Repository.Repositories
             return await _context.Payments
                 .Where(p => p.RentalOrderId == orderId)
                 .OrderByDescending(p => p.Id)
+                .FirstOrDefaultAsync();
+        }
+        
+        public async Task<Payment?> GetPendingPaymentByOrderIdAndAmountAsync(int orderId, decimal amount)
+        {
+            return await _context.Payments
+                .Where(p => p.RentalOrderId == orderId 
+                         && p.Status == PaymentStatus.Pending 
+                         && Math.Abs((double)(p.Amount - amount)) < 0.01)
                 .FirstOrDefaultAsync();
         }
     }

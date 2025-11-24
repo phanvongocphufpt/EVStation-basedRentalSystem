@@ -74,6 +74,11 @@ namespace EVStation_basedRentalSystem.Controllers
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> Create([FromBody] CreateRentalOrderDTO createRentalOrderDTO)
         {
+            if (createRentalOrderDTO == null)
+            {
+                return BadRequest(new { message = "Dữ liệu không hợp lệ." });
+            }
+
             var result = await _rentalOrderService.CreateAsync(createRentalOrderDTO);
             if (result.IsSuccess)
             {

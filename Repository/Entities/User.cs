@@ -15,6 +15,10 @@
             public string Password { get; set; }
             public string PasswordHash { get; set; }
             public string FullName { get; set; }
+            public DateTime? DateOfBirth { get; set; } // Ngày sinh
+            public string? Address { get; set; } // Địa chỉ
+            public string? Occupation { get; set; } // Nghề nghiệp
+            public string? PhoneNumber { get; set; } // Số điện thoại
             public string Role { get; set; } // 1. Customer, 2. Staff, 3. Admin
             public string? ConfirmEmailToken { get; set; }
             public bool IsEmailConfirmed { get; set; } = false;

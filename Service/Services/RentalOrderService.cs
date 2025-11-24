@@ -107,11 +107,24 @@ namespace Service.Services
                             ? subtotalDays * car.RentPricePerDayWithDriver
                             : subtotalDays * car.RentPricePerDay;
             var deposit = (decimal)Math.Round(subTotal * 0.2, 0);
+            
+            // Xử lý PhoneNumber: ưu tiên từ DTO, nếu không có thì lấy từ User
+            var phoneNumber = !string.IsNullOrWhiteSpace(createRentalOrderDTO.PhoneNumber) 
+                ? createRentalOrderDTO.PhoneNumber 
+                : (!string.IsNullOrWhiteSpace(user.PhoneNumber) ? user.PhoneNumber : null);
+            
+            // Validation PhoneNumber
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                return Result<CreateRentalOrderDTO>.Failure("Số điện thoại là bắt buộc. Vui lòng cập nhật số điện thoại trong thông tin cá nhân hoặc cung cấp số điện thoại khi đặt xe.");
+            }
+            
             if (createRentalOrderDTO.WithDriver == true)
             {
                 var order = new RentalOrder
                 {
-                    PhoneNumber = dto.PhoneNumber,
+                    PhoneNumber = phoneNumber,
+                    OrderDate = DateTime.Now,
                     PickupTime = dto.PickupTime,
                     ExpectedReturnTime = dto.ExpectedReturnTime,
                     WithDriver = true,
@@ -124,7 +137,7 @@ namespace Service.Services
                     RentalLocationId = dto.RentalLocationId,
                     RentalLocation = location,
                     CreatedAt = DateTime.Now,
-                    Status = RentalOrderStatus.DepositPending
+                    Status = RentalOrderStatus.Pending // ✅ Sau khi tạo order, status = 0 (Pending)
                 };
                 await _rentalOrderRepository.AddAsync(order);
                 var payment = new Payment
@@ -135,6 +148,7 @@ namespace Service.Services
                     PaymentMethod = "Direct",
                     Status = PaymentStatus.Pending,
                     UserId = order.UserId,
+                    RentalOrderId = order.Id, // ✅ Đảm bảo set RentalOrderId
                     RentalOrder = order,
                     User = order.User,
                 };
@@ -145,7 +159,8 @@ namespace Service.Services
             {
                 var order = new RentalOrder
                 {
-                    PhoneNumber = dto.PhoneNumber,
+                    PhoneNumber = phoneNumber,
+                    OrderDate = DateTime.Now,
                     PickupTime = dto.PickupTime,
                     ExpectedReturnTime = dto.ExpectedReturnTime,
                     WithDriver = false,
@@ -158,7 +173,7 @@ namespace Service.Services
                     RentalLocationId = dto.RentalLocationId,
                     RentalLocation = location,
                     CreatedAt = DateTime.Now,
-                    Status = RentalOrderStatus.Pending
+                    Status = RentalOrderStatus.Pending // ✅ Sau khi tạo order, status = 0 (Pending)
                 };
                 await _rentalOrderRepository.AddAsync(order);
                 var payment = new Payment
@@ -169,6 +184,7 @@ namespace Service.Services
                     PaymentMethod = "Direct",
                     Status = PaymentStatus.Pending,
                     UserId = order.UserId,
+                    RentalOrderId = order.Id, // ✅ Đảm bảo set RentalOrderId
                     RentalOrder = order,
                     User = order.User,
                 };

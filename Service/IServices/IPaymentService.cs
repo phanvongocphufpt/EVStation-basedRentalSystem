@@ -27,6 +27,13 @@ namespace Service.IServices
         Task<Result<CreatePayOSPaymentResponseDTO>> CreatePayOSPaymentAsync(int rentalOrderId, int userId, double amount);
         Task<Result<bool>> ProcessPayOSIpnAsync(object payload);
         Task<Result<PaymentDetailDTO>> GetPaymentByPayOSOrderCodeAsync(int orderCode);
+        
+        // ===== Payment Status Check =====
+        
+        /// <summary>
+        /// Kiểm tra và cập nhật payment status (dùng khi callback chưa được gọi)
+        /// </summary>
+        Task<Result<bool>> CheckAndUpdatePaymentStatusAsync(int paymentId);
 
         // ===== Unified Payment Gateway =====
 
