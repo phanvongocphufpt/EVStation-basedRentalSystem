@@ -55,6 +55,25 @@ namespace Service.Services
             var dto = _mapper.Map<CitizenIdDTO>(citizenId);
             return Result<CitizenIdDTO>.Success(dto);
         }
+        public async Task<Result<CitizenIdDTO>> GetCitizenIdByOrderIdAsync(int orderId)
+        {
+            var order = await _rentalOrderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                return Result<CitizenIdDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại OrderId.");
+            }
+            if (!order.CitizenId.HasValue)
+            {
+                return Result<CitizenIdDTO>.Failure("Đơn đặt thuê này chưa có chứng minh nhân dân.");
+            }
+            var citizenId = await _citizenIdRepository.GetCitizenIdByIdAsync(order.CitizenId.Value);
+            if (citizenId == null)
+            {
+                return Result<CitizenIdDTO>.Failure("Chứng minh nhân dân không tồn tại! Kiểm tra lại Id.");
+            }
+            var dto = _mapper.Map<CitizenIdDTO>(citizenId);
+            return Result<CitizenIdDTO>.Success(dto);
+        }
         public async Task<Result<CreateCitizenIdDTO>> CreateCitizenIdAsync(CreateCitizenIdDTO createCitizenIdDTO)
         {
             var dto = _mapper.Map<CitizenId>(createCitizenIdDTO);

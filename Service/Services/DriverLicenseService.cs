@@ -56,6 +56,25 @@ namespace Service.Services
             var dto = _mapper.Map<DriverLicenseDTO>(driverLicense);
             return Result<DriverLicenseDTO>.Success(dto);
         }
+        public async Task<Result<DriverLicenseDTO>> GetByOrderIdAsync(int orderId)
+        {
+            var order = await _rentalOrderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                return Result<DriverLicenseDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại OrderId.");
+            }
+            if (!order.DriverLicenseId.HasValue)
+            {
+                return Result<DriverLicenseDTO>.Failure("Đơn đặt thuê này chưa có giấy phép lái xe.");
+            }
+            var driverLicense = await _driverLicenseRepository.GetByIdAsync(order.DriverLicenseId.Value);
+            if (driverLicense == null)
+            {
+                return Result<DriverLicenseDTO>.Failure("Giấy phép lái xe không tồn tại! Kiểm tra lại Id.");
+            }
+            var dto = _mapper.Map<DriverLicenseDTO>(driverLicense);
+            return Result<DriverLicenseDTO>.Success(dto);
+        }
         public async Task<Result<CreateDriverLicenseDTO>> CreateAsync(CreateDriverLicenseDTO createDriverLicenseDTO)
         {
             var dto = _mapper.Map<DriverLicense>(createDriverLicenseDTO);

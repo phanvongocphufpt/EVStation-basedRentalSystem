@@ -94,9 +94,9 @@ namespace Service.Services
             existing.BatteryType = car.BatteryType;
             existing.BatteryDuration = car.BatteryDuration;
             existing.RentPricePerDay = car.RentPricePerDay;
-            existing.RentPricePerHour = car.RentPricePerHour;
+        
             existing.RentPricePerDayWithDriver = car.RentPricePerDayWithDriver;
-            existing.RentPricePerHourWithDriver = car.RentPricePerHourWithDriver;
+    
             existing.ImageUrl = car.ImageUrl;
             existing.ImageUrl2 = car.ImageUrl2;
             existing.ImageUrl3 = car.ImageUrl3;
