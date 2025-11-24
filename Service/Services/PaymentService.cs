@@ -24,7 +24,6 @@ namespace Service.Services
         private readonly IUserRepository _userRepository;
         private readonly IRentalOrderRepository _rentalOrderRepository;
         private readonly IRentalLocationRepository _rentalLocationRepository;
-        private readonly ICarRentalLocationRepository _carRentalLocationRepository;
         private readonly IMapper _mapper;
         private readonly MomoSettings _momoSettings;
         private readonly MomoHelper _momoHelper;
@@ -37,7 +36,6 @@ namespace Service.Services
             IUserRepository userRepository,
             IRentalOrderRepository rentalOrderRepository,
             IRentalLocationRepository rentalLocationRepository,
-            ICarRentalLocationRepository carRentalLocationRepository,
             IOptions<MomoSettings> momoSettings,
             IOptions<PayOSSettings> payOSSettings)
         {
@@ -46,7 +44,6 @@ namespace Service.Services
             _userRepository = userRepository;
             _rentalOrderRepository = rentalOrderRepository;
             _rentalLocationRepository = rentalLocationRepository;
-            _carRentalLocationRepository = carRentalLocationRepository;
             _momoSettings = momoSettings.Value;
             _momoHelper = new MomoHelper(_momoSettings);
             _payOSSettings = payOSSettings.Value;
@@ -149,9 +146,6 @@ namespace Service.Services
 
             order.Status = RentalOrderStatus.Confirmed;
             await _rentalOrderRepository.UpdateAsync(order);
-
-            // Giảm quantity của car tại location khi thanh toán cọc thành công
-            await DecreaseCarQuantityAsync(order.CarId, order.RentalLocationId);
 
             return Result<bool>.Success(true, "Xác nhận thanh toán đặt cọc thành công.");
         }
@@ -298,30 +292,15 @@ namespace Service.Services
             payment.MomoPayType = data["payType"]?.ToString();
             payment.Status = resultCode == 0 ? PaymentStatus.Completed : PaymentStatus.Failed;
 
-            // Nếu thanh toán thành công, cập nhật order status và giảm quantity
+            // Nếu thanh toán thành công, cập nhật order status
             if (resultCode == 0 && payment.RentalOrderId.HasValue)
             {
                 var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId.Value);
-                if (order != null)
+                if (order != null && order.Status == RentalOrderStatus.Confirmed)
                 {
-                    // Nếu là deposit payment và thành công, cập nhật order status và giảm quantity
-                    if (payment.PaymentType == PaymentType.Deposit)
-                    {
-                        if (order.Status == RentalOrderStatus.DepositPending)
-                        {
-                            order.Status = RentalOrderStatus.Confirmed;
-                            await _rentalOrderRepository.UpdateAsync(order);
-                            
-                            // Giảm quantity của car tại location
-                            await DecreaseCarQuantityAsync(order.CarId, order.RentalLocationId);
-                        }
-                    }
-                    else if (order.Status == RentalOrderStatus.Confirmed)
-                    {
-                        // Có thể cập nhật order status nếu cần
-                        // order.Status = RentalOrderStatus.Paid;
-                        // await _rentalOrderRepository.UpdateAsync(order);
-                    }
+                    // Có thể cập nhật order status nếu cần
+                    // order.Status = RentalOrderStatus.Paid;
+                    // await _rentalOrderRepository.UpdateAsync(order);
                 }
             }
 
@@ -489,25 +468,10 @@ namespace Service.Services
             if (code == "00" && payment.RentalOrderId.HasValue)
             {
                 var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId.Value);
-                if (order != null)
+                if (order != null && order.Status == RentalOrderStatus.Confirmed)
                 {
-                    // Nếu là deposit payment và thành công, cập nhật order status và giảm quantity
-                    if (payment.PaymentType == PaymentType.Deposit)
-                    {
-                        if (order.Status == RentalOrderStatus.DepositPending)
-                        {
-                            order.Status = RentalOrderStatus.Confirmed;
-                            await _rentalOrderRepository.UpdateAsync(order);
-                            
-                            // Giảm quantity của car tại location
-                            await DecreaseCarQuantityAsync(order.CarId, order.RentalLocationId);
-                        }
-                    }
-                    else if (order.Status == RentalOrderStatus.Confirmed)
-                    {
-                        // order.Status = RentalOrderStatus.Paid; // tùy cần thiết
-                        // await _rentalOrderRepository.UpdateAsync(order);
-                    }
+                    // order.Status = RentalOrderStatus.Paid; // tùy cần thiết
+                    // await _rentalOrderRepository.UpdateAsync(order);
                 }
             }
 
@@ -636,30 +600,65 @@ namespace Service.Services
         }
 
         /// <summary>
-        /// Giảm quantity của car tại location khi thanh toán cọc thành công
+        /// Đổi phương thức thanh toán cho payment đã tạo
         /// </summary>
-        private async Task DecreaseCarQuantityAsync(int carId, int locationId)
+        public async Task<Result<CreatePaymentResponseDTO>> ChangePaymentGatewayAsync(ChangePaymentGatewayRequestDTO request)
         {
-            try
+            // Tìm payment hiện tại
+            var existingPayment = await _paymentRepository.GetByIdAsync(request.PaymentId);
+            if (existingPayment == null)
+                return Result<CreatePaymentResponseDTO>.Failure("Payment không tồn tại.");
+
+            // Chỉ cho phép đổi nếu payment đang ở trạng thái Pending hoặc Failed
+            if (existingPayment.Status != PaymentStatus.Pending && existingPayment.Status != PaymentStatus.Failed)
             {
-                var carRentalLocation = await _carRentalLocationRepository.GetByCarAndLocationIdAsync(carId, locationId);
-                if (carRentalLocation != null && carRentalLocation.Quantity > 0)
-                {
-                    carRentalLocation.Quantity -= 1;
-                    await _carRentalLocationRepository.UpdateAsync(carRentalLocation);
-                    
-                    System.Diagnostics.Debug.WriteLine($"Đã giảm quantity của Car {carId} tại Location {locationId}. Quantity còn lại: {carRentalLocation.Quantity}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"Không tìm thấy CarRentalLocation hoặc quantity = 0. CarId: {carId}, LocationId: {locationId}");
-                }
+                return Result<CreatePaymentResponseDTO>.Failure(
+                    $"Không thể đổi phương thức thanh toán. Payment đang ở trạng thái: {existingPayment.Status}"
+                );
             }
-            catch (Exception ex)
+
+            // Nếu đổi sang cùng gateway thì không cần làm gì
+            if (existingPayment.Gateway == request.NewGateway)
             {
-                System.Diagnostics.Debug.WriteLine($"Lỗi khi giảm quantity: {ex.Message}");
-                // Không throw exception để không ảnh hưởng đến flow thanh toán
+                return Result<CreatePaymentResponseDTO>.Failure("Payment đã sử dụng phương thức thanh toán này.");
             }
+
+            // Lấy thông tin order và user
+            if (!existingPayment.RentalOrderId.HasValue || !existingPayment.UserId.HasValue)
+            {
+                return Result<CreatePaymentResponseDTO>.Failure("Payment thiếu thông tin order hoặc user.");
+            }
+
+            var order = await _rentalOrderRepository.GetByIdAsync(existingPayment.RentalOrderId.Value);
+            var user = await _userRepository.GetByIdAsync(existingPayment.UserId.Value);
+
+            if (order == null || user == null)
+                return Result<CreatePaymentResponseDTO>.Failure("Order hoặc User không tồn tại.");
+
+            // Xóa hoặc vô hiệu hóa payment cũ (nếu là MoMo/PayOS)
+            if (existingPayment.Gateway == PaymentGateway.MoMo || existingPayment.Gateway == PaymentGateway.PayOS)
+            {
+                // Có thể xóa payment cũ hoặc đánh dấu là cancelled
+                existingPayment.Status = PaymentStatus.Failed;
+                existingPayment.MomoMessage = "Đã đổi sang phương thức thanh toán khác";
+                await _paymentRepository.UpdateAsync(existingPayment);
+            }
+
+            // Tạo payment mới với gateway mới
+            var newPaymentRequest = new CreatePaymentRequestDTO
+            {
+                RentalOrderId = existingPayment.RentalOrderId.Value,
+                UserId = existingPayment.UserId.Value,
+                Amount = (double)existingPayment.Amount,
+                Gateway = request.NewGateway
+            };
+
+            var createResult = await CreatePaymentAsync(newPaymentRequest);
+            
+            if (!createResult.IsSuccess)
+                return Result<CreatePaymentResponseDTO>.Failure($"Tạo payment mới thất bại: {createResult.Message}");
+
+            return Result<CreatePaymentResponseDTO>.Success(createResult.Data);
         }
     }
 }

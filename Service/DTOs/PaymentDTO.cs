@@ -99,6 +99,13 @@ namespace Service.DTOs
         public PaymentGateway Gateway { get; set; } // MoMo, PayOS, Cash, BankTransfer
     }
 
+    // DTO để đổi phương thức thanh toán
+    public class ChangePaymentGatewayRequestDTO
+    {
+        public int PaymentId { get; set; }
+        public PaymentGateway NewGateway { get; set; } // MoMo, PayOS, Cash, BankTransfer
+    }
+
     // DTO response tổng hợp cho tất cả payment gateway
     public class CreatePaymentResponseDTO
     {

@@ -193,7 +193,7 @@ namespace EVStation_basedRentalSystem.Controllers
         /// <summary>
         /// Tạo payment với gateway được chọn (MoMo, PayOS, Cash, BankTransfer)
         /// </summary>
-        [HttpPost("vCreatePaymentWithGateway")]
+        [HttpPost("CreatePaymentWithGateway")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> CreatePaymentWithGateway([FromBody] CreatePaymentRequestDTO request)
         {
@@ -201,6 +201,26 @@ namespace EVStation_basedRentalSystem.Controllers
                 return BadRequest(new { success = false, message = "Request không hợp lệ." });
 
             var result = await _paymentService.CreatePaymentAsync(request);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { success = false, message = result.Message });
+            }
+
+            return Ok(new { success = true, data = result.Data });
+        }
+
+        /// <summary>
+        /// Đổi phương thức thanh toán cho payment đã tạo
+        /// </summary>
+        [HttpPut("ChangePaymentGateway")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> ChangePaymentGateway([FromBody] ChangePaymentGatewayRequestDTO request)
+        {
+            if (request == null)
+                return BadRequest(new { success = false, message = "Request không hợp lệ." });
+
+            var result = await _paymentService.ChangePaymentGatewayAsync(request);
 
             if (!result.IsSuccess)
             {

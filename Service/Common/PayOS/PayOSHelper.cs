@@ -30,11 +30,7 @@ namespace Service.Common.PayOS
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             
-            System.Diagnostics.Debug.WriteLine("=== PayOS Client Initialized ===");
-            System.Diagnostics.Debug.WriteLine($"ClientId: {_settings.ClientId}");
-            System.Diagnostics.Debug.WriteLine($"ApiKey: {_settings.ApiKey}");
-            System.Diagnostics.Debug.WriteLine($"Endpoint: {_settings.Endpoint}");
-            System.Diagnostics.Debug.WriteLine("================================");
+       
         }
 
         /// <summary>
@@ -50,17 +46,10 @@ namespace Service.Common.PayOS
             // KHÔNG có items và KHÔNG có key trong raw string
             var rawString = $"amount={amount}&cancelUrl={cancelUrl}&description={description}&orderCode={orderCode}&returnUrl={returnUrl}";
 
-            System.Diagnostics.Debug.WriteLine("=== PayOS Signature Calculation (Official Format) ===");
-            System.Diagnostics.Debug.WriteLine($"Raw String (NO items, NO key): {rawString}");
-            System.Diagnostics.Debug.WriteLine($"ChecksumKey: {_settings.ChecksumKey}");
-
             // Tạo HMAC SHA256 với checksumKey
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_settings.ChecksumKey));
             byte[] hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(rawString));
             string signature = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-
-            System.Diagnostics.Debug.WriteLine($"Generated Signature: {signature}");
-            System.Diagnostics.Debug.WriteLine("=====================================================");
 
             return signature;
         }
@@ -105,20 +94,14 @@ namespace Service.Common.PayOS
                     WriteIndented = false
                 });
 
-                System.Diagnostics.Debug.WriteLine("=== PayOS Request (New Method) ===");
-                System.Diagnostics.Debug.WriteLine($"URL: {_settings.Endpoint}");
-                System.Diagnostics.Debug.WriteLine($"Body: {jsonBody}");
-                System.Diagnostics.Debug.WriteLine("==================================");
+            
 
                 // Gửi request
                 var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(_settings.Endpoint, content);
                 string responseJson = await response.Content.ReadAsStringAsync();
 
-                System.Diagnostics.Debug.WriteLine("=== PayOS Response ===");
-                System.Diagnostics.Debug.WriteLine($"Status: {response.StatusCode}");
-                System.Diagnostics.Debug.WriteLine($"Body: {responseJson}");
-                System.Diagnostics.Debug.WriteLine("======================");
+               
 
                 // Parse response
                 var doc = JsonDocument.Parse(responseJson);
@@ -159,8 +142,7 @@ namespace Service.Common.PayOS
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"PayOS Exception: {ex.GetType().Name} - {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack: {ex.StackTrace}");
+        
 
                 return new PayOSPaymentResponse
                 {

@@ -34,5 +34,10 @@ namespace Service.IServices
         /// Tạo payment với gateway được chọn (MoMo, PayOS, Cash, BankTransfer)
         /// </summary>
         Task<Result<CreatePaymentResponseDTO>> CreatePaymentAsync(CreatePaymentRequestDTO request);
+
+        /// <summary>
+        /// Đổi phương thức thanh toán cho payment đã tạo
+        /// </summary>
+        Task<Result<CreatePaymentResponseDTO>> ChangePaymentGatewayAsync(ChangePaymentGatewayRequestDTO request);
     }
 }
