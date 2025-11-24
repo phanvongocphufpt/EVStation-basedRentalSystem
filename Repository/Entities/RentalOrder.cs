@@ -12,13 +12,12 @@ namespace Repository.Entities
     {
         [Key]
         public int Id { get; set; }
-        public string PhoneNumber { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime PickupTime { get; set; }
         public DateTime ExpectedReturnTime { get; set; }
         public DateTime? ActualReturnTime { get; set; }
         public double? SubTotal { get; set; }
-        public double? Deposit { get; set; }
+        public int? Deposit { get; set; }
         public double? Total { get; set; }
         public int? Discount { get; set; }
         public double? ExtraFee { get; set; }
@@ -34,12 +33,6 @@ namespace Repository.Entities
         public RentalLocation RentalLocation { get; set; }
         public int CarId { get; set; }
         public Car Car { get; set; }
-        public int? RentalContactId { get; set; }
-        public RentalContact? RentalContact { get; set; }
-        public int? CitizenId { get; set; }
-        public CitizenId? CitizenIdNavigation { get; set; }
-        public int? DriverLicenseId { get; set; }
-        public DriverLicense? DriverLicense { get; set; }
         public ICollection<Payment> Payments { get; set; }
     }
 }

@@ -74,18 +74,7 @@ namespace EVStation_basedRentalSystem.Controllers
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> Create([FromBody] CreateRentalOrderDTO createRentalOrderDTO)
         {
-            var result = await _rentalOrderService.CreateAsync(createRentalOrderDTO);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
-        }
-        [HttpPut("ConfirmDocuments")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> ConfirmDocuments(int orderId)
-        {
-            var result = await _rentalOrderService.ConfirmDocumentAsync(orderId);
+            var result = await _rentalOrderService.CreateAsync(createRentalOrderDTO, HttpContext);
             if (result.IsSuccess)
             {
                 return Ok(result);
@@ -135,6 +124,47 @@ namespace EVStation_basedRentalSystem.Controllers
                 return Ok(result);
             }
             return BadRequest(result);
+        }
+        [HttpGet("Checkout/PaymentCallbackVnpay")]
+        [HttpPost("Checkout/PaymentCallbackVnpay")]
+        public async Task<IActionResult> PaymentCallbackVnpay()
+        {
+            var result = await _rentalOrderService.ProcessVnpayCallbackAsync(Request.Query);
+
+            if (result.IsSuccess)
+                return Redirect($"http://localhost:7200/payment-success?orderId={result.OrderId}");
+
+            return Redirect($"http://localhost:7200/payment-failed?code={result.VnPayResponseCode ?? "99"}");
+        }
+        [HttpPost("api/payment/vnpay-ipn")]
+        public async Task<IActionResult> VnpayIpn()
+        {
+            var result = await _rentalOrderService.ProcessVnpayIpnAsync(Request.Query);
+
+            return Ok(new
+            {
+                RspCode = result.IsSuccess ? "00" : "99",
+                Message = result.Message
+            });
+        }
+        [HttpPost("api/payment/confirm-manual")]
+        public async Task<IActionResult> ConfirmPaymentManual([FromBody] ConfirmPaymentDto dto)
+        {
+            // FE sẽ gửi lên TxnRef và ResponseCode
+            var result = await _rentalOrderService.ProcessVnpayCallbackManualAsync(dto.TxnRef, dto.ResponseCode);
+
+            if (result.IsSuccess)
+            {
+                return Ok(new { success = true, message = "Thanh toán thành công!", orderId = result.OrderId });
+            }
+
+            return Ok(new { success = false, message = result.Message });
+        }
+
+        public class ConfirmPaymentDto
+        {
+            public string TxnRef { get; set; } = string.Empty;
+            public string ResponseCode { get; set; } = string.Empty;
         }
     }
 }
