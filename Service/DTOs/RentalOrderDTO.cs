@@ -16,9 +16,10 @@ namespace Service.DTOs
         public DateTime ExpectedReturnTime { get; set; }
         public DateTime? ActualReturnTime { get; set; }
         public double? SubTotal { get; set; }
-        public int? DepositPercent { get; set; }
         public double? Total { get; set; }
-        public int? Discount { get; set; }
+        public double? DepositOrder { get; set; }
+        public double? DepositCar { get; set; }
+        public double? Discount { get; set; }
         public double? ExtraFee { get; set; }
         public double? DamageFee { get; set; }
         public string? DamageNotes { get; set; }
@@ -29,6 +30,10 @@ namespace Service.DTOs
         public int UserId { get; set; }
         public int CarId { get; set; }
         public int RentalLocationId { get; set; }
+        public string? ContactImageUrl { get; set; }
+        public string? ContactImageUrl2 { get; set; }
+        public string? ContactNotes { get; set; }
+        public string? ReportNote { get; set; }
     }
     public class RentalOrderWithDetailsDTO
     {
@@ -39,8 +44,9 @@ namespace Service.DTOs
         public DateTime? ActualReturnTime { get; set; }
         public double? SubTotal { get; set; }
         public double? Total { get; set; }
-        public int? DepositPercent { get; set; }
-        public int? Discount { get; set; }
+        public double? DepositOrder { get; set; }
+        public double? DepositCar { get; set; }
+        public double? Discount { get; set; }
         public double? ExtraFee { get; set; }
         public double? DamageFee { get; set; }
         public string? DamageNotes { get; set; }
@@ -51,6 +57,10 @@ namespace Service.DTOs
         public int UserId { get; set; }
         public int CarId { get; set; }
         public int RentalLocationId { get; set; }
+        public string? ContactImageUrl { get; set; }
+        public string? ContactImageUrl2 { get; set; }
+        public string? ContactNotes { get; set; }
+        public string? ReportNote { get; set; }
         public List<PaymentDTO> Payments { get; set; }
     }
     public class CreateRentalOrderDTO

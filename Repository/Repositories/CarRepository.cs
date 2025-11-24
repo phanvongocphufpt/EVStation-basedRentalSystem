@@ -109,5 +109,11 @@ namespace Repository.Repositories
 
             return await query.ToListAsync();
         }
+        public async Task<IEnumerable<Car>> GetCarsByLocationAsync(int locationId)
+        {
+            return await _context.Cars
+                .Where(c => !c.IsDeleted && c.RentalLocationId == locationId)
+                .ToListAsync();
+        }
     }
 }

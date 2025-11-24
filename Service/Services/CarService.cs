@@ -1,4 +1,5 @@
-﻿using Repository.Entities;
+﻿using AutoMapper;
+using Repository.Entities;
 using Repository.IRepositories;
 using Service.Common;
 using Service.DTOs;
@@ -13,10 +14,11 @@ namespace Service.Services
     public class CarService : ICarService
     {
         private readonly ICarRepository _carRepository;
-
-        public CarService(ICarRepository carRepository)
+        private readonly IMapper _mapper;
+        public CarService(ICarRepository carRepository, IMapper mapper)
         {
             _carRepository = carRepository;
+            _mapper = mapper;
         }
 
         public async Task<Result<IEnumerable<Car>>> GetAllAsync()
@@ -139,6 +141,13 @@ namespace Service.Services
             });
 
             return Result<IEnumerable<TopRentCarDto>>.Success(dtoList, "Lấy danh sách xe được thuê nhiều nhất thành công.");
+        }
+
+        public async Task<Result<IEnumerable<CarDTO>>> GetCarsByLocationAsync(int locationId)
+        {
+            var cars = await _carRepository.GetCarsByLocationAsync(locationId);
+            var dtos = _mapper.Map<IEnumerable<CarDTO>>(cars);
+            return Result<IEnumerable<CarDTO>>.Success(dtos);
         }
     }
 }

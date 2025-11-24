@@ -17,9 +17,10 @@ namespace Repository.Entities
         public DateTime ExpectedReturnTime { get; set; }
         public DateTime? ActualReturnTime { get; set; }
         public double? SubTotal { get; set; }
-        public int? Deposit { get; set; }
+        public double? DepositOrder { get; set; }
+        public double? DepositCar { get; set; }
         public double? Total { get; set; }
-        public int? Discount { get; set; }
+        public double? Discount { get; set; }
         public double? ExtraFee { get; set; }
         public double? DamageFee { get; set; }
         public string? DamageNotes { get; set; }
@@ -34,5 +35,9 @@ namespace Repository.Entities
         public int CarId { get; set; }
         public Car Car { get; set; }
         public ICollection<Payment> Payments { get; set; }
+        public string? ContactImageUrl { get; set; }
+        public string? ContactImageUrl2 { get; set; }
+        public string? ContactNotes { get; set; }
+        public string? ReportNote { get; set; }
     }
 }

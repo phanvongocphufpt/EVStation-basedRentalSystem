@@ -12,6 +12,7 @@ namespace Repository.IRepositories
         Task AddAsync(Car car);
         Task UpdateAsync(Car car);
         Task DeleteAsync(int id);
+        Task<IEnumerable<Car>> GetCarsByLocationAsync(int locationId);
 
         // Lấy top thuê nhiều nhất, chỉ entity
         Task<IEnumerable<Car>> GetTopRentedAsync(int topCount);

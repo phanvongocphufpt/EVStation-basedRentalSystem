@@ -83,10 +83,15 @@ namespace Repository.Context.Migrations
                     SizeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TrunkCapacity = table.Column<int>(type: "int", nullable: false),
                     BatteryType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DepositPercent = table.Column<int>(type: "int", nullable: false),
+                    DepositOrderAmount = table.Column<double>(type: "float", nullable: false),
+                    DepositCarAmount = table.Column<double>(type: "float", nullable: false),
                     BatteryDuration = table.Column<int>(type: "int", nullable: false),
                     RentPricePerDay = table.Column<double>(type: "float", nullable: false),
+                    RentPricePer4Hour = table.Column<double>(type: "float", nullable: false),
+                    RentPricePer8Hour = table.Column<double>(type: "float", nullable: false),
                     RentPricePerDayWithDriver = table.Column<double>(type: "float", nullable: false),
+                    RentPricePer4HourWithDriver = table.Column<double>(type: "float", nullable: false),
+                    RentPricePer8HourWithDriver = table.Column<double>(type: "float", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ImageUrl2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ImageUrl3 = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -118,6 +123,9 @@ namespace Repository.Context.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BankNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BankName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConfirmEmailToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsEmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
@@ -164,9 +172,10 @@ namespace Repository.Context.Migrations
                     ExpectedReturnTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ActualReturnTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     SubTotal = table.Column<double>(type: "float", nullable: true),
-                    Deposit = table.Column<int>(type: "int", nullable: true),
+                    DepositOrder = table.Column<double>(type: "float", nullable: true),
+                    DepositCar = table.Column<double>(type: "float", nullable: true),
                     Total = table.Column<double>(type: "float", nullable: true),
-                    Discount = table.Column<int>(type: "int", nullable: true),
+                    Discount = table.Column<double>(type: "float", nullable: true),
                     ExtraFee = table.Column<double>(type: "float", nullable: true),
                     DamageFee = table.Column<double>(type: "float", nullable: true),
                     DamageNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -176,7 +185,11 @@ namespace Repository.Context.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     RentalLocationId = table.Column<int>(type: "int", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: false)
+                    CarId = table.Column<int>(type: "int", nullable: false),
+                    ContactImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ContactImageUrl2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ContactNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReportNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -208,6 +221,7 @@ namespace Repository.Context.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DeliveryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     OdometerStart = table.Column<int>(type: "int", nullable: false),
                     BatteryLevelStart = table.Column<int>(type: "int", nullable: false),
                     VehicleConditionStart = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -216,6 +230,7 @@ namespace Repository.Context.Migrations
                     ImageUrl3 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ImageUrl4 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ImageUrl5 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUrl6 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     OrderId = table.Column<int>(type: "int", nullable: false),
                     CarId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: true)
@@ -249,6 +264,7 @@ namespace Repository.Context.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     OdometerEnd = table.Column<int>(type: "int", nullable: false),
                     BatteryLevelEnd = table.Column<int>(type: "int", nullable: false),
                     VehicleConditionEnd = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -257,6 +273,7 @@ namespace Repository.Context.Migrations
                     ImageUrl3 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ImageUrl4 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ImageUrl5 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUrl6 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     OrderId = table.Column<int>(type: "int", nullable: false),
                     CarId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -355,34 +372,35 @@ namespace Repository.Context.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "PhoneNumber", "RentalLocationId", "ResetPasswordToken", "ResetPasswordTokenExpiry", "Role", "UpdatedAt" },
+                columns: new[] { "Id", "Address", "BankName", "BankNumber", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "PhoneNumber", "RentalLocationId", "ResetPasswordToken", "ResetPasswordTokenExpiry", "Role", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "admin@gmail.com", "Admin User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", null, null, null, "Admin", null },
-                    { 3, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "customer@gmail.com", "Customer User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", null, null, null, "Customer", null }
+                    { 1, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "admin@gmail.com", "Admin User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", null, null, null, "Admin", null },
+                    { 3, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "customer@gmail.com", "Customer User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", null, null, null, "Customer", null }
                 });
 
             migrationBuilder.InsertData(
                 table: "Cars",
-                columns: new[] { "Id", "BatteryDuration", "BatteryType", "CreatedAt", "DepositPercent", "ImageUrl", "ImageUrl2", "ImageUrl3", "IsActive", "IsDeleted", "Model", "Name", "RentPricePerDay", "RentPricePerDayWithDriver", "RentalLocationId", "Seats", "SizeType", "TrunkCapacity", "UpdatedAt" },
+                columns: new[] { "Id", "BatteryDuration", "BatteryType", "CreatedAt", "DepositCarAmount", "DepositOrderAmount", "ImageUrl", "ImageUrl2", "ImageUrl3", "IsActive", "IsDeleted", "Model", "Name", "RentPricePer4Hour", "RentPricePer4HourWithDriver", "RentPricePer8Hour", "RentPricePer8HourWithDriver", "RentPricePerDay", "RentPricePerDayWithDriver", "RentalLocationId", "Seats", "SizeType", "TrunkCapacity", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 20, "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 1000000.0, 1400000.0, 1, 5, "Sedan", 425, null },
-                    { 2, 240, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 20, "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", true, false, "Nissan Leaf", "Leaf", 800000.0, 1200000.0, 2, 5, "Hatchback", 435, null },
-                    { 3, 259, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 20, "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", true, false, "Chevrolet Bolt EV", "Bolt EV", 900000.0, 1300000.0, 3, 5, "Hatchback", 478, null },
-                    { 4, 153, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 10, "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", true, false, "BMW i3", "i3", 1100000.0, 1500000.0, 3, 4, "Hatchback", 260, null },
-                    { 5, 222, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 15, "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", true, false, "Audi e-tron", "e-tron", 1500000.0, 2000000.0, 4, 5, "SUV", 660, null }
+                    { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 2000000.0, 200000.0, "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 300000.0, 400000.0, 500000.0, 700000.0, 1000000.0, 1400000.0, 1, 5, "Sedan", 425, null },
+                    { 2, 240, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 4500000.0, 160000.0, "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", true, false, "Nissan Leaf", "Leaf", 250000.0, 350000.0, 450000.0, 600000.0, 800000.0, 1200000.0, 2, 5, "Hatchback", 435, null },
+                    { 3, 259, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 3400000.0, 180000.0, "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", true, false, "Chevrolet Bolt EV", "Bolt EV", 280000.0, 380000.0, 480000.0, 650000.0, 900000.0, 1300000.0, 3, 5, "Hatchback", 478, null },
+                    { 4, 153, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 20000000.0, 110000.0, "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", true, false, "BMW i3", "i3", 350000.0, 450000.0, 550000.0, 750000.0, 1100000.0, 1500000.0, 3, 4, "Hatchback", 260, null },
+                    { 5, 222, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 17000000.0, 225000.0, "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", true, false, "Audi e-tron", "e-tron", 450000.0, 600000.0, 750000.0, 900000.0, 1500000.0, 2000000.0, 4, 5, "SUV", 660, null },
+                    { 6, 258, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 6000000.0, 175000.0, "https://example.com/hyundai_kona_electric.jpg", "https://example.com/hyundai_kona_electric.jpg", "https://example.com/hyundai_kona_electric.jpg", true, false, "Hyundai Kona Electric", "Kona Electric", 290000.0, 390000.0, 490000.0, 640000.0, 950000.0, 1350000.0, 2, 5, "SUV", 332, null }
                 });
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "PhoneNumber", "RentalLocationId", "ResetPasswordToken", "ResetPasswordTokenExpiry", "Role", "UpdatedAt" },
+                columns: new[] { "Id", "Address", "BankName", "BankNumber", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "PhoneNumber", "RentalLocationId", "ResetPasswordToken", "ResetPasswordTokenExpiry", "Role", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 2, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 1, null, null, "Staff", null },
-                    { 4, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff2@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 2, null, null, "Staff", null },
-                    { 5, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff3@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 3, null, null, "Staff", null },
-                    { 6, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff4@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 4, null, null, "Staff", null }
+                    { 2, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 1, null, null, "Staff", null },
+                    { 4, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff2@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 2, null, null, "Staff", null },
+                    { 5, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff3@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 3, null, null, "Staff", null },
+                    { 6, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff4@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 4, null, null, "Staff", null }
                 });
 
             migrationBuilder.CreateIndex(

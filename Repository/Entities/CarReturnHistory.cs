@@ -12,6 +12,7 @@ namespace Repository.Entities
         [Key]
         public int Id { get; set; }
         public DateTime ReturnDate { get; set; }
+        public DateTime? UpdateAt { get; set; }
         public int OdometerEnd { get; set; }
         public int BatteryLevelEnd { get; set; }
         public string VehicleConditionEnd { get; set; }
@@ -20,6 +21,7 @@ namespace Repository.Entities
         public string? ImageUrl3 { get; set; }
         public string? ImageUrl4 { get; set; }
         public string? ImageUrl5 { get; set; }
+        public string? ImageUrl6 { get; set; }
         public int OrderId { get; set; }
         public int CarId { get; set; }
         public RentalOrder Order { get; set; }

@@ -99,7 +99,7 @@ namespace Service.Services
             depositPayment.PaymentDate = DateTime.UtcNow;
             depositPayment.Status = PaymentStatus.Completed;
             await _paymentRepository.UpdateAsync(depositPayment);
-            order.Status = RentalOrderStatus.DepositConfirmed;
+            order.Status = RentalOrderStatus.CarDepositConfirmed;
             await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận thanh toán đặt cọc thành công.");
         }

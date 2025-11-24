@@ -76,7 +76,6 @@ namespace Service.Services
         {
             var dto = _mapper.Map<RentalOrder>(createRentalOrderDTO);
 
-            // === KIỂM TRA DỮ LIỆU ===
             var user = await _userRepository.GetByIdAsync(dto.UserId);
             if (user == null)
                 return Result<CreateRentalOrderResponseDTO>.Failure("Người dùng không tồn tại!");
@@ -93,13 +92,21 @@ namespace Service.Services
             if (subtotalDays <= 0)
                 return Result<CreateRentalOrderResponseDTO>.Failure("Thời gian trả xe phải lớn hơn thời gian nhận xe.");
 
-            var subTotal = dto.WithDriver
-                ? subtotalDays * car.RentPricePerDayWithDriver
-                : subtotalDays * car.RentPricePerDay;
+            var subTotal = 0.0;
+            if (subtotalDays <= 0.4) 
+            {
+                subTotal = dto.WithDriver ? car.RentPricePer4HourWithDriver : car.RentPricePer4Hour;
+            }
+            if (subtotalDays > 0.4 && subtotalDays <= 0.8)
+            {
+                subTotal = dto.WithDriver ? car.RentPricePer8HourWithDriver : car.RentPricePer8Hour;
+            }
+            if (subtotalDays > 0.8)
+            {
+                subTotal = subtotalDays * (dto.WithDriver ? car.RentPricePerDayWithDriver : car.RentPricePerDay);
+            }
+            var depositAmount = car.DepositOrderAmount;
 
-            var depositAmount = Math.Round(subTotal * car.DepositPercent / 100.0, 0);
-
-            // === TẠO ĐƠN HÀNG ===
             var order = new RentalOrder
             {
                 OrderDate = DateTime.Now,
@@ -107,7 +114,8 @@ namespace Service.Services
                 ExpectedReturnTime = dto.ExpectedReturnTime,
                 WithDriver = dto.WithDriver,
                 SubTotal = subTotal,
-                Deposit = car.DepositPercent,
+                DepositCar = car.DepositCarAmount,
+                DepositOrder = car.DepositOrderAmount,
                 UserId = user.Id,
                 User = user,
                 CarId = car.Id,
@@ -115,7 +123,7 @@ namespace Service.Services
                 RentalLocationId = location.Id,
                 RentalLocation = location,
                 CreatedAt = DateTime.Now,
-                Status = RentalOrderStatus.Pending   // ← rõ nghĩa hơn
+                Status = RentalOrderStatus.Pending
             };
 
             await _rentalOrderRepository.AddAsync(order);
@@ -133,7 +141,7 @@ namespace Service.Services
 
             var payment = new Payment
             {
-                PaymentType = PaymentType.Deposit,
+                PaymentType = PaymentType.OrderDeposit,
                 Amount = depositAmount,
                 PaymentMethod = "VNPAY",
                 Status = PaymentStatus.Pending,
@@ -167,7 +175,7 @@ namespace Service.Services
             {
                 return Result<UpdateRentalOrderTotalDTO>.Failure("Chỉ có thể cập nhật tổng tiền cho đơn hàng ở trạng thái 'Returned'.");
             }
-            var total = (existingOrder.SubTotal ?? 0) + updateRentalOrderTotalDTO.ExtraFee + updateRentalOrderTotalDTO.DamageFee - existingOrder.Deposit;
+            var total = (existingOrder.SubTotal ?? 0) + updateRentalOrderTotalDTO.ExtraFee + updateRentalOrderTotalDTO.DamageFee - existingOrder.DepositOrder;
             existingOrder.Total = total;
             existingOrder.ExtraFee = updateRentalOrderTotalDTO.ExtraFee;
             existingOrder.DamageFee = updateRentalOrderTotalDTO.DamageFee;
@@ -341,7 +349,7 @@ namespace Service.Services
                 var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId.Value);
                 if (order != null && payment.PaymentType == PaymentType.Deposit)
                 {
-                    order.Status = RentalOrderStatus.DepositConfirmed;
+                    order.Status = RentalOrderStatus.OrderDepositConfirmed;
                 }
 
                 await _paymentRepository.UpdateAsync(payment);
@@ -355,7 +363,6 @@ namespace Service.Services
         /// </summary>
         public async Task<PaymentCallbackResult> ProcessVnpayCallbackAsync(IQueryCollection queryParams)
         {
-            // BƯỚC 1: KIỂM TRA CÓ DATA HỢP LỆ KHÔNG – CHỐNG LỖI RỖNG
             if (queryParams == null || !queryParams.Any())
             {
                 return new PaymentCallbackResult
@@ -365,7 +372,6 @@ namespace Service.Services
                 };
             }
 
-            // Kiểm tra có ít nhất 1 trong các field bắt buộc
             if (!queryParams.ContainsKey("vnp_ResponseCode") ||
                 !queryParams.ContainsKey("vnp_TxnRef") ||
                 string.IsNullOrEmpty(queryParams["vnp_TxnRef"]))
@@ -419,7 +425,7 @@ namespace Service.Services
                 if (order != null)
                 {
                     if (payment.PaymentType == PaymentType.Deposit)
-                        order.Status = RentalOrderStatus.DepositConfirmed;
+                        order.Status = RentalOrderStatus.OrderDepositConfirmed;
                     else if (payment.PaymentType == PaymentType.OrderPayment)
                         order.Status = RentalOrderStatus.Completed;
 
@@ -476,7 +482,7 @@ namespace Service.Services
                 var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId!.Value);
                 if (order != null)
                 {
-                    order.Status = RentalOrderStatus.DepositConfirmed;
+                    order.Status = RentalOrderStatus.OrderDepositConfirmed;
                     await _rentalOrderRepository.UpdateAsync(order);
                 }
 

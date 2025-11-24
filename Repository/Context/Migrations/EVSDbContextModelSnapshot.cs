@@ -40,8 +40,11 @@ namespace Repository.Context.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DepositPercent")
-                        .HasColumnType("int");
+                    b.Property<double>("DepositCarAmount")
+                        .HasColumnType("float");
+
+                    b.Property<double>("DepositOrderAmount")
+                        .HasColumnType("float");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
@@ -68,6 +71,18 @@ namespace Repository.Context.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("RentPricePer4Hour")
+                        .HasColumnType("float");
+
+                    b.Property<double>("RentPricePer4HourWithDriver")
+                        .HasColumnType("float");
+
+                    b.Property<double>("RentPricePer8Hour")
+                        .HasColumnType("float");
+
+                    b.Property<double>("RentPricePer8HourWithDriver")
+                        .HasColumnType("float");
 
                     b.Property<double>("RentPricePerDay")
                         .HasColumnType("float");
@@ -104,7 +119,8 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 350,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositPercent = 20,
+                            DepositCarAmount = 2000000.0,
+                            DepositOrderAmount = 200000.0,
                             ImageUrl = "https://example.com/tesla_model_3.jpg",
                             ImageUrl2 = "https://example.com/tesla_model_3.jpg",
                             ImageUrl3 = "https://example.com/tesla_model_3.jpg",
@@ -112,6 +128,10 @@ namespace Repository.Context.Migrations
                             IsDeleted = false,
                             Model = "Tesla Model 3",
                             Name = "Model 3",
+                            RentPricePer4Hour = 300000.0,
+                            RentPricePer4HourWithDriver = 400000.0,
+                            RentPricePer8Hour = 500000.0,
+                            RentPricePer8HourWithDriver = 700000.0,
                             RentPricePerDay = 1000000.0,
                             RentPricePerDayWithDriver = 1400000.0,
                             RentalLocationId = 1,
@@ -125,7 +145,8 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 240,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositPercent = 20,
+                            DepositCarAmount = 4500000.0,
+                            DepositOrderAmount = 160000.0,
                             ImageUrl = "https://example.com/nissan_leaf.jpg",
                             ImageUrl2 = "https://example.com/nissan_leaf.jpg",
                             ImageUrl3 = "https://example.com/nissan_leaf.jpg",
@@ -133,6 +154,10 @@ namespace Repository.Context.Migrations
                             IsDeleted = false,
                             Model = "Nissan Leaf",
                             Name = "Leaf",
+                            RentPricePer4Hour = 250000.0,
+                            RentPricePer4HourWithDriver = 350000.0,
+                            RentPricePer8Hour = 450000.0,
+                            RentPricePer8HourWithDriver = 600000.0,
                             RentPricePerDay = 800000.0,
                             RentPricePerDayWithDriver = 1200000.0,
                             RentalLocationId = 2,
@@ -146,7 +171,8 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 259,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositPercent = 20,
+                            DepositCarAmount = 3400000.0,
+                            DepositOrderAmount = 180000.0,
                             ImageUrl = "https://example.com/chevrolet_bolt_ev.jpg",
                             ImageUrl2 = "https://example.com/chevrolet_bolt_ev.jpg",
                             ImageUrl3 = "https://example.com/chevrolet_bolt_ev.jpg",
@@ -154,6 +180,10 @@ namespace Repository.Context.Migrations
                             IsDeleted = false,
                             Model = "Chevrolet Bolt EV",
                             Name = "Bolt EV",
+                            RentPricePer4Hour = 280000.0,
+                            RentPricePer4HourWithDriver = 380000.0,
+                            RentPricePer8Hour = 480000.0,
+                            RentPricePer8HourWithDriver = 650000.0,
                             RentPricePerDay = 900000.0,
                             RentPricePerDayWithDriver = 1300000.0,
                             RentalLocationId = 3,
@@ -167,7 +197,8 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 153,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositPercent = 10,
+                            DepositCarAmount = 20000000.0,
+                            DepositOrderAmount = 110000.0,
                             ImageUrl = "https://example.com/bmw_i3.jpg",
                             ImageUrl2 = "https://example.com/bmw_i3.jpg",
                             ImageUrl3 = "https://example.com/bmw_i3.jpg",
@@ -175,6 +206,10 @@ namespace Repository.Context.Migrations
                             IsDeleted = false,
                             Model = "BMW i3",
                             Name = "i3",
+                            RentPricePer4Hour = 350000.0,
+                            RentPricePer4HourWithDriver = 450000.0,
+                            RentPricePer8Hour = 550000.0,
+                            RentPricePer8HourWithDriver = 750000.0,
                             RentPricePerDay = 1100000.0,
                             RentPricePerDayWithDriver = 1500000.0,
                             RentalLocationId = 3,
@@ -188,7 +223,8 @@ namespace Repository.Context.Migrations
                             BatteryDuration = 222,
                             BatteryType = "Lithium-Ion",
                             CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DepositPercent = 15,
+                            DepositCarAmount = 17000000.0,
+                            DepositOrderAmount = 225000.0,
                             ImageUrl = "https://example.com/audi_e_tron.jpg",
                             ImageUrl2 = "https://example.com/audi_e_tron.jpg",
                             ImageUrl3 = "https://example.com/audi_e_tron.jpg",
@@ -196,12 +232,42 @@ namespace Repository.Context.Migrations
                             IsDeleted = false,
                             Model = "Audi e-tron",
                             Name = "e-tron",
+                            RentPricePer4Hour = 450000.0,
+                            RentPricePer4HourWithDriver = 600000.0,
+                            RentPricePer8Hour = 750000.0,
+                            RentPricePer8HourWithDriver = 900000.0,
                             RentPricePerDay = 1500000.0,
                             RentPricePerDayWithDriver = 2000000.0,
                             RentalLocationId = 4,
                             Seats = 5,
                             SizeType = "SUV",
                             TrunkCapacity = 660
+                        },
+                        new
+                        {
+                            Id = 6,
+                            BatteryDuration = 258,
+                            BatteryType = "Lithium-Ion",
+                            CreatedAt = new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepositCarAmount = 6000000.0,
+                            DepositOrderAmount = 175000.0,
+                            ImageUrl = "https://example.com/hyundai_kona_electric.jpg",
+                            ImageUrl2 = "https://example.com/hyundai_kona_electric.jpg",
+                            ImageUrl3 = "https://example.com/hyundai_kona_electric.jpg",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Model = "Hyundai Kona Electric",
+                            Name = "Kona Electric",
+                            RentPricePer4Hour = 290000.0,
+                            RentPricePer4HourWithDriver = 390000.0,
+                            RentPricePer8Hour = 490000.0,
+                            RentPricePer8HourWithDriver = 640000.0,
+                            RentPricePerDay = 950000.0,
+                            RentPricePerDayWithDriver = 1350000.0,
+                            RentalLocationId = 2,
+                            Seats = 5,
+                            SizeType = "SUV",
+                            TrunkCapacity = 332
                         });
                 });
 
@@ -237,11 +303,17 @@ namespace Repository.Context.Migrations
                     b.Property<string>("ImageUrl5")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUrl6")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("OdometerStart")
                         .HasColumnType("int");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -290,6 +362,9 @@ namespace Repository.Context.Migrations
                     b.Property<string>("ImageUrl5")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUrl6")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("OdometerEnd")
                         .HasColumnType("int");
 
@@ -297,6 +372,9 @@ namespace Repository.Context.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ReturnDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("VehicleConditionEnd")
@@ -569,6 +647,15 @@ namespace Repository.Context.Migrations
                     b.Property<int>("CarId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ContactImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactImageUrl2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactNotes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -578,11 +665,14 @@ namespace Repository.Context.Migrations
                     b.Property<string>("DamageNotes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Deposit")
-                        .HasColumnType("int");
+                    b.Property<double?>("DepositCar")
+                        .HasColumnType("float");
 
-                    b.Property<int?>("Discount")
-                        .HasColumnType("int");
+                    b.Property<double?>("DepositOrder")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Discount")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("ExpectedReturnTime")
                         .HasColumnType("datetime2");
@@ -598,6 +688,9 @@ namespace Repository.Context.Migrations
 
                     b.Property<int>("RentalLocationId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ReportNote")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -635,6 +728,15 @@ namespace Repository.Context.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("CitizenId")
                         .HasColumnType("int");

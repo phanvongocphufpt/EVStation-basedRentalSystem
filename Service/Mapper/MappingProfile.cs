@@ -87,7 +87,8 @@ namespace Service.Mapper
                 .ForMember(dest => dest.ExpectedReturnTime, opt => opt.MapFrom(src => src.ExpectedReturnTime))
                 .ForMember(dest => dest.ActualReturnTime, opt => opt.MapFrom(src => src.ActualReturnTime))
                 .ForMember(dest => dest.SubTotal, opt => opt.MapFrom(src => src.SubTotal))
-                .ForMember(dest => dest.Deposit, opt => opt.MapFrom(src => src.DepositPercent))
+                .ForMember(dest => dest.DepositCar, opt => opt.MapFrom(src => src.DepositOrder))
+                .ForMember(dest => dest.DepositOrder, opt => opt.MapFrom(src => src.DepositOrder))
                 .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Total))
                 .ForMember(dest => dest.Discount, opt => opt.MapFrom(src => src.Discount))
                 .ForMember(dest => dest.ExtraFee, opt => opt.MapFrom(src => src.ExtraFee))
@@ -99,7 +100,11 @@ namespace Service.Mapper
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
                 .ForMember(dest => dest.CarId, opt => opt.MapFrom(src => src.CarId))
-                .ForMember(dest => dest.RentalLocationId, opt => opt.MapFrom(src => src.RentalLocationId));
+                .ForMember(dest => dest.RentalLocationId, opt => opt.MapFrom(src => src.RentalLocationId))
+                .ForMember(dest => dest.ContactImageUrl, opt => opt.MapFrom(src => src.ContactImageUrl))
+                .ForMember(dest => dest.ContactImageUrl2, opt => opt.MapFrom(src => src.ContactImageUrl2))
+                .ForMember(dest => dest.ContactNotes, opt => opt.MapFrom(src => src.ContactNotes))
+                .ForMember(dest => dest.ReportNote, opt => opt.MapFrom(src => src.ReportNote));
 
             CreateMap<RentalOrder, RentalOrderWithDetailsDTO>().ReverseMap()
     .ForMember(dest => dest.Id, otp => otp.MapFrom(src => src))
@@ -120,6 +125,10 @@ namespace Service.Mapper
     .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
     .ForMember(dest => dest.CarId, opt => opt.MapFrom(src => src.CarId))
     .ForMember(dest => dest.RentalLocationId, opt => opt.MapFrom(src => src.RentalLocationId))
+                    .ForMember(dest => dest.ContactImageUrl, opt => opt.MapFrom(src => src.ContactImageUrl))
+                .ForMember(dest => dest.ContactImageUrl2, opt => opt.MapFrom(src => src.ContactImageUrl2))
+                .ForMember(dest => dest.ContactNotes, opt => opt.MapFrom(src => src.ContactNotes))
+                .ForMember(dest => dest.ReportNote, opt => opt.MapFrom(src => src.ReportNote))
     .ForMember(dest => dest.Payments,opt => opt.MapFrom(src => src.Payments));
             CreateMap<CreateRentalOrderDTO, RentalOrder>();
             //feedback mappings
@@ -133,6 +142,8 @@ namespace Service.Mapper
 
             CreateMap<UpdateFeedbackDTO, Feedback>()
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now));
+
+            CreateMap<Car, CarDTO>().ReverseMap();
         }
     }
 }

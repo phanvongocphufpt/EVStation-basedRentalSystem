@@ -8,6 +8,7 @@ namespace Repository.Entities.Enum
 {
     public enum PaymentType
     {
+        OrderDeposit,
         Deposit,
         OrderPayment,
         RefundPayment,

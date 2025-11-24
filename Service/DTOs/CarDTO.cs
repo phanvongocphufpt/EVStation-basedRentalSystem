@@ -1,15 +1,14 @@
-﻿using System;
+﻿using Repository.Entities;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repository.Entities
+namespace Service.DTOs
 {
-    public class Car
+    public class CarDTO
     {
-        [Key]
         public int Id { get; set; }
         public string Model { get; set; }
         public string Name { get; set; }
@@ -32,9 +31,6 @@ namespace Repository.Entities
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }
-        public bool IsDeleted { get; set; } = false;
         public int? RentalLocationId { get; set; }
-        public RentalLocation? RentalLocation { get; set; }
-        public ICollection<RentalOrder> RentalOrders { get; set; }
-    }   
+    }
 }

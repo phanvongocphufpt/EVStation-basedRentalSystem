@@ -21,6 +21,5 @@ namespace Repository.Entities
         public DateTime? UpdatedAt { get; set; }
         public int UserId { get; set; }
         public User User { get; set; }
-
     }
 }

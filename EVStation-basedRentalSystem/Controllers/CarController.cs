@@ -18,7 +18,14 @@ namespace EVStation_basedRentalSystem.Controllers
         {
             _carService = carService;
         }
-
+        [HttpGet("GetByLocationId")]
+        public async Task<IActionResult> GetByLocationId(int locationId)
+        {
+            var result = await _carService.GetCarsByLocationAsync(locationId);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message });
+            return Ok(new { message = result.Message, data = result.Data });
+        }
         // ✅ GET: api/Car
         [HttpGet]
        
@@ -31,7 +38,6 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(new { message = result.Message, data = result.Data });
         }
 
-        // ✅ GET: api/Car/byName/{name}
         [HttpGet("byName/{name}")]
       
         public async Task<IActionResult> GetByName(string name)
