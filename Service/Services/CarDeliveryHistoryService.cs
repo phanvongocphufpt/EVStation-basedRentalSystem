@@ -70,7 +70,7 @@ namespace Service.Services
                 var order = await _rentalOrderRepo.GetByIdAsync(dto.OrderId);
                 if (order == null)
                     return Result<string>.Failure("Không tìm thấy đơn thuê.");
-                if (order.Status != RentalOrderStatus.Confirmed)
+                if (order.Status != RentalOrderStatus.DepositConfirmed)
                     return Result<string>.Failure("Chỉ có thể giao xe cho các đơn thuê ở trạng thái 'Confirmed'.");
                 // 🔍 Kiểm tra xe có sẵn ở chi nhánh không
                 var carRentalLocation = await _carRentalLocationRepo

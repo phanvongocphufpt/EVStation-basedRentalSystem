@@ -85,4 +85,11 @@ namespace Service.DTOs
         public int OrderId { get; set; }
         public RentalOrderStatus Status { get; set; }
     }
+    public class CreateRentalOrderResponseDTO
+    {
+        public int OrderId { get; set; }
+        public double DepositAmount { get; set; }
+        public string? VnpayPaymentUrl { get; set; }
+        public string Message { get; set; }
+    }
 }

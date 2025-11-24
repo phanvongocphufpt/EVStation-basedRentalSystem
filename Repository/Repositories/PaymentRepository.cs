@@ -123,6 +123,12 @@ namespace Repository.Repositories
                 .FirstOrDefaultAsync(p => p.PayOSOrderCode == orderCode);
         }
 
+        public async Task<Payment?> GetByTxnRefAsync(string txnRef)
+        {
+            return await _context.Payments
+                .FirstOrDefaultAsync(p => p.TxnRef == txnRef);
+        }
+
         public async Task<IEnumerable<Payment>> GetByStatusAsync(PaymentStatus status)
         {
             return await _context.Payments

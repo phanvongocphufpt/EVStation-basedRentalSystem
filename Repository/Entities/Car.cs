@@ -27,7 +27,9 @@ namespace Repository.Entities
         public string ImageUrl { get; set; }
         public string ImageUrl2 { get; set; }
         public string ImageUrl3 { get; set; }
-        public int Status { get; set; } // 0: Con xe, 1: Hetxe
+        public int Status { get; set; }
+        public int DepositPercent { get; set; }
+        public int? RentalLocationId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }

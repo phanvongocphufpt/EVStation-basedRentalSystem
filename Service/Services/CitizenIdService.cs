@@ -84,7 +84,7 @@ namespace Service.Services
             await _citizenIdRepository.AddCitizenIdAsync(citizenId);
             if (order.DriverLicenseId.HasValue)
             {
-                order.Status = RentalOrderStatus.DocumentsSubmitted;
+                order.Status = RentalOrderStatus.Pending;
                 await _rentalOrderRepository.UpdateAsync(order);
             }
             return Result<CreateCitizenIdDTO>.Success(createCitizenIdDTO, "Tạo căn cước công dân thành công."); 
@@ -108,16 +108,16 @@ namespace Service.Services
             // Reload order với navigation properties để kiểm tra trạng thái cả 2 giấy tờ
             order = await _rentalOrderRepository.GetByIdAsync(citizenId.RentalOrderId);
             
-            // Kiểm tra nếu cả 2 giấy tờ đều được duyệt và order đang ở trạng thái DocumentsSubmitted
+            // Kiểm tra nếu cả 2 giấy tờ đều được duyệt và order đang ở trạng thái Pending
             if (order.DriverLicenseId.HasValue &&  
                 order.CitizenIdNavigation != null &&
                 order.DriverLicense != null &&
                 order.CitizenIdNavigation.Status == DocumentStatus.Approved && 
                 order.DriverLicense.Status == DocumentStatus.Approved && 
-                order.Status == RentalOrderStatus.DocumentsSubmitted)
+                order.Status == RentalOrderStatus.Pending)
             {
-                // Tự động chuyển trạng thái order sang DepositPending
-                order.Status = RentalOrderStatus.DepositPending;
+                // Tự động chuyển trạng thái order sang Pending (chờ thanh toán deposit)
+                order.Status = RentalOrderStatus.Pending;
                 order.UpdatedAt = DateTime.Now;
                 await _rentalOrderRepository.UpdateAsync(order);
                 

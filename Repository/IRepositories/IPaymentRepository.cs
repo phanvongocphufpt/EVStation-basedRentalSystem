@@ -36,6 +36,9 @@ namespace Repository.IRepositories
         // Lấy payment theo PayOSOrderCode
         Task<Payment?> GetByPayOSOrderCodeAsync(int orderCode);
 
+        // Lấy payment theo VNPay TxnRef
+        Task<Payment?> GetByTxnRefAsync(string txnRef);
+
         // Lấy payment theo trạng thái thành công/failed
         Task<IEnumerable<Payment>> GetByStatusAsync(PaymentStatus status);
 

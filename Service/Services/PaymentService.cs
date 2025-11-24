@@ -129,31 +129,23 @@ namespace Service.Services
         {
             var order = await _rentalOrderRepository.GetByIdAsync(orderId);
             if (order == null)
-                return Result<bool>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
-
-            if (order.Status != RentalOrderStatus.DepositPending)
-                return Result<bool>.Failure("Đơn hàng không ở trạng thái chờ thanh toán đặt cọc.");
-
-            if (order.WithDriver == false)
             {
-                if (!order.CitizenId.HasValue || !order.DriverLicenseId.HasValue)
-                    return Result<bool>.Failure("Đơn hàng chưa hoàn tất nộp giấy tờ cần thiết.");
+                return Result<bool>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
             }
 
             var depositPayment = await _paymentRepository.GetDepositByOrderIdAsync(orderId);
             if (depositPayment == null)
-                return Result<bool>.Failure("Thanh toán đặt cọc không tồn tại cho đơn hàng này.");
+            {
+                return Result<bool>.Failure("Không tìm thấy thanh toán đặt cọc cho đơn hàng này.");
+            }
 
             depositPayment.PaymentDate = DateTime.UtcNow;
             depositPayment.Status = PaymentStatus.Completed;
             await _paymentRepository.UpdateAsync(depositPayment);
-
-            order.Status = RentalOrderStatus.Confirmed;
+            order.Status = RentalOrderStatus.DepositConfirmed;
             await _rentalOrderRepository.UpdateAsync(order);
-
             return Result<bool>.Success(true, "Xác nhận thanh toán đặt cọc thành công.");
         }
-
         public async Task<Result<UpdatePaymentStatusDTO>> UpdatePaymentStatusAsync(UpdatePaymentStatusDTO updatePaymentDTO)
         {
             var payment = await _paymentRepository.GetByIdAsync(updatePaymentDTO.Id);
@@ -338,9 +330,7 @@ namespace Service.Services
         {
             try
             {
-                // ✅ DEBUG: Log toàn bộ payload nhận được
-                _logger.LogInformation("========== MoMo IPN CALLBACK START ==========");
-                _logger.LogInformation("MoMo IPN Raw Payload: {Payload}", payload?.ToString() ?? "null");
+               
                 
                 var data = payload as JObject;
                 if (data == null)
@@ -349,8 +339,6 @@ namespace Service.Services
                     return Result<bool>.Failure("Payload MoMo không hợp lệ.");
                 }
 
-                // ✅ DEBUG: Log từng field trong payload
-                _logger.LogInformation("MoMo IPN Payload Fields:");
                 foreach (var prop in data.Properties())
                 {
                     _logger.LogInformation("  - {Key} = {Value}", prop.Name, prop.Value?.ToString() ?? "null");
@@ -370,46 +358,20 @@ namespace Service.Services
                 string extraData = data["extraData"]?.ToString() ?? "";
                 string orderInfo = data["orderInfo"]?.ToString() ?? "";
 
-                _logger.LogInformation("MoMo IPN Parsed Data:");
-                _logger.LogInformation("  - MomoOrderId: {MomoOrderId}", momoOrderId);
-                _logger.LogInformation("  - ResultCode: {ResultCode}", resultCode);
-                _logger.LogInformation("  - Message: {Message}", message);
-                _logger.LogInformation("  - Signature: {Signature}", signature);
-                _logger.LogInformation("  - OrderType: {OrderType}", orderType);
-                _logger.LogInformation("  - TransId: {TransId}", transId);
-                _logger.LogInformation("  - PayType: {PayType}", payType);
-                _logger.LogInformation("  - Amount: {Amount}", amount);
-                _logger.LogInformation("  - PartnerCode: {PartnerCode}", partnerCode);
-                _logger.LogInformation("  - RequestId: {RequestId}", requestId);
-                _logger.LogInformation("  - ResponseTime: {ResponseTime}", responseTime);
-                _logger.LogInformation("  - ExtraData: {ExtraData}", extraData);
-                _logger.LogInformation("  - OrderInfo: {OrderInfo}", orderInfo);
-
+                
                 if (string.IsNullOrEmpty(momoOrderId))
                 {
                     _logger.LogWarning("MoMo IPN: MomoOrderId trống");
                     return Result<bool>.Failure("MomoOrderId không hợp lệ.");
                 }
 
-                // ✅ DEBUG: Log trước khi tìm payment
-                _logger.LogInformation("MoMo IPN: Đang tìm payment với MomoOrderId={MomoOrderId}", momoOrderId);
-                
                 var payment = await _paymentRepository.GetByMomoOrderIdAsync(momoOrderId);
                 if (payment == null)
                 {
-                    _logger.LogWarning("MoMo IPN: ❌ Không tìm thấy payment với MomoOrderId={MomoOrderId}", momoOrderId);
-                    _logger.LogWarning("MoMo IPN: Có thể payment chưa được tạo hoặc MomoOrderId không khớp");
                     return Result<bool>.Failure("Payment không tồn tại.");
                 }
                 
-                // ✅ DEBUG: Log thông tin payment tìm được
-                _logger.LogInformation("MoMo IPN: ✅ Tìm thấy payment:");
-                _logger.LogInformation("  - PaymentId: {PaymentId}", payment.Id);
-                _logger.LogInformation("  - Current Status: {Status}", payment.Status);
-                _logger.LogInformation("  - Amount: {Amount}", payment.Amount);
-                _logger.LogInformation("  - PaymentType: {PaymentType}", payment.PaymentType);
-                _logger.LogInformation("  - RentalOrderId: {RentalOrderId}", payment.RentalOrderId);
-                _logger.LogInformation("  - UserId: {UserId}", payment.UserId);
+           
 
                 // Kiểm tra xem payment đã được xử lý chưa (tránh xử lý trùng)
                 if (payment.Status == PaymentStatus.Completed && resultCode == 0)
@@ -419,9 +381,6 @@ namespace Service.Services
                     return Result<bool>.Success(true); // Trả về success để MoMo không gửi lại
                 }
 
-                // ✅ DEBUG: Verify signature từ MoMo
-                _logger.LogInformation("MoMo IPN: Bắt đầu verify signature...");
-                
                 // Theo tài liệu MoMo, signature được tạo từ các field: accessKey, amount, extraData, message, 
                 // orderId, orderInfo, orderType, partnerCode, payType, requestId, responseTime, resultCode, transId
                 var parameters = new Dictionary<string, string>();
@@ -498,15 +457,15 @@ namespace Service.Services
                             // Cập nhật status khi thanh toán deposit thành công (trừ khi đã Completed hoặc Cancelled)
                             if (order.Status != RentalOrderStatus.Completed && order.Status != RentalOrderStatus.Cancelled)
                             {
-                                // Với WithDriver = true: sau khi deposit thanh toán thành công, chuyển sang DepositPending (2)
-                                // Với WithDriver = false: chuyển sang DocumentsSubmitted (1) để user nộp giấy tờ
+                                // Với WithDriver = true: sau khi deposit thanh toán thành công, chuyển sang Completed
+                                // Với WithDriver = false: chuyển sang Pending để user nộp giấy tờ
                                 if (order.WithDriver == true)
                                 {
-                                    order.Status = RentalOrderStatus.DepositPending;
+                                    order.Status = RentalOrderStatus.Completed;
                                 }
                                 else
                                 {
-                                    order.Status = RentalOrderStatus.DocumentsSubmitted;
+                                    order.Status = RentalOrderStatus.Pending;
                                 }
                                 order.UpdatedAt = DateTimeHelper.GetVietnamTime();
                                 await _rentalOrderRepository.UpdateAsync(order);
@@ -524,26 +483,11 @@ namespace Service.Services
                     }
                 }
 
-                // ✅ DEBUG: Lưu payment vào database
-                _logger.LogInformation("MoMo IPN: Đang lưu payment vào database...");
-                await _paymentRepository.UpdateAsync(payment);
-                _logger.LogInformation("MoMo IPN: ✅ Đã lưu payment vào database thành công!");
-                
-                _logger.LogInformation("========== MoMo IPN CALLBACK SUCCESS ==========");
-                _logger.LogInformation("MoMo IPN: Đã xử lý thành công. PaymentId={PaymentId}, Status={Status}, ResultCode={ResultCode}",
-                    payment.Id, payment.Status, resultCode);
-                
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "========== MoMo IPN CALLBACK ERROR ==========");
-                _logger.LogError(ex, "MoMo IPN: ❌ Lỗi không mong đợi khi xử lý callback");
-                _logger.LogError(ex, "MoMo IPN: Exception Type: {ExceptionType}", ex.GetType().Name);
-                _logger.LogError(ex, "MoMo IPN: Exception Message: {Message}", ex.Message);
-                _logger.LogError(ex, "MoMo IPN: Stack Trace: {StackTrace}", ex.StackTrace);
-                _logger.LogError(ex, "MoMo IPN: Payload: {Payload}", payload?.ToString() ?? "null");
-                _logger.LogError(ex, "=============================================");
+              
                 return Result<bool>.Failure($"Lỗi xử lý callback MoMo: {ex.Message}");
             }
         }
@@ -771,15 +715,15 @@ namespace Service.Services
                             // Cập nhật status khi thanh toán deposit thành công (trừ khi đã Completed hoặc Cancelled)
                             if (order.Status != RentalOrderStatus.Completed && order.Status != RentalOrderStatus.Cancelled)
                             {
-                                // Với WithDriver = true: sau khi deposit thanh toán thành công, chuyển sang DepositPending (2)
-                                // Với WithDriver = false: chuyển sang DocumentsSubmitted (1) để user nộp giấy tờ
+                                // Với WithDriver = true: sau khi deposit thanh toán thành công, chuyển sang Pending
+                                // Với WithDriver = false: chuyển sang Pending để user nộp giấy tờ
                                 if (order.WithDriver == true)
                                 {
-                                    order.Status = RentalOrderStatus.DepositPending;
+                                    order.Status = RentalOrderStatus.Pending;
                                 }
                                 else
                                 {
-                                    order.Status = RentalOrderStatus.DocumentsSubmitted;
+                                    order.Status = RentalOrderStatus.Pending;
                                 }
                                 order.UpdatedAt = DateTimeHelper.GetVietnamTime();
                                 await _rentalOrderRepository.UpdateAsync(order);

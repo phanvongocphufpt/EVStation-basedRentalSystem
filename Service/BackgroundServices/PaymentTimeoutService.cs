@@ -89,10 +89,8 @@ namespace Service.BackgroundServices
                                 continue;
                             }
 
-                            // Chỉ hủy nếu order chưa được confirmed hoặc đang ở trạng thái DepositPending
-                            if (order.Status == RentalOrderStatus.DepositPending || 
-                                order.Status == RentalOrderStatus.Pending ||
-                                order.Status == RentalOrderStatus.DocumentsSubmitted)
+                            // Chỉ hủy nếu order chưa được confirmed hoặc đang ở trạng thái Pending
+                            if (order.Status == RentalOrderStatus.Pending)
                             {
                                 // Cập nhật payment status thành Failed
                                 payment.Status = PaymentStatus.Failed;

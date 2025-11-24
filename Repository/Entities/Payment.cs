@@ -54,6 +54,12 @@ namespace Repository.Entities
         public string? PayOSStatus { get; set; } // paid, pending, cancel, expired
 
         // -----------------------------
+        // VNPAY PAYMENT INFORMATION
+        // -----------------------------
+        public string? TxnRef { get; set; } // VNPay transaction reference
+        public string? TransactionNo { get; set; } // VNPay transaction number
+
+        // -----------------------------
         // Khóa ngoại
         // -----------------------------
         public int? UserId { get; set; }
