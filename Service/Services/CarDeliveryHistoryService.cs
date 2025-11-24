@@ -11,15 +11,18 @@ namespace Service.Services
     public class CarDeliveryHistoryService : ICarDeliveryHistoryService
     {
         private readonly ICarDeliveryHistoryRepository _repo;
+        private readonly ICarRentalLocationRepository _carRentalLocationRepo;
         private readonly IRentalOrderRepository _rentalOrderRepo;
         private readonly IMapper _mapper;
 
         public CarDeliveryHistoryService(
             ICarDeliveryHistoryRepository repo,
+            ICarRentalLocationRepository carRentalLocationRepo,
             IRentalOrderRepository rentalOrderRepo,
             IMapper mapper)
         {
             _repo = repo;
+            _carRentalLocationRepo = carRentalLocationRepo;
             _rentalOrderRepo = rentalOrderRepo;
             _mapper = mapper;
         }
@@ -67,8 +70,23 @@ namespace Service.Services
                 var order = await _rentalOrderRepo.GetByIdAsync(dto.OrderId);
                 if (order == null)
                     return Result<string>.Failure("Không tìm thấy đơn thuê.");
-                if (order.Status != RentalOrderStatus.DepositConfirmed)
+                if (order.Status != RentalOrderStatus.Confirmed)
                     return Result<string>.Failure("Chỉ có thể giao xe cho các đơn thuê ở trạng thái 'Confirmed'.");
+                // 🔍 Kiểm tra xe có sẵn ở chi nhánh không
+                var carRentalLocation = await _carRentalLocationRepo
+                    .GetByCarAndRentalLocationIdAsync(order.CarId, order.RentalLocationId);
+
+                if (carRentalLocation == null)
+                    return Result<string>.Failure("Không tìm thấy xe tại chi nhánh này.");
+
+                if (carRentalLocation.Quantity <= 0)
+                    return Result<string>.Failure("Chi nhánh này không còn xe khả dụng để giao.");
+
+                using var transaction = await _carRentalLocationRepo.BeginTransactionAsync();
+
+                // 🚗 Giảm số lượng xe khả dụng tại chi nhánh
+                carRentalLocation.Quantity -= 1;
+                await _carRentalLocationRepo.UpdateAsync(carRentalLocation);
 
                 // 📝 Tạo bản ghi giao xe
                 var history = new CarDeliveryHistory
@@ -87,6 +105,7 @@ namespace Service.Services
                 order.Status = RentalOrderStatus.Renting;
                 await _rentalOrderRepo.UpdateAsync(order);
 
+                await transaction.CommitAsync();
                 return Result<string>.Success("✅ Giao xe thành công. Trạng thái đơn đã chuyển sang 'Renting'.");
             }
             catch (Exception ex)

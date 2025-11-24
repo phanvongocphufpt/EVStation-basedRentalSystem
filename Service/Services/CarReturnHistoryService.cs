@@ -14,15 +14,18 @@ namespace Service.Services
     public class CarReturnHistoryService : ICarReturnHistoryService
     {
         private readonly ICarReturnHistoryRepository _repo;
+        private readonly ICarRentalLocationRepository _carRentalLocationRepo;
         private readonly IRentalOrderRepository _rentalOrderRepo;
         private readonly IMapper _mapper;
 
         public CarReturnHistoryService(
             ICarReturnHistoryRepository repo,
+            ICarRentalLocationRepository carRentalLocationRepo,
             IRentalOrderRepository rentalOrderRepo,
             IMapper mapper)
         {
             _repo = repo;
+            _carRentalLocationRepo = carRentalLocationRepo;
             _rentalOrderRepo = rentalOrderRepo;
             _mapper = mapper;
         }
@@ -48,6 +51,7 @@ namespace Service.Services
         // 🔹 Thêm mới (Xử lý logic trả xe)
         public async Task<Result<string>> AddAsync(CarReturnHistoryCreateDTO dto)
         {
+            using var transaction = await _carRentalLocationRepo.BeginTransactionAsync();
 
             try
             {
@@ -57,6 +61,16 @@ namespace Service.Services
                     return Result<string>.Failure("Không tìm thấy đơn hàng để trả xe.");
                 if (order.Status != RentalOrderStatus.Renting)
                     return Result<string>.Failure("Đơn hàng không ở trạng thái 'Renting', không thể trả xe.");
+                // Lấy thông tin xe tại chi nhánh
+                var carLocation = await _carRentalLocationRepo.GetByCarAndRentalLocationIdAsync(order.CarId, order.RentalLocationId);
+                if (carLocation == null)
+                    return Result<string>.Failure("Không tìm thấy xe tại chi nhánh để cập nhật.");
+
+                // +1 xe về chi nhánh
+                carLocation.Quantity += 1;
+                await _carRentalLocationRepo.UpdateAsync(carLocation);
+
+                // Cập nhật trạng thái đơn hàng
 
                 order.ActualReturnTime = dto.ReturnDate;
                 await _rentalOrderRepo.UpdateAsync(order);
@@ -74,10 +88,12 @@ namespace Service.Services
                 await _repo.AddAsync(entity);
                 order.Status = RentalOrderStatus.Returned;
                 await _rentalOrderRepo.UpdateAsync(order);
+                await transaction.CommitAsync();
                 return Result<string>.Success("OK", "✅ Trả xe thành công, đơn hàng đã cập nhật sang trạng thái 'Returned'.");
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 return Result<string>.Failure($"❌ Trả xe thất bại: {ex.Message}");
             }
         }

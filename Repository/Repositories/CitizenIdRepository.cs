@@ -24,9 +24,9 @@ namespace Repository.Repositories
         {
             return await _context.CitizenIds.FindAsync(id);
         }
-        public async Task<CitizenId?> GetCitizenIdsByUserIdAsync(int Id)
+        public async Task<CitizenId?> GetCitizenIdsByOrderIdAsync(int Id)
         {
-            return await Task.FromResult(_context.CitizenIds.FirstOrDefault(c => c.UserId == Id));
+            return await Task.FromResult(_context.CitizenIds.FirstOrDefault(c => c.RentalOrderId == Id));
         }
         public async Task AddCitizenIdAsync(CitizenId citizenId)
         {

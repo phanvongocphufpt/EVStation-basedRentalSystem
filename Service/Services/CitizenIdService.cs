@@ -18,16 +18,14 @@ namespace Service.Services
     {
         private readonly ICitizenIdRepository _citizenIdRepository;
         private readonly IRentalOrderRepository _rentalOrderRepository;
-        private readonly IUserRepository _userRepository;
         private readonly EmailService _emailService;
         private readonly IMapper _mapper;
-        public CitizenIdService(ICitizenIdRepository citizenIdRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository, EmailService emailService, IUserRepository userRepository)
+        public CitizenIdService(ICitizenIdRepository citizenIdRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository, EmailService emailService)
         {
             _citizenIdRepository = citizenIdRepository;
             _mapper = mapper;
             _rentalOrderRepository = rentalOrderRepository; 
             _emailService = emailService;
-            _userRepository = userRepository;
         }
         public async Task<Result<IEnumerable<CitizenIdDTO>>> GetAllCitizenIdsAsync()
         {
@@ -45,12 +43,12 @@ namespace Service.Services
             var dto = _mapper.Map<CitizenIdDTO>(citizenId);
             return Result<CitizenIdDTO>.Success(dto);
         }
-        public async Task<Result<CitizenIdDTO>> GetCitizenIdByUserIdAsync(int id)
+        public async Task<Result<CitizenIdDTO>> GetCitizenIdByOrderIdAsync(int id)
         {
-            var citizenId = await _citizenIdRepository.GetCitizenIdsByUserIdAsync(id);
+            var citizenId = await _citizenIdRepository.GetCitizenIdsByOrderIdAsync(id);
             if (citizenId == null)
             {
-                return Result<CitizenIdDTO>.Failure("Chứng minh nhân dân không tồn tại cho User này! Kiểm tra lại UserId.");
+                return Result<CitizenIdDTO>.Failure("Chứng minh nhân dân không tồn tại cho Order này! Kiểm tra lại OrderId.");
             }
             var dto = _mapper.Map<CitizenIdDTO>(citizenId);
             return Result<CitizenIdDTO>.Success(dto);
@@ -58,26 +56,37 @@ namespace Service.Services
         public async Task<Result<CreateCitizenIdDTO>> CreateCitizenIdAsync(CreateCitizenIdDTO createCitizenIdDTO)
         {
             var dto = _mapper.Map<CitizenId>(createCitizenIdDTO);
-            var user = await _userRepository.GetByIdAsync(dto.UserId);
-            if (user == null)
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.RentalOrderId);
+            if (order == null)
             {
-                return Result<CreateCitizenIdDTO>.Failure("User không tồn tại! Kiểm tra lại Id của User.");
+                return Result<CreateCitizenIdDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của order.");
             }
-            if (user.CitizenIdNavigation != null)
+            if (order.WithDriver == true)
             {
-                return Result<CreateCitizenIdDTO>.Failure("User đã có căn cước công dân rồi! Không thể tạo thêm.");
+                return Result<CreateCitizenIdDTO>.Failure("Order có tài xế, không cần căn cước công dân!");
+            }
+            if (order.CitizenIdNavigation != null)
+            {
+                return Result<CreateCitizenIdDTO>.Failure("Order đã có căn cước công dân rồi! Không thể tạo thêm.");
             }
             var citizenId = new CitizenId
             {
                 CitizenIdNumber = dto.CitizenIdNumber,
                 Name = dto.Name,
                 BirthDate = dto.BirthDate,
+                ImageUrl = dto.ImageUrl,
+                ImageUrl2 = dto.ImageUrl2,
                 Status = DocumentStatus.Pending,
                 CreatedAt = DateTime.Now,
-                UserId = user.Id,
-                User = user
+                RentalOrderId = order.Id,
+                RentalOrder = order
             };
             await _citizenIdRepository.AddCitizenIdAsync(citizenId);
+            if (order.DriverLicenseId.HasValue)
+            {
+                order.Status = RentalOrderStatus.DocumentsSubmitted;
+                await _rentalOrderRepository.UpdateAsync(order);
+            }
             return Result<CreateCitizenIdDTO>.Success(createCitizenIdDTO, "Tạo căn cước công dân thành công."); 
         }
         public async Task<Result<UpdateCitizenIdStatusDTO>> UpdateCitizenIdStatusAsync(UpdateCitizenIdStatusDTO updateCitizenIdStatusDTO)
@@ -87,14 +96,34 @@ namespace Service.Services
             {
                 return Result<UpdateCitizenIdStatusDTO>.Failure("Căn cước công dân không tồn tại! Kiểm tra lại Id.");
             }
-            var user = await _userRepository.GetByIdAsync(citizenId.UserId);
-            if (user == null)
+            var order = await _rentalOrderRepository.GetByIdAsync(citizenId.RentalOrderId);
+            if (order == null)
             {
-                return Result<UpdateCitizenIdStatusDTO>.Failure("User không tồn tại! Kiểm tra lại Id của user.");
+                return Result<UpdateCitizenIdStatusDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của order.");
             }
             citizenId.Status = updateCitizenIdStatusDTO.Status;
             citizenId.UpdatedAt = DateTime.Now;
             await _citizenIdRepository.UpdateCitizenIdAsync(citizenId);
+
+            // Reload order với navigation properties để kiểm tra trạng thái cả 2 giấy tờ
+            order = await _rentalOrderRepository.GetByIdAsync(citizenId.RentalOrderId);
+            
+            // Kiểm tra nếu cả 2 giấy tờ đều được duyệt và order đang ở trạng thái DocumentsSubmitted
+            if (order.DriverLicenseId.HasValue &&  
+                order.CitizenIdNavigation != null &&
+                order.DriverLicense != null &&
+                order.CitizenIdNavigation.Status == DocumentStatus.Approved && 
+                order.DriverLicense.Status == DocumentStatus.Approved && 
+                order.Status == RentalOrderStatus.DocumentsSubmitted)
+            {
+                // Tự động chuyển trạng thái order sang DepositPending
+                order.Status = RentalOrderStatus.DepositPending;
+                order.UpdatedAt = DateTime.Now;
+                await _rentalOrderRepository.UpdateAsync(order);
+                
+                // Gửi email thông báo
+                await _emailService.SendRemindEmail(order.User.Email, order);
+            }
             return Result<UpdateCitizenIdStatusDTO>.Success(updateCitizenIdStatusDTO, "Cập nhật trạng thái căn cước công dân thành công.");
         }
         public async Task<Result<UpdateCitizenIdInfoDTO>> UpdateCitizenIdInfoAsync(UpdateCitizenIdInfoDTO updateCitizenIdInfoDTO)
@@ -107,6 +136,8 @@ namespace Service.Services
             citizenId.Name = updateCitizenIdInfoDTO.Name;
             citizenId.CitizenIdNumber = updateCitizenIdInfoDTO.CitizenIdNumber;
             citizenId.BirthDate = updateCitizenIdInfoDTO.BirthDate;
+            citizenId.ImageUrl = updateCitizenIdInfoDTO.ImageUrl;
+            citizenId.ImageUrl2 = updateCitizenIdInfoDTO.ImageUrl2;
             citizenId.UpdatedAt = DateTime.Now;
             await _citizenIdRepository.UpdateCitizenIdAsync(citizenId);
             return Result<UpdateCitizenIdInfoDTO>.Success(updateCitizenIdInfoDTO, "Cập nhật thông tin căn cước công dân thành công.");

@@ -11,12 +11,13 @@ namespace Service.DTOs
     public class RentalOrderDTO
     {
         public int Id { get; set; }
+        public string PhoneNumber { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime PickupTime { get; set; }
         public DateTime ExpectedReturnTime { get; set; }
         public DateTime? ActualReturnTime { get; set; }
         public double? SubTotal { get; set; }
-        public int? DepositPercent { get; set; }
+        public double? Deposit { get; set; }
         public double? Total { get; set; }
         public int? Discount { get; set; }
         public double? ExtraFee { get; set; }
@@ -29,17 +30,22 @@ namespace Service.DTOs
         public int UserId { get; set; }
         public int CarId { get; set; }
         public int RentalLocationId { get; set; }
+        public int? RentalContactId { get; set; }
+        public int? CitizenId { get; set; }
+        public int? DriverLicenseId { get; set; }
+        public int? PaymentId { get; set; }
     }
     public class RentalOrderWithDetailsDTO
     {
         public int Id { get; set; }
+        public string PhoneNumber { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime PickupTime { get; set; }
         public DateTime ExpectedReturnTime { get; set; }
         public DateTime? ActualReturnTime { get; set; }
         public double? SubTotal { get; set; }
+        public double? Deposit { get; set; }
         public double? Total { get; set; }
-        public int? DepositPercent { get; set; }
         public int? Discount { get; set; }
         public double? ExtraFee { get; set; }
         public double? DamageFee { get; set; }
@@ -51,23 +57,21 @@ namespace Service.DTOs
         public int UserId { get; set; }
         public int CarId { get; set; }
         public int RentalLocationId { get; set; }
+        public int? RentalContactId { get; set; }
+        public int? CitizenId { get; set; }
+        public int? DriverLicenseId { get; set; }
+        public int? PaymentId { get; set; }
         public List<PaymentDTO> Payments { get; set; }
     }
     public class CreateRentalOrderDTO
     {
+        public string PhoneNumber { get; set; }
         public DateTime PickupTime { get; set; }
         public DateTime ExpectedReturnTime { get; set; }
         public bool WithDriver { get; set; }
         public int UserId { get; set; }
         public int CarId { get; set; }
-    }
-    public class CreateRentalOrderResponseDTO
-    {
-        public int OrderId { get; set; }
-        public double SubTotal { get; set; }
-        public double DepositAmount { get; set; }
-        public string VnpayPaymentUrl { get; set; } = string.Empty;
-        public string Message { get; set; } = string.Empty;
+        public int RentalLocationId { get; set; }
     }
     public class UpdateRentalOrderTotalDTO
     {

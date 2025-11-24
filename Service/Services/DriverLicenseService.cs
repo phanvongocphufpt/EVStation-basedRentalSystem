@@ -19,16 +19,14 @@ namespace Service.Services
     {
         private readonly IDriverLicenseRepository _driverLicenseRepository;
         private readonly IRentalOrderRepository _rentalOrderRepository;
-        private readonly IUserRepository _userRepository;
         private readonly EmailService _emailService;
         private readonly IMapper _mapper;
-        public DriverLicenseService(IDriverLicenseRepository driverLicenseRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository, EmailService emailService, IUserRepository userRepository)
+        public DriverLicenseService(IDriverLicenseRepository driverLicenseRepository, IMapper mapper, IRentalOrderRepository rentalOrderRepository, EmailService emailService)
         {
             _driverLicenseRepository = driverLicenseRepository;
             _mapper = mapper;
             _rentalOrderRepository = rentalOrderRepository;
             _emailService = emailService;
-            _userRepository = userRepository;
         }
         public async Task<Result<IEnumerable<DriverLicenseDTO>>> GetAllAsync()
         {
@@ -46,12 +44,12 @@ namespace Service.Services
             var dto = _mapper.Map<DriverLicenseDTO>(driverLicense);
             return Result<DriverLicenseDTO>.Success(dto);
         }
-        public async Task<Result<DriverLicenseDTO>> GetByUserIdAsync(int id)
+        public async Task<Result<DriverLicenseDTO>> GetByOrderIdAsync(int id)
         {
-            var driverLicense = await _driverLicenseRepository.GetByUserIdAsync(id);
+            var driverLicense = await _driverLicenseRepository.GetByOrderIdAsync(id);
             if (driverLicense == null)
             {
-                return Result<DriverLicenseDTO>.Failure("Giấy phép lái xe không tồn tại cho User này! Kiểm tra lại UserId.");
+                return Result<DriverLicenseDTO>.Failure("Giấy phép lái xe không tồn tại cho Order này! Kiểm tra lại OrderId.");
             }
             var dto = _mapper.Map<DriverLicenseDTO>(driverLicense);
             return Result<DriverLicenseDTO>.Success(dto);
@@ -59,12 +57,16 @@ namespace Service.Services
         public async Task<Result<CreateDriverLicenseDTO>> CreateAsync(CreateDriverLicenseDTO createDriverLicenseDTO)
         {
             var dto = _mapper.Map<DriverLicense>(createDriverLicenseDTO);
-            var user = await _userRepository.GetByIdAsync(dto.UserId);
-            if (user == null)
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.RentalOrderId);
+            if (order == null)
             {
-                return Result<CreateDriverLicenseDTO>.Failure("User không tồn tại! Kiểm tra lại Id của User.");
+                return Result<CreateDriverLicenseDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của Order.");
             }
-            if (user.DriverLicense != null)
+            if (order.WithDriver == true)
+            {
+                return Result<CreateDriverLicenseDTO>.Failure("Order có tài xế, không cần giấy phép lái xe!");
+            }
+            if (order.DriverLicense != null)
             {
                 return Result<CreateDriverLicenseDTO>.Failure("Order đã có giấy phép lái xe rồi!");
             }
@@ -76,10 +78,15 @@ namespace Service.Services
                 ImageUrl2 = dto.ImageUrl2,
                 Status = DocumentStatus.Pending,
                 CreatedAt = DateTime.Now,
-                UserId = user.Id,
-                User = user
+                RentalOrderId = order.Id,
+                RentalOrder = order
             };
             await _driverLicenseRepository.AddAsync(driverLicense);
+            if (order.CitizenId.HasValue)
+            {
+                order.Status = RentalOrderStatus.DocumentsSubmitted;
+                await _rentalOrderRepository.UpdateAsync(order);
+            }
             return Result<CreateDriverLicenseDTO>.Success(createDriverLicenseDTO, "Tạo giấy phép lái xe thành công.");
         }
         public async Task<Result<UpdateDriverLicenseStatusDTO>> UpdateStatusAsync(UpdateDriverLicenseStatusDTO driverLicenseDTO)
@@ -89,9 +96,34 @@ namespace Service.Services
             {
                 return Result<UpdateDriverLicenseStatusDTO>.Failure("Giấy phép lái xe không tồn tại! Kiểm tra lại Id.");
             }
+            var order = await _rentalOrderRepository.GetByIdAsync(existingDriverLicense.RentalOrderId);
+            if (order == null)
+            {
+                return Result<UpdateDriverLicenseStatusDTO>.Failure("Order không tồn tại! Kiểm tra lại Id của order.");
+            }
             existingDriverLicense.Status = driverLicenseDTO.Status;
             existingDriverLicense.UpdatedAt = DateTime.Now;
             await _driverLicenseRepository.UpdateAsync(existingDriverLicense);
+            
+            // Reload order với navigation properties để kiểm tra trạng thái cả 2 giấy tờ
+            order = await _rentalOrderRepository.GetByIdAsync(existingDriverLicense.RentalOrderId);
+            
+            // Kiểm tra nếu cả 2 giấy tờ đều được duyệt và order đang ở trạng thái DocumentsSubmitted
+            if (order.CitizenId.HasValue && 
+                order.CitizenIdNavigation != null &&
+                order.DriverLicense != null &&
+                order.CitizenIdNavigation.Status == DocumentStatus.Approved && 
+                order.DriverLicense.Status == DocumentStatus.Approved && 
+                order.Status == RentalOrderStatus.DocumentsSubmitted)
+            {
+                // Tự động chuyển trạng thái order sang DepositPending
+                order.Status = RentalOrderStatus.DepositPending;
+                order.UpdatedAt = DateTime.Now;
+                await _rentalOrderRepository.UpdateAsync(order);
+                
+                // Gửi email thông báo
+                await _emailService.SendRemindEmail(order.User.Email, order);
+            }
             return Result<UpdateDriverLicenseStatusDTO>.Success(driverLicenseDTO, "Cập nhật trạng thái giấy phép lái xe thành công.");
         }
         public async Task<Result<UpdateDriverLicenseInfoDTO>> UpdateInfoAsync(UpdateDriverLicenseInfoDTO driverLicenseDTO)

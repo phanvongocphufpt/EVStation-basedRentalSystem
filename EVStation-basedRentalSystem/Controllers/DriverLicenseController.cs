@@ -35,7 +35,7 @@ namespace EVStation_basedRentalSystem.Controllers
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetByOrderId(int orderId)
         {
-            var driverLicense = await _driverLicenseService.GetByUserIdAsync(orderId);
+            var driverLicense = await _driverLicenseService.GetByOrderIdAsync(orderId);
             if (driverLicense == null)
                 return NotFound();
             return Ok(driverLicense);

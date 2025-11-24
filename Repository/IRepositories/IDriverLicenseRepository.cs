@@ -11,7 +11,7 @@ namespace Repository.IRepositories
     {
         Task<IEnumerable<DriverLicense>> GetAllAsync();
         Task<DriverLicense?> GetByIdAsync(int id);
-        Task<DriverLicense?> GetByUserIdAsync(int id);
+        Task<DriverLicense?> GetByOrderIdAsync(int id);
         Task AddAsync(DriverLicense driverLicense);
         Task UpdateAsync(DriverLicense driverLicense);
         Task DeleteAsync(int id);

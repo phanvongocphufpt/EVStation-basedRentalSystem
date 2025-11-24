@@ -7,17 +7,16 @@ using System.Threading.Tasks;
 
 namespace Repository.Entities
 {
-    public class CarDeliveryHistory
+    public class CarRentalLocation
     {
         [Key]
         public int Id { get; set; }
-        public DateTime DeliveryDate { get; set; }
-        public int OdometerStart { get; set; }
-        public int BatteryLevelStart { get; set; }
-        public string VehicleConditionStart { get; set; }
-        public int OrderId { get; set; }
+        public int Quantity { get; set; }
         public int CarId { get; set; }
-        public RentalOrder Order { get; set; }
+        public int LocationId { get; set; }
         public Car Car { get; set; }
+        public RentalLocation Location { get; set; }
+        public bool IsDeleted { get; set; }
+
     }
 }
