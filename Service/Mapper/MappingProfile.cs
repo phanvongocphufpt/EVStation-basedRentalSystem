@@ -19,13 +19,14 @@ namespace Service.Mapper
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth))
-                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
-                .ForMember(dest => dest.Occupation, opt => opt.MapFrom(src => src.Occupation))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.Address) ? "Chưa cập nhật" : src.Address))
+                .ForMember(dest => dest.Occupation, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.Occupation) ? "Chưa cập nhật" : src.Occupation))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.PhoneNumber) ? "Chưa cập nhật" : src.PhoneNumber))
                 .ForMember(dest => dest.RentalLocationId, opt => opt.MapFrom(src => src.RentalLocationId))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => src.UpdatedAt));
+                .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => src.UpdatedAt ?? src.CreatedAt));
             CreateMap<CreateStaffUserDTO, User>();
 
             // Payment Mappings
@@ -122,14 +123,7 @@ namespace Service.Mapper
             CreateMap<CarDeliveryHistoryCreateDTO, CarDeliveryHistory>();
             CreateMap<CarDeliveryHistoryUpdateDTO, CarDeliveryHistory>();
 
-            //CarRentalLocation Mappings
-            CreateMap<CarRentalLocation, CarRentalLocationDTO>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
-                .ForMember(dest => dest.CarId, opt => opt.MapFrom(src => src.CarId))
-                .ForMember(dest => dest.LocationId, opt => opt.MapFrom(src => src.LocationId));
             //CarReturnHistory Mappings
-            CreateMap<CreateCarRentalLocationDTO, CarRentalLocation>();
             CreateMap<CarReturnHistory, CarReturnHistoryDTO>().ReverseMap();
             CreateMap<CarReturnHistory, CarReturnHistoryCreateDTO>().ReverseMap();
 
@@ -223,25 +217,7 @@ namespace Service.Mapper
             CreateMap<UpdateFeedbackDTO, Feedback>()
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now));
 
-            //Rental Contact Mappings
-            CreateMap<RentalContact, RentalContactDTO>()
-                    .ForMember(dest => dest.RentalOrderId, opt => opt.MapFrom(src => src.RentalOrderId))
-                    .ForMember(dest => dest.RentalDate, opt => opt.MapFrom(src => src.RentalDate))
-                    .ForMember(dest => dest.RentalPeriod, opt => opt.MapFrom(src => src.RentalPeriod))
-                    .ForMember(dest => dest.ReturnDate, opt => opt.MapFrom(src => src.ReturnDate))
-                    .ForMember(dest => dest.TerminationClause, opt => opt.MapFrom(src => src.TerminationClause))
-                    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                    .ForMember(dest => dest.LesseeId, opt => opt.MapFrom(src => src.LesseeId))
-                    .ForMember(dest => dest.LessorId, opt => opt.MapFrom(src => src.LessorId))
-                    .ReverseMap();
-            CreateMap<RentalContactCreateDTO, RentalContact>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore()) // tránh map ID thủ công
-                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(_ => false));
-            CreateMap<RentalContactUpdateDTO, RentalContact>()
-
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-
-
+          
         }
     }
 }

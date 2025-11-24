@@ -15,6 +15,7 @@ namespace Service.DTOs
             public DateTime? DateOfBirth { get; set; } // Ngày sinh
             public string? Address { get; set; } // Địa chỉ
             public string? Occupation { get; set; } // Nghề nghiệp
+            public string? PhoneNumber { get; set; } // Số điện thoại
             public int? RentalLocationId { get; set; }
             public string Role { get; set; } // 1. Customer, 2. Staff, 3. Admin
             public bool IsActive { get; set; }

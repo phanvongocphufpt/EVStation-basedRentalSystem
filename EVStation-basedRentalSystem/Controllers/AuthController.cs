@@ -53,6 +53,8 @@ namespace EVStation_basedRentalSystem.Controllers
                     , new Claim[]
                     {
                     new(ClaimTypes.Name, userInfo.FullName),
+                    new(ClaimTypes.NameIdentifier, userInfo.Id.ToString()),
+                    new("UserId", userInfo.Id.ToString()),
                     //new(ClaimTypes.Email, userInfo.Email),
                     new(ClaimTypes.Role, userInfo.Role.ToString()),
                     },

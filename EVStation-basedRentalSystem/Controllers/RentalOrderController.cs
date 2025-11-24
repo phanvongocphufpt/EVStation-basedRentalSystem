@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Service.DTOs;
 using Service.IServices;
+using System.Security.Claims;
 
 namespace EVStation_basedRentalSystem.Controllers
 {
@@ -14,6 +15,16 @@ namespace EVStation_basedRentalSystem.Controllers
         public RentalOrderController(IRentalOrderService rentalOrderService)
         {
             _rentalOrderService = rentalOrderService;
+        }
+        
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst("UserId") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return userId;
+            }
+            return 0;
         }
         [HttpGet("GetAll")]
         [Authorize(Roles = "Admin,Staff")]
@@ -79,6 +90,16 @@ namespace EVStation_basedRentalSystem.Controllers
                 return BadRequest(new { message = "Dữ liệu không hợp lệ." });
             }
 
+            // Lấy UserId từ JWT token thay vì từ DTO
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId <= 0)
+            {
+                return Unauthorized(new { message = "Không thể xác định người dùng. Vui lòng đăng nhập lại." });
+            }
+
+            // Set UserId từ token vào DTO
+            createRentalOrderDTO.UserId = currentUserId;
+
             var result = await _rentalOrderService.CreateAsync(createRentalOrderDTO);
             if (result.IsSuccess)
             {
@@ -86,17 +107,7 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPut("ConfirmDocuments")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> ConfirmDocuments(int orderId)
-        {
-            var result = await _rentalOrderService.ConfirmDocumentAsync(orderId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
-        }
+      
         [HttpPut("UpdateTotal")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)

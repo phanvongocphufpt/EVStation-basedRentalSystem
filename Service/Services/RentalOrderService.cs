@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Repository.Entities;
 using Repository.Entities.Enum;
 using Repository.IRepositories;
 using Service.Common;
-using Service.Common.VNPay.Model;
 using Service.DTOs;
 using Service.EmailConfirmation;
 using Service.IServices;
@@ -19,39 +17,31 @@ namespace Service.Services
     public class RentalOrderService : IRentalOrderService
     {
         private readonly IRentalOrderRepository _rentalOrderRepository;
-        private readonly ICitizenIdRepository _citizenIdRepository;
-        private readonly IDriverLicenseRepository _driverLicenseRepository;
         private readonly IUserRepository _userRepository;
         private readonly ICarRepository _carRepository;
-        private readonly ICarRentalLocationRepository _carRentalLocationRepository;
         private readonly IRentalLocationRepository _rentalLocationRepository;
-        private readonly IRentalContactRepository _rentalContactRepository;
         private readonly IPaymentRepository _paymentRepository;
         private readonly IMapper _mapper;
         private readonly EmailService _emailService;
+        private readonly IPaymentService _paymentService;
         public RentalOrderService(
             IRentalOrderRepository rentalOrderRepository,
-            ICitizenIdRepository citizenIdRepository,
-            IDriverLicenseRepository driverLicenseRepository,
             IUserRepository userRepository,
             ICarRepository carRepository,
-            IRentalContactRepository rentalContactRepository,
             IMapper mapper,
-            ICarRentalLocationRepository carRentalLocationRepository,
             IRentalLocationRepository rentalLocationRepository,
-            IPaymentRepository paymentRepository, EmailService emailService)
+            IPaymentRepository paymentRepository, 
+            EmailService emailService, 
+            IPaymentService paymentService)
         {
             _rentalOrderRepository = rentalOrderRepository;
-            _citizenIdRepository = citizenIdRepository;
-            _driverLicenseRepository = driverLicenseRepository;
             _userRepository = userRepository;
             _carRepository = carRepository;
-            _rentalContactRepository = rentalContactRepository;
             _mapper = mapper;
-            _carRentalLocationRepository = carRentalLocationRepository;
             _rentalLocationRepository = rentalLocationRepository;
             _paymentRepository = paymentRepository;
             _emailService = emailService;
+            _paymentService = paymentService;
         }
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetAllAsync()
         {
@@ -80,8 +70,7 @@ namespace Service.Services
             return Result<RentalOrderWithDetailsDTO>.Success(dto);
         }
         public async Task<Result<CreateRentalOrderResponseDTO>> CreateAsync(
-            CreateRentalOrderDTO createRentalOrderDTO,
-            HttpContext httpContext)
+            CreateRentalOrderDTO createRentalOrderDTO)
         {
             var dto = _mapper.Map<RentalOrder>(createRentalOrderDTO);
 
@@ -94,6 +83,9 @@ namespace Service.Services
             if (car == null)
                 return Result<CreateRentalOrderResponseDTO>.Failure("Xe không tồn tại!");
 
+            if (!car.RentalLocationId.HasValue)
+                return Result<CreateRentalOrderResponseDTO>.Failure("Xe chưa được gán địa điểm thuê!");
+            
             var location = await _rentalLocationRepository.GetByIdAsync(car.RentalLocationId.Value);
             if (location == null)
                 return Result<CreateRentalOrderResponseDTO>.Failure("Địa điểm thuê xe không tồn tại!");
@@ -130,38 +122,40 @@ namespace Service.Services
             await _rentalOrderRepository.AddAsync(order);
             await _rentalOrderRepository.SaveChangesAsync();
 
-            // VNPay đã được tắt - không tạo payment VNPay nữa
-            // var vnPayModel = new PaymentInformationModel
-            // {
-            //     OrderType = "250001",
-            //     Amount = depositAmount,
-            //     OrderDescription = $"Thanh toan coc don thue xe #{order.Id}",
-            //     Name = user.FullName ?? "Khách hàng"
-            // };
-            // var (vnpayUrl, txnRef) = _vnPayService.CreatePaymentUrl(vnPayModel, httpContext);
+            // Tạo payment với PayOS (ưu tiên PayOS, có thể thêm logic chọn MoMo sau)
+            var payOSResult = await _paymentService.CreatePayOSPaymentAsync(
+                rentalOrderId: order.Id,
+                userId: user.Id,
+                amount: depositAmount
+            );
 
-            // Tạo payment với phương thức Direct thay vì VNPay
-            var payment = new Payment
+            string? paymentUrl = null;
+            if (payOSResult.IsSuccess && payOSResult.Data != null)
             {
-                PaymentType = PaymentType.Deposit,
-                Amount = (decimal)depositAmount,
-                PaymentMethod = "Direct",
-                Status = PaymentStatus.Pending,
-                UserId = order.UserId,
-                RentalOrderId = order.Id,
-                RentalOrder = order,
-                User = user
-                // TxnRef = txnRef // Không cần nữa vì không dùng VNPay
-            };
-
-            await _paymentRepository.AddAsync(payment);
+                paymentUrl = payOSResult.Data.CheckoutUrl;
+            }
+            else
+            {
+                // Nếu PayOS thất bại, thử MoMo
+                var momoResult = await _paymentService.CreateMomoPaymentAsync(
+                    rentalOrderId: order.Id,
+                    userId: user.Id,
+                    amount: depositAmount
+                );
+                if (momoResult.IsSuccess && momoResult.Data != null)
+                {
+                    paymentUrl = momoResult.Data.MomoPayUrl ?? momoResult.Data.MomoDeeplink;
+                }
+            }
 
             var response = new CreateRentalOrderResponseDTO
             {
                 OrderId = order.Id,
                 DepositAmount = depositAmount,
-                VnpayPaymentUrl = null, // VNPay đã tắt
-                Message = "Tạo đơn thành công! Vui lòng thanh toán tiền cọc."
+                PaymentUrl = paymentUrl,
+                Message = paymentUrl != null 
+                    ? "Tạo đơn thành công! Vui lòng thanh toán tiền cọc." 
+                    : "Tạo đơn thành công nhưng không thể tạo link thanh toán. Vui lòng liên hệ hỗ trợ."
             };
 
             return Result<CreateRentalOrderResponseDTO>.Success(response);
@@ -289,17 +283,27 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
             }
+            
             if (order.WithDriver == false)
             {
-                if (!order.CitizenId.HasValue || !order.DriverLicenseId.HasValue)
+                // Lấy thông tin giấy tờ từ User
+                var user = await _userRepository.GetByIdAsync(order.UserId);
+                if (user == null)
+                {
+                    return Result<bool>.Failure("Không tìm thấy thông tin người dùng.");
+                }
+                
+                if (user.CitizenIdNavigation == null || user.DriverLicense == null)
                 {
                     return Result<bool>.Failure("Chưa có đủ thông tin giấy tờ cần thiết để xác nhận giấy tờ đơn đặt thuê này.");
                 }
-                if (order.CitizenIdNavigation?.Status != DocumentStatus.Approved)
+                
+                if (user.CitizenIdNavigation.Status != DocumentStatus.Approved)
                 {
                     return Result<bool>.Failure("Giấy CMND/CCCD chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
                 }
-                if (order.DriverLicense?.Status != DocumentStatus.Approved)
+                
+                if (user.DriverLicense.Status != DocumentStatus.Approved)
                 {
                     return Result<bool>.Failure("Giấy phép lái xe chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
                 }
@@ -308,6 +312,7 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Đơn thuê cùng tài xế nên không cần xác nhận giấy tờ.");
             }
+            
             order.Status = RentalOrderStatus.Pending;
             order.UpdatedAt = DateTime.Now;
             await _rentalOrderRepository.UpdateAsync(order);
@@ -325,180 +330,6 @@ namespace Service.Services
             var rentalOrders = await _rentalOrderRepository.GetOrderByLocationAsync(locationId);
             var dtos = _mapper.Map<IEnumerable<RentalOrderWithDetailsDTO>>(rentalOrders);
             return Result<IEnumerable<RentalOrderWithDetailsDTO>>.Success(dtos);
-        }
-        public async Task<PaymentCallbackResult> ProcessVnpayIpnAsync(IQueryCollection queryParams)
-        {
-            var response = _vnPayService.PaymentExecute(queryParams);
-
-            var result = new PaymentCallbackResult
-            {
-                IsSuccess = response.Success && response.VnPayResponseCode == "00",
-                Message = response.Success ? "Confirm Success" : "Input data error",
-                TransactionNo = response.TransactionId
-            };
-            if (response.VnPayResponseCode == "00")
-            {
-                var payment = await _paymentRepository.GetByTxnRefAsync(response.OrderId);
-                if (payment == null || payment.Status == PaymentStatus.Completed)
-                {
-                    result.Message = "Giao dịch không tồn tại hoặc đã xử lý";
-                    return result;
-                }
-                payment.Status = PaymentStatus.Completed;
-                payment.TransactionNo = response.TransactionId;
-                payment.PaymentDate = DateTime.UtcNow;
-
-                var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId.Value);
-                if (order != null && payment.PaymentType == PaymentType.Deposit)
-                {
-                    order.Status = RentalOrderStatus.DepositConfirmed;
-                }
-
-                await _paymentRepository.UpdateAsync(payment);
-                if (order != null) await _rentalOrderRepository.UpdateAsync(order);
-            }
-            return result;
-        }
-        /// <summary>
-        /// Xử lý callback từ VNPAY (cả ReturnUrl và IPN trong sandbox)
-        /// Chỉ cập nhật DB khi giao dịch THÀNH CÔNG và CHƯA từng được xử lý
-        /// </summary>
-        public async Task<PaymentCallbackResult> ProcessVnpayCallbackAsync(IQueryCollection queryParams)
-        {
-            // BƯỚC 1: KIỂM TRA CÓ DATA HỢP LỆ KHÔNG – CHỐNG LỖI RỖNG
-            if (queryParams == null || !queryParams.Any())
-            {
-                return new PaymentCallbackResult
-                {
-                    IsSuccess = false,
-                    Message = "Không có dữ liệu callback từ VNPAY"
-                };
-            }
-
-            // Kiểm tra có ít nhất 1 trong các field bắt buộc
-            if (!queryParams.ContainsKey("vnp_ResponseCode") ||
-                !queryParams.ContainsKey("vnp_TxnRef") ||
-                string.IsNullOrEmpty(queryParams["vnp_TxnRef"]))
-            {
-                return new PaymentCallbackResult
-                {
-                    IsSuccess = false,
-                    Message = "Dữ liệu callback không hợp lệ"
-                };
-            }
-
-            var vnpayResponse = _vnPayService.PaymentExecute(queryParams);
-
-            var result = new PaymentCallbackResult
-            {
-                IsSuccess = false,
-                OrderId = vnpayResponse.OrderId,
-                TransactionNo = vnpayResponse.TransactionId,
-                VnPayResponseCode = vnpayResponse.VnPayResponseCode,
-                Message = "Thanh toán thất bại"
-            };
-
-            if (vnpayResponse.VnPayResponseCode != "00")
-            {
-                result.Message = $"Giao dịch thất bại - Mã lỗi: {vnpayResponse.VnPayResponseCode}";
-                return result;
-            }
-
-            var payment = await _paymentRepository.GetByTxnRefAsync(vnpayResponse.OrderId);
-            if (payment == null)
-            {
-                result.Message = "Không tìm thấy giao dịch";
-                return result;
-            }
-
-            if (payment.Status == PaymentStatus.Completed)
-            {
-                result.IsSuccess = true;
-                result.Message = "Giao dịch đã được xử lý trước đó";
-                return result;
-            }
-
-            try
-            {
-                payment.Status = PaymentStatus.Completed;
-                payment.TransactionNo = vnpayResponse.TransactionId;
-                payment.PaymentDate = DateTime.UtcNow;
-                await _paymentRepository.UpdateAsync(payment);
-
-                var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId!.Value);
-                if (order != null)
-                {
-                    if (payment.PaymentType == PaymentType.Deposit)
-                        order.Status = RentalOrderStatus.DepositConfirmed;
-                    else if (payment.PaymentType == PaymentType.OrderPayment)
-                        order.Status = RentalOrderStatus.Completed;
-
-                    await _rentalOrderRepository.UpdateAsync(order);
-                }
-
-                result.IsSuccess = true;
-                result.Message = "Thanh toán thành công";
-            }
-            catch (Exception ex)
-            {
-                // _logger.LogError(ex, "Lỗi xử lý callback VNPAY");
-                result.Message = "Lỗi hệ thống";
-            }
-
-            return result;
-        }
-        public async Task<PaymentCallbackResult> ProcessVnpayCallbackManualAsync(string txnRef, string responseCode)
-        {
-            var result = new PaymentCallbackResult
-            {
-                IsSuccess = false,
-                OrderId = txnRef,
-                Message = "Thanh toán thất bại"
-            };
-
-            if (string.IsNullOrEmpty(txnRef) || responseCode != "00")
-            {
-                result.Message = "Giao dịch không thành công";
-                return result;
-            }
-
-            var payment = await _paymentRepository.GetByTxnRefAsync(txnRef);
-            if (payment == null)
-            {
-                result.Message = "Không tìm thấy giao dịch";
-                return result;
-            }
-
-            if (payment.Status == PaymentStatus.Completed)
-            {
-                result.IsSuccess = true;
-                result.Message = "Đã xử lý trước đó";
-                return result;
-            }
-
-            try
-            {
-                payment.Status = PaymentStatus.Completed;
-                payment.TransactionNo = "MANUAL_" + txnRef;
-                payment.PaymentDate = DateTime.UtcNow;
-                await _paymentRepository.UpdateAsync(payment);
-
-                var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId!.Value);
-                if (order != null)
-                {
-                    order.Status = RentalOrderStatus.DepositConfirmed;
-                    await _rentalOrderRepository.UpdateAsync(order);
-                }
-
-                result.IsSuccess = true;
-                result.Message = "Thanh toán thành công!";
-            }
-            catch (Exception ex)
-            {
-                result.Message = "Lỗi hệ thống";
-            }
-
-            return result;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Service.IServices
         Task<Result<RentalOrderDTO>> GetByIdAsync(int id);
         Task<Result<RentalOrderWithDetailsDTO>> GetByIdWithDetailsAsync(int orderId);
         Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id);
-        Task<Result<CreateRentalOrderResponseDTO>> CreateAsync(CreateRentalOrderDTO createRentalOrderDTO, Microsoft.AspNetCore.Http.HttpContext httpContext);
+        Task<Result<CreateRentalOrderResponseDTO>> CreateAsync(CreateRentalOrderDTO createRentalOrderDTO);
         Task<Result<bool>> CancelOrderAsync(int orderId);
         Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO);
         Task<Result<bool>> ConfirmPaymentAsync(int orderId);

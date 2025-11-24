@@ -24,7 +24,7 @@ namespace Repository.Repositories
         {
             return await _context.DriverLicenses.FindAsync(id);
         }
-        public async Task<DriverLicense?> GetByOrderIdAsync(int id)
+       public async Task<DriverLicense?> GetByUserIdAsync(int id)
         {
             return await Task.FromResult(_context.DriverLicenses.FirstOrDefault(dl => dl.RentalOrderId == id));
         }

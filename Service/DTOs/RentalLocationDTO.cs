@@ -1,4 +1,5 @@
-﻿using Repository.Entities;
+﻿﻿using Repository.Entities;
+using Repository.Entities.Enum;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -21,20 +21,21 @@ namespace Repository.Entities
       
         public int BatteryDuration { get; set; } // in km
         public double RentPricePerDay { get; set; }
-        public double RentPricePerHour { get; set; }
+
         public double RentPricePerDayWithDriver { get; set; }
-        public double RentPricePerHourWithDriver { get; set; }
+       
         public string ImageUrl { get; set; }
         public string ImageUrl2 { get; set; }
         public string ImageUrl3 { get; set; }
-        public int Status { get; set; }
+       
         public int DepositPercent { get; set; }
+        public int Status { get; set; }
         public int? RentalLocationId { get; set; }
+        public RentalLocation? RentalLocation { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; } = false;
-        public ICollection<CarRentalLocation> CarRentalLocations { get; set; }
         public ICollection<RentalOrder> RentalOrders { get; set; }
         
     }   

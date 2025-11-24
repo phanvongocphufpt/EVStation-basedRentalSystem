@@ -84,7 +84,7 @@ namespace Service.Services
                 return Result<Car>.Failure("Xe cần cập nhật không tồn tại.");
 
             // Cập nhật các properties từ car mới vào existing entity
-            // KHÔNG cập nhật navigation properties (CarRentalLocations, RentalOrders)
+            // KHÔNG cập nhật navigation properties (RentalOrders)
             existing.Name = car.Name;
             existing.Model = car.Model;
            
@@ -100,10 +100,10 @@ namespace Service.Services
             existing.ImageUrl = car.ImageUrl;
             existing.ImageUrl2 = car.ImageUrl2;
             existing.ImageUrl3 = car.ImageUrl3;
-            existing.Status = car.Status;
+        
             existing.IsActive = car.IsActive;
             existing.UpdatedAt = DateTime.UtcNow;
-            // KHÔNG cập nhật: CarRentalLocations, RentalOrders, CreatedAt, IsDeleted
+            // KHÔNG cập nhật: RentalOrders, CreatedAt, IsDeleted
 
             // Gọi repository để save - entity đã được track nên chỉ cần SaveChanges
             await _carRepository.UpdateAsync(existing);

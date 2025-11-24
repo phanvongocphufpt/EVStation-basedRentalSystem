@@ -89,7 +89,7 @@ namespace Service.DTOs
     {
         public int OrderId { get; set; }
         public double DepositAmount { get; set; }
-        public string? VnpayPaymentUrl { get; set; }
+        public string? PaymentUrl { get; set; } // PayOS hoặc MoMo URL
         public string Message { get; set; }
     }
 }

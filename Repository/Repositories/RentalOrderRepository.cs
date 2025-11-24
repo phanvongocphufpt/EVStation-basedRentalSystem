@@ -41,8 +41,7 @@ namespace Repository.Repositories
                 .Include(x => x.Car)
                 .Include(x => x.RentalLocation)
                 .Include(x => x.User)
-                .Include(x => x.CitizenIdNavigation)
-                .Include(x => x.DriverLicense)
+               
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 

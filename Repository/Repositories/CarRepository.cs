@@ -23,7 +23,16 @@ namespace Repository.Repositories
 
         public async Task<IEnumerable<Car>> GetAllAsync()
         {
-            return await _context.Cars.Where(c => !c.IsDeleted).ToListAsync();
+            try
+            {
+                return await _context.Cars.Where(c => !c.IsDeleted).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                // Nếu lỗi do thiếu cột trong database, thử query không có các cột mới
+                // Hoặc throw exception để service layer xử lý
+                throw new Exception($"Lỗi khi lấy danh sách xe. Có thể database chưa được cập nhật. Chi tiết: {ex.Message}", ex);
+            }
         }
         public async Task<Car?> GetByIdAsync(int id)
         {
@@ -70,16 +79,16 @@ namespace Repository.Repositories
                     existing.BatteryType = car.BatteryType;
                     existing.BatteryDuration = car.BatteryDuration;
                     existing.RentPricePerDay = car.RentPricePerDay;
-                    existing.RentPricePerHour = car.RentPricePerHour;
+
                     existing.RentPricePerDayWithDriver = car.RentPricePerDayWithDriver;
-                    existing.RentPricePerHourWithDriver = car.RentPricePerHourWithDriver;
+                 
                     existing.ImageUrl = car.ImageUrl;
                     existing.ImageUrl2 = car.ImageUrl2;
                     existing.ImageUrl3 = car.ImageUrl3;
-                    existing.Status = car.Status;
+                
                     existing.IsActive = car.IsActive;
                     existing.UpdatedAt = car.UpdatedAt ?? DateTime.UtcNow;
-                    // KHÔNG cập nhật: CarRentalLocations, RentalOrders, CreatedAt, IsDeleted
+                    // KHÔNG cập nhật: RentalOrders, CreatedAt, IsDeleted
                     await _context.SaveChangesAsync();
                 }
             }
