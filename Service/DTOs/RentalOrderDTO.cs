@@ -91,4 +91,18 @@ namespace Service.DTOs
         public int OrderId { get; set; }
         public RentalOrderStatus Status { get; set; }
     }
+    public class AddContactToOrderDTO
+    {
+        public int OrderId { get; set; }
+        public string? ContactImageUrl { get; set; }
+        public string? ContactImageUrl2 { get; set; }
+        public string? ContactNotes { get; set; }
+    }
+    public class GetContactFromOrderDTO
+    {
+        public int OrderId { get; set; }
+        public string? ContactImageUrl { get; set; }
+        public string? ContactImageUrl2 { get; set; }
+        public string? ContactNotes { get; set; }
+    }
 }

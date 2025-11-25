@@ -147,7 +147,7 @@ namespace EVStation_basedRentalSystem.Controllers
         //        Message = result.Message
         //    });
         //}
-        [HttpPost("api/payment/confirm-manual")]
+        [HttpPost("api/payment/confirm-orderdeposit-manual")]
         public async Task<IActionResult> ConfirmPaymentManual([FromBody] ConfirmPaymentDto dto)
         {
             // FE sẽ gửi lên TxnRef và ResponseCode
@@ -165,6 +165,39 @@ namespace EVStation_basedRentalSystem.Controllers
         {
             public string TxnRef { get; set; } = string.Empty;
             public string ResponseCode { get; set; } = string.Empty;
+        }
+        [HttpPost("AddContactToOrder")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> AddContactToOrder([FromBody] AddContactToOrderDTO dto)
+        {
+            var result = await _rentalOrderService.AddContactToOrderAsync(dto);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("GetContactFromOrder")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> GetContactFromOrder(int orderId)
+        {
+            var result = await _rentalOrderService.GetContactFromOrderDTO(orderId);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpPut("UpdateContact")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> UpdateContact([FromBody] GetContactFromOrderDTO dto)
+        {
+            var result = await _rentalOrderService.UpdateContact(dto);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
     }
 }

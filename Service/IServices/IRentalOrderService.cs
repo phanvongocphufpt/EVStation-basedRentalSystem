@@ -24,5 +24,8 @@ namespace Service.IServices
         Task<PaymentCallbackResult> ProcessVnpayIpnAsync(IQueryCollection queryParams);
         Task<PaymentCallbackResult> ProcessVnpayCallbackAsync(IQueryCollection queryParams);
         Task<PaymentCallbackResult> ProcessVnpayCallbackManualAsync(string txnRef, string responseCode);
+        Task<Result<bool>> AddContactToOrderAsync(AddContactToOrderDTO dto);
+        Task<Result<GetContactFromOrderDTO>> GetContactFromOrderDTO(int orderId);
+        Task<Result<bool>> UpdateContact(GetContactFromOrderDTO dto);
     }
 }

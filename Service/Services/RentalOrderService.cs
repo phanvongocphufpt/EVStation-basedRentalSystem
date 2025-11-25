@@ -508,5 +508,48 @@ namespace Service.Services
 
             return result;
         }
+        public async Task<Result<bool>> AddContactToOrderAsync (AddContactToOrderDTO dto)
+        {
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.OrderId);
+            if (order == null)
+            {
+                return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
+            }
+            order.ContactImageUrl = dto.ContactImageUrl;
+            order.ContactImageUrl2 = dto.ContactImageUrl2;
+            order.ContactNotes = dto.ContactNotes;
+            order.UpdatedAt = DateTime.Now;
+            await _rentalOrderRepository.UpdateAsync(order);
+            return Result<bool>.Success(true, "Thêm hợp đồng vào đơn đặt thuê thành công!");
+        }
+        public async Task<Result<GetContactFromOrderDTO>> GetContactFromOrderDTO (int orderId)
+        {
+            var order = await _rentalOrderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                return Result<GetContactFromOrderDTO>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
+            }
+            var dto = new GetContactFromOrderDTO
+            {
+                ContactImageUrl = order.ContactImageUrl,
+                ContactImageUrl2 = order.ContactImageUrl2,
+                ContactNotes = order.ContactNotes
+            };
+            return Result<GetContactFromOrderDTO>.Success(dto);
+        }
+        public async Task<Result<bool>> UpdateContact (GetContactFromOrderDTO dto)
+        {
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.OrderId);
+            if (order == null)
+            {
+                return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
+            }
+            order.ContactImageUrl = dto.ContactImageUrl;
+            order.ContactImageUrl2 = dto.ContactImageUrl2;
+            order.ContactNotes = dto.ContactNotes;
+            order.UpdatedAt = DateTime.Now;
+            await _rentalOrderRepository.UpdateAsync(order);
+            return Result<bool>.Success(true, "Cập nhật thông tin hợp đồng thành công!");
+        }
     }
 }
