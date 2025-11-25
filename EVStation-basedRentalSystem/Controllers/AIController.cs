@@ -204,16 +204,107 @@ YÊU CẦU:
 
                 var aiResponse = await _aiService.GenerateResponseAsync(prompt, shortAnswer: true);
 
-                return Ok(new { 
-                    response = aiResponse,
-                    summary = new {
-                        totalCars,
-                        totalOrders,
-                        totalUsers,
-                        totalRevenue,
-                        avgRating
+                // Build structured response
+                var response = new AnalysisResponseDTO
+                {
+                    AiAnalysis = aiResponse,
+                    Summary = new SummaryDTO
+                    {
+                        TotalCars = totalCars,
+                        TotalOrders = totalOrders,
+                        TotalUsers = totalUsers,
+                        TotalFeedbacks = totalFeedbacks,
+                        TotalRevenue = totalRevenue,
+                        AvgRating = avgRating
+                    },
+                    CarStatistics = new CarStatisticsDTO
+                    {
+                        BySizeType = carStats.Select(c => new CarSizeTypeStatDTO
+                        {
+                            SizeType = c.SizeType ?? "Unknown",
+                            Count = c.Count,
+                            AvgPrice = c.AvgPrice,
+                            AvgBattery = c.AvgBattery
+                        }).ToList(),
+                        TopCars = topCars.Select(c => new TopCarDTO
+                        {
+                            Name = c.Name ?? "Unknown",
+                            Model = c.Model ?? "Unknown",
+                            Seats = c.Seats,
+                            BatteryDuration = c.BatteryDuration,
+                            RentPricePerDay = c.RentPricePerDay,
+                            SizeType = c.SizeType ?? "Unknown",
+                            BatteryType = c.BatteryType ?? "Unknown"
+                        }).ToList()
+                    },
+                    OrderStatistics = new OrderStatisticsDTO
+                    {
+                        ByStatus = orderStats.Select(o => new OrderStatusStatDTO
+                        {
+                            Status = o.Status,
+                            Count = o.Count,
+                            TotalRevenue = o.TotalRevenue
+                        }).ToList(),
+                        DriverOption = new DriverOptionStatDTO
+                        {
+                            WithDriverCount = orderWithDriverStats.FirstOrDefault(o => o.WithDriver)?.Count ?? 0,
+                            WithoutDriverCount = orderWithDriverStats.FirstOrDefault(o => !o.WithDriver)?.Count ?? 0,
+                            WithDriverPercentage = orderWithDriverStats.FirstOrDefault(o => o.WithDriver)?.Percentage ?? 0,
+                            WithoutDriverPercentage = orderWithDriverStats.FirstOrDefault(o => !o.WithDriver)?.Percentage ?? 0
+                        },
+                        RecentOrders = recentOrders.Select(o => new RecentOrderDTO
+                        {
+                            Id = o.Id,
+                            OrderDate = o.OrderDate,
+                            PickupTime = o.PickupTime,
+                            ExpectedReturnTime = o.ExpectedReturnTime,
+                            ActualReturnTime = o.ActualReturnTime,
+                            WithDriver = o.WithDriver,
+                            Status = o.Status.ToString(),
+                            Total = o.Total,
+                            SubTotal = o.SubTotal,
+                            CarName = o.CarName ?? "Unknown",
+                            LocationName = o.LocationName ?? "Unknown"
+                        }).ToList()
+                    },
+                    FeedbackStatistics = new FeedbackStatisticsDTO
+                    {
+                        ByRating = feedbackStats.Select(f => new RatingStatDTO
+                        {
+                            Rating = f.Rating,
+                            Count = f.Count
+                        }).ToList(),
+                        RecentFeedbacks = recentFeedbacks.Select(f => new RecentFeedbackDTO
+                        {
+                            Title = f.Title ?? "",
+                            Content = f.Content ?? "",
+                            Rating = f.Rating,
+                            CreatedAt = f.CreatedAt,
+                            UserName = f.UserName ?? "Unknown"
+                        }).ToList()
+                    },
+                    PaymentStatistics = new PaymentStatisticsDTO
+                    {
+                        ByMethod = paymentStats.Select(p => new PaymentMethodStatDTO
+                        {
+                            PaymentMethod = p.PaymentMethod ?? "Unknown",
+                            Count = p.Count,
+                            TotalAmount = p.TotalAmount
+                        }).ToList()
+                    },
+                    LocationStatistics = new LocationStatisticsDTO
+                    {
+                        Locations = locationStats.Select(l => new LocationStatDTO
+                        {
+                            Name = l.Name ?? "Unknown",
+                            Address = l.Address ?? "Unknown",
+                            CarCount = l.CarCount,
+                            OrderCount = l.OrderCount
+                        }).ToList()
                     }
-                });
+                };
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
