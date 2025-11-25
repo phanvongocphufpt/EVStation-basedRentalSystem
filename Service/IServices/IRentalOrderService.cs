@@ -13,6 +13,7 @@ namespace Service.IServices
     {
         Task<Result<IEnumerable<RentalOrderDTO>>> GetAllAsync();
         Task<Result<IEnumerable<RentalOrderWithDetailsDTO>>> GetOrderByLocationAsync(int locationId);
+        Task<Result<IEnumerable<RentalOrderDTO>>> GetByPhoneNumber(string phoneNumber);
         Task<Result<RentalOrderDTO>> GetByIdAsync(int id);
         Task<Result<RentalOrderWithDetailsDTO>> GetByIdWithDetailsAsync(int orderId);
         Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id);

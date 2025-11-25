@@ -50,6 +50,12 @@ namespace Service.Services
             var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(rentalOrders);
             return Result<IEnumerable<RentalOrderDTO>>.Success(dtos);
         }
+        public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByPhoneNumber(string phoneNumber)
+        {
+            var rentalOrders = await _rentalOrderRepository.GetOrdersByPhoneNumberAsync(phoneNumber);
+            var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(rentalOrders);
+            return Result<IEnumerable<RentalOrderDTO>>.Success(dtos);
+        }
         public async Task<Result<RentalOrderDTO>> GetByIdAsync(int id)
         {
             var rentalOrder = await _rentalOrderRepository.GetByIdAsync(id);

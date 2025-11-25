@@ -51,7 +51,15 @@ namespace Repository.Repositories
                 .Where(x => x.UserId == userId)
                 .ToListAsync();
         }
-
+        public async Task<IEnumerable<RentalOrder>> GetOrdersByPhoneNumberAsync(string phoneNumber)
+        {
+            return await _context.RentalOrders
+                .Include(x => x.Payments)
+                .Include(x => x.Car)
+                .Include(x => x.User)
+                .Where(x => x.User.PhoneNumber == phoneNumber)
+                .ToListAsync();
+        }
         public async Task AddAsync(RentalOrder order)
         {
             await _context.RentalOrders.AddAsync(order);
