@@ -56,6 +56,13 @@ namespace Service.DTOs
         public int RentalOrderId { get; set; }
         public string? BillingImageUrl { get; set; }
     }
+    public class CreateMomoPaymentDTO
+    {
+        public int OrderId { get; set; }
+        public int UserId { get; set; }
+        public decimal Amount { get; set; }
+        public string OrderInfo { get; set; }
+    }
     public class PaymentCallbackResult
     {
         public bool IsSuccess { get; set; }

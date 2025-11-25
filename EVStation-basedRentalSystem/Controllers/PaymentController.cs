@@ -109,5 +109,32 @@ namespace EVStation_basedRentalSystem.Controllers
             var result = await _paymentService.ConfirmRefundDepositOrderAsync(dto);
             return Ok(result);
         }
+
+        [HttpPost("CreateMomoPayment")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> CreateMomoPayment([FromBody] CreateMomoPaymentDTO dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid data.");
+
+            if (dto.OrderId <= 0)
+                return BadRequest("OrderId không hợp lệ.");
+
+            if (dto.UserId <= 0)
+                return BadRequest("UserId không hợp lệ.");
+
+            if (dto.Amount <= 0)
+                return BadRequest("Amount phải lớn hơn 0.");
+
+            if (string.IsNullOrWhiteSpace(dto.OrderInfo))
+                return BadRequest("OrderInfo không được để trống.");
+
+            var result = await _paymentService.CreateMomoPaymentAsync(dto.OrderId, dto.UserId, dto.Amount, dto.OrderInfo);
+            
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            return Ok(new { PaymentUrl = result.Data, Message = result.Message });
+        }
     }
 }
