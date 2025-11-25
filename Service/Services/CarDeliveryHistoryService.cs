@@ -72,8 +72,8 @@ namespace Service.Services
                 {
                     return Result<string>.Failure("Người dùng chưa có thông tin giấy phép lái xe.");
                 }
-                if (order.Status != RentalOrderStatus.CarDepositConfirmed)
-                    return Result<string>.Failure("Chỉ có thể giao xe cho các đơn thuê ở trạng thái 'CarDepositConfirmed'.");
+                if (order.Status != RentalOrderStatus.OrderDepositConfirmed)
+                    return Result<string>.Failure("Chỉ có thể giao xe cho các đơn thuê ở trạng thái 'OrderDepositConfirmed'.");
 
                 var history = new CarDeliveryHistory
                 {
@@ -93,7 +93,7 @@ namespace Service.Services
 
                 await _repo.AddAsync(history);
 
-                order.Status = RentalOrderStatus.Renting;
+                order.Status = RentalOrderStatus.CheckedIn;
                 await _rentalOrderRepo.UpdateAsync(order);
 
                 return Result<string>.Success("Giao xe thành công. Trạng thái đơn đã chuyển sang 'Renting'.");

@@ -91,6 +91,10 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
             }
+            if (order.Status != RentalOrderStatus.CheckedIn)
+            {
+                return Result<bool>.Failure("Chỉ có thể xác nhận đặt cọc xe sau khi xác nhận kiểm tra xe.");
+            }
             var depositPayment = await _paymentRepository.GetDepositByOrderIdAsync(dto.RentalOrderId);
             if (depositPayment == null)
             {
@@ -100,7 +104,7 @@ namespace Service.Services
             depositPayment.Status = PaymentStatus.Completed;
             depositPayment.BillingImageUrl = dto.BillingImageUrl;
             await _paymentRepository.UpdateAsync(depositPayment);
-            order.Status = RentalOrderStatus.CarDepositConfirmed;
+            order.Status = RentalOrderStatus.Renting;
             await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận thanh toán đặt cọc xe thành công.");
         }
