@@ -24,7 +24,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(Users);
         }
         [HttpGet("GetById")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetById(int id)
         {
             var user = await _userService.GetByIdAsync(id);
