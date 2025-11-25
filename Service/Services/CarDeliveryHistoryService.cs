@@ -96,7 +96,7 @@ namespace Service.Services
                 order.Status = RentalOrderStatus.CheckedIn;
                 await _rentalOrderRepo.UpdateAsync(order);
 
-                return Result<string>.Success("Giao xe thành công. Trạng thái đơn đã chuyển sang 'Renting'.");
+                return Result<string>.Success("Giao xe thành công. Trạng thái đơn đã chuyển sang 'CheckedIn'.", "Giao xe thành công. Trạng thái đơn đã chuyển sang 'CheckedIn'.");
             }
             catch (Exception ex)
             {

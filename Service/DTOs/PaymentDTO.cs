@@ -49,6 +49,12 @@ namespace Service.DTOs
     {
         public int RentalOrderId { get; set; }
         public string? BillingImageUrl { get; set; }
+        public string? Note { get; set; }
+    }
+    public class ConfirmRefundDepositOrderPaymentDTO
+    {
+        public int RentalOrderId { get; set; }
+        public string? BillingImageUrl { get; set; }
     }
     public class PaymentCallbackResult
     {

@@ -33,6 +33,15 @@ namespace EVStation_basedRentalSystem.Controllers
 
             return Ok(user);
         }
+        [HttpGet("GetBankingInfo")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> GetBankingInfo(int userId)
+        {
+            var bankingInfo = await _userService.GetBankInfoAsync(userId);
+            if (bankingInfo == null)
+                return NotFound();
+            return Ok(bankingInfo);
+        }
         [HttpPost("CreateStaff")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateStaff([FromBody] CreateStaffUserDTO staffUserDTO)
@@ -54,7 +63,15 @@ namespace EVStation_basedRentalSystem.Controllers
             var result = await _userService.UpdateAsync(updateUserDTO);
             return Ok(result);
         }
-
+        [HttpPut("UpdateBankingInfo")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> UpdateBankingInfo([FromBody] UpdateBankInfoDTO updateBankingInfoDTO)
+        {
+            if (updateBankingInfoDTO == null)
+                return BadRequest("Invalid data.");
+            var result = await _userService.UpdateBankInfoAsync(updateBankingInfoDTO);
+            return Ok(result);
+        }
         [HttpPut("UpdateCustomerName")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> UpdateCustomerName([FromBody] UpdateCustomerNameDTO updateUserDTO)

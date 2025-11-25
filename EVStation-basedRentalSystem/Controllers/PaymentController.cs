@@ -39,7 +39,7 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(result.Data);
         }
 
-      
+
 
         [HttpGet("GetAllByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
@@ -100,6 +100,13 @@ namespace EVStation_basedRentalSystem.Controllers
         public async Task<IActionResult> ConfirmRefundDepositCarPayment([FromBody] ConfirmRefundDepositCarPaymentDTO dto)
         {
             var result = await _paymentService.ConfirmRefundDepositCarAsync(dto);
+            return Ok(result);
+        }
+        [HttpPut("ConfirmRefundOrderDepositPayment")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> ConfirmRefundOrderDepositPayment([FromBody] ConfirmRefundDepositOrderPaymentDTO dto)
+        {
+            var result = await _paymentService.ConfirmRefundDepositOrderAsync(dto);
             return Ok(result);
         }
     }

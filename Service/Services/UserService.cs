@@ -152,6 +152,36 @@ namespace Service.Services
             await _userRepository.UpdateAsync(getUser);
             return Result<UpdateStaffRentalLocationDTO>.Success(updateStaffRentalLocationDTO, "Cập nhật địa điểm cho thuê của nhân viên thành công.");
         }
+        public async Task<Result<bool>> UpdateBankInfoAsync(UpdateBankInfoDTO updateBankInfoDTO)
+        {
+            var getUser = await _userRepository.GetByIdAsync(updateBankInfoDTO.UserId);
+            if (getUser == null)
+            {
+                return Result<bool>.Failure("Người dùng không tồn tại! Kiểm tra lại Id.");
+            }
+            getUser.BankAccountName = updateBankInfoDTO.BankAccountName;
+            getUser.BankNumber = updateBankInfoDTO.BankNumber;
+            getUser.BankName = updateBankInfoDTO.BankName;
+            getUser.UpdatedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(getUser);
+            return Result<bool>.Success(true, "Cập nhật thông tin ngân hàng thành công.");
+        }
+        public async Task<Result<UpdateBankInfoDTO>> GetBankInfoAsync(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return Result<UpdateBankInfoDTO>.Failure("Người dùng không tồn tại! Kiểm tra lại Id.");
+            }
+            var dto = new UpdateBankInfoDTO
+            {
+                UserId = user.Id,
+                BankAccountName = user.BankAccountName,
+                BankNumber = user.BankNumber,
+                BankName = user.BankName
+            };
+            return Result<UpdateBankInfoDTO>.Success(dto);
+        }
         public async Task DeleteAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);

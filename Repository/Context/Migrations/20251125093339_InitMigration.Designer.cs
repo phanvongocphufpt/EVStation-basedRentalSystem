@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251125051707_InitMigration")]
+    [Migration("20251125093339_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -736,6 +736,9 @@ namespace Repository.Context.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankAccountName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BankName")
