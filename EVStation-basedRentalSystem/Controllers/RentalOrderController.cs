@@ -16,7 +16,7 @@ namespace EVStation_basedRentalSystem.Controllers
             _rentalOrderService = rentalOrderService;
         }
         [HttpGet("GetAll")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _rentalOrderService.GetAllAsync();
