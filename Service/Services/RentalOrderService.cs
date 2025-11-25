@@ -292,11 +292,7 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Không thể hủy đơn đặt thuê đang trong quá trình thuê hoặc đã trả xe.");
             }
-            var user = await _userRepository.GetByIdAsync(existingOrder.UserId);
-            if (user.BankAccountName == null || user.BankNumber == null || user.BankName == null)
-            {
-                return Result<bool>.Failure("Vui lòng cập nhật thông tin tài khoản ngân hàng trong hồ sơ cá nhân để tiến hành hủy đơn thuê hoàn tiền giữ đơn.");
-            }
+
             var timeSinceCreated = DateTime.Now - existingOrder.CreatedAt;
             var canRefund = timeSinceCreated <= TimeSpan.FromHours(1);
             if (canRefund)
@@ -305,6 +301,11 @@ namespace Service.Services
                 if (depositOrderPayment == null)
                 {
                     return Result<bool>.Failure("Không tìm thấy thông tin thanh toán tiền cọc đơn đặt thuê.");
+                }
+                var user = await _userRepository.GetByIdAsync(existingOrder.UserId);
+                if (user.BankAccountName == null || user.BankNumber == null || user.BankName == null)
+                {
+                    return Result<bool>.Failure("Vui lòng cập nhật thông tin tài khoản ngân hàng trong hồ sơ cá nhân để tiến hành hủy đơn thuê hoàn tiền giữ đơn.");
                 }
                 depositOrderPayment.Status = PaymentStatus.RefundPending;
                 await _paymentRepository.UpdateAsync(depositOrderPayment);
