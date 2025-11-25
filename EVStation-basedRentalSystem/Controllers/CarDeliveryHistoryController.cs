@@ -18,7 +18,6 @@ namespace EVStation_basedRentalSystem.Controllers
             _service = service;
         }
 
-        // 📘 GET: api/CarDeliveryHistory?pageIndex=1&pageSize=10
         [HttpGet]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAll([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
@@ -28,7 +27,6 @@ namespace EVStation_basedRentalSystem.Controllers
 
         }
 
-        // 📘 GET: api/CarDeliveryHistory/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetById(int id)
@@ -40,7 +38,6 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(result);
         }
 
-        // 📗 POST: api/CarDeliveryHistory
         [HttpPost]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] CarDeliveryHistoryCreateDTO dto)
@@ -52,7 +49,6 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(new { result.Message });
         }
 
-        // 📙 PUT: api/CarDeliveryHistory/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Update(int id, [FromBody] CarDeliveryHistoryUpdateDTO dto)
@@ -65,17 +61,15 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(new { result.Message });
         }
 
+        //[HttpDelete("{id}")]
+        //[Authorize(Roles = "Admin,Staff")]
+        //public async Task<IActionResult> Delete(int id)
+        //{
+        //    var result = await _service.DeleteAsync(id);
+        //    if (!result.IsSuccess)
+        //        return NotFound(new { result.Message });
 
-        // 📕 DELETE: api/CarDeliveryHistory/{id}
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var result = await _service.DeleteAsync(id);
-            if (!result.IsSuccess)
-                return NotFound(new { result.Message });
-
-            return Ok(new { result.Message });
-        }
+        //    return Ok(new { result.Message });
+        //}
     }
 }

@@ -68,9 +68,9 @@ namespace Service.Services
                 if (order == null)
                     return Result<string>.Failure("Không tìm thấy đơn thuê.");
                 var user = await _userRepo.GetByIdAsync(order.UserId);
-                if (user.DriverLicense == null)
+                if (user.DriverLicense == null || user.DriverLicense.Status != DocumentStatus.Approved)
                 {
-                    return Result<string>.Failure("Người dùng chưa có thông tin giấy phép lái xe.");
+                    return Result<string>.Failure("Người dùng chưa có hoặc chưa xác thực thông tin giấy phép lái xe.");
                 }
                 if (order.Status != RentalOrderStatus.OrderDepositConfirmed)
                     return Result<string>.Failure("Chỉ có thể giao xe cho các đơn thuê ở trạng thái 'OrderDepositConfirmed'.");

@@ -31,9 +31,9 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound();
             return Ok(citizenId);
         }
-        [HttpGet("GetByOrderId")]
+        [HttpGet("GetByUserId")]
         [Authorize(Roles = "Admin,Staff,Customer")]
-        public async Task<IActionResult> GetByOrderId(int orderId)
+        public async Task<IActionResult> GetByUserId(int orderId)
         {
             var citizenId = await _citizenIdService.GetCitizenIdByUserIdAsync(orderId);
             if (citizenId == null)

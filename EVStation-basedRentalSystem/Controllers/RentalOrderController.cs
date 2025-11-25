@@ -125,28 +125,28 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
-        [HttpGet("Checkout/PaymentCallbackVnpay")]
-        [HttpPost("Checkout/PaymentCallbackVnpay")]
-        public async Task<IActionResult> PaymentCallbackVnpay()
-        {
-            var result = await _rentalOrderService.ProcessVnpayCallbackAsync(Request.Query);
+        //[HttpGet("Checkout/PaymentCallbackVnpay")]
+        //[HttpPost("Checkout/PaymentCallbackVnpay")]
+        //public async Task<IActionResult> PaymentCallbackVnpay()
+        //{
+        //    var result = await _rentalOrderService.ProcessVnpayCallbackAsync(Request.Query);
 
-            if (result.IsSuccess)
-                return Redirect($"http://localhost:7200/payment-success?orderId={result.OrderId}");
+        //    if (result.IsSuccess)
+        //        return Redirect($"http://localhost:7200/payment-success?orderId={result.OrderId}");
 
-            return Redirect($"http://localhost:7200/payment-failed?code={result.VnPayResponseCode ?? "99"}");
-        }
-        [HttpPost("api/payment/vnpay-ipn")]
-        public async Task<IActionResult> VnpayIpn()
-        {
-            var result = await _rentalOrderService.ProcessVnpayIpnAsync(Request.Query);
+        //    return Redirect($"http://localhost:7200/payment-failed?code={result.VnPayResponseCode ?? "99"}");
+        //}
+        //[HttpPost("api/payment/vnpay-ipn")]
+        //public async Task<IActionResult> VnpayIpn()
+        //{
+        //    var result = await _rentalOrderService.ProcessVnpayIpnAsync(Request.Query);
 
-            return Ok(new
-            {
-                RspCode = result.IsSuccess ? "00" : "99",
-                Message = result.Message
-            });
-        }
+        //    return Ok(new
+        //    {
+        //        RspCode = result.IsSuccess ? "00" : "99",
+        //        Message = result.Message
+        //    });
+        //}
         [HttpPost("api/payment/confirm-manual")]
         public async Task<IActionResult> ConfirmPaymentManual([FromBody] ConfirmPaymentDto dto)
         {

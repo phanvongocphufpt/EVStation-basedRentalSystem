@@ -18,7 +18,6 @@ namespace EVStation_basedRentalSystem.Controllers
             _service = service;
         }
 
-        // 📘 GET: api/CarReturnHistory
         [HttpGet]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAll()
@@ -34,7 +33,6 @@ namespace EVStation_basedRentalSystem.Controllers
             });
         }
 
-        // 📘 GET: api/CarReturnHistory/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetById(int id)
@@ -50,7 +48,6 @@ namespace EVStation_basedRentalSystem.Controllers
             });
         }
 
-        // 📗 POST: api/CarReturnHistory
         [HttpPost]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] CarReturnHistoryCreateDTO dto)
@@ -65,7 +62,6 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(new { result.Message });
         }
 
-        // 📙 PUT: api/CarReturnHistory/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Update(int id, [FromBody] CarReturnHistoryCreateDTO dto)
@@ -77,16 +73,15 @@ namespace EVStation_basedRentalSystem.Controllers
             return Ok(new { result.Message });
         }
 
-        // 📕 DELETE: api/CarReturnHistory/{id}
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var result = await _service.DeleteAsync(id);
-            if (!result.IsSuccess)
-                return NotFound(new { result.Message });
+        //[HttpDelete("{id}")]
+        //[Authorize(Roles = "Admin,Staff")]
+        //public async Task<IActionResult> Delete(int id)
+        //{
+        //    var result = await _service.DeleteAsync(id);
+        //    if (!result.IsSuccess)
+        //        return NotFound(new { result.Message });
 
-            return Ok(new { result.Message });
-        }
+        //    return Ok(new { result.Message });
+        //}
     }
 }
