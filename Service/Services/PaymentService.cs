@@ -3,6 +3,7 @@ using Repository.Entities;
 using Repository.Entities.Enum;
 using Repository.IRepositories;
 using Service.Common;
+using Service.Common.Momo.MomoServices;
 using Service.DTOs;
 using Service.IServices;
 using System;
@@ -19,13 +20,15 @@ namespace Service.Services
         private readonly IRentalOrderRepository _rentalOrderRepository;
         private readonly IRentalLocationRepository _rentalLocationRepository;
         private readonly IMapper _mapper;
-        public PaymentService(IPaymentRepository paymentRepository, IMapper mapper, IUserRepository userRepository, IRentalOrderRepository rentalOrderRepository, IRentalLocationRepository rentalLocationRepository)
+        private readonly IMoMoService _momoService;
+        public PaymentService(IPaymentRepository paymentRepository, IMapper mapper, IUserRepository userRepository, IRentalOrderRepository rentalOrderRepository, IRentalLocationRepository rentalLocationRepository, IMoMoService momoService)
         {
             _paymentRepository = paymentRepository;
             _mapper = mapper;
             _userRepository = userRepository;
             _rentalOrderRepository = rentalOrderRepository;
             _rentalLocationRepository = rentalLocationRepository;
+            _momoService = momoService;
         }
 
         public async Task<Result<CreatePaymentDTO>> AddAsync(CreatePaymentDTO createPaymentDTO)
@@ -163,25 +166,77 @@ namespace Service.Services
 
         public async Task<Result<IEnumerable<RevenueByLocationDTO>>> GetRevenueByLocationAsync()
         {
-            var payments = await _paymentRepository.GetByRentalLocationAsync();
+            var orders = await _rentalOrderRepository.GetAllAsync();
             
-            // Filter only completed payments, exclude Deposit payments, and group by rental location
-            var revenueByLocation = payments
-                .Where(p => p.Status == PaymentStatus.Completed 
-                         && p.PaymentType != PaymentType.Deposit 
-                         && p.RentalOrder?.RentalLocation != null)
-                .GroupBy(p => p.RentalOrder!.RentalLocation)
+            // Filter orders with Total and group by rental location
+            var filteredOrders = orders
+                .Where(o => o.Total.HasValue 
+                         && o.Total.Value > 0
+                         && o.RentalLocation != null)
+                .ToList();
+            
+            var revenueByLocation = filteredOrders
+                .GroupBy(o => o.RentalLocation)
                 .Select(g => new RevenueByLocationDTO
                 {
                     RentalLocationName = g.Key.Name,
-                    TotalRevenue = g.Sum(p => p.Amount),
-                    PaymentCount = g.Count()
+                    TotalRevenue = (double)g.Sum(o => o.Total ?? 0),
+                    OrderCount = g.Count(),
+                    OrderTimes = g.Select(o => new OrderTimeInfo
+                    {
+                        OrderId = o.Id,
+                        OrderDate = o.OrderDate,
+                        PickupTime = o.PickupTime,
+                        ExpectedReturnTime = o.ExpectedReturnTime,
+                        ActualReturnTime = o.ActualReturnTime,
+                        Total = o.Total
+                    }).ToList()
                 })
                 .ToList();
 
             return Result<IEnumerable<RevenueByLocationDTO>>.Success(revenueByLocation);
         }
 
-       
+        public async Task<Result<string>> CreateMomoPaymentAsync(int orderId, int userId, decimal amount, string orderInfo)
+        {
+            try
+            {
+                var order = await _rentalOrderRepository.GetByIdAsync(orderId);
+                if (order == null)
+                {
+                    return Result<string>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
+                }
+
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return Result<string>.Failure("Người dùng không tồn tại! Kiểm tra lại UserId.");
+                }
+
+                var amountLong = (long)amount; // Convert to long without multiplying by 100
+                var orderIdString = orderId.ToString();
+                
+                var (paymentUrl, requestId) = await _momoService.CreatePaymentUrlAsync(
+                    orderIdString,
+                    orderInfo,
+                    amountLong
+                );
+
+                // Update payment record with requestId if exists
+                var payment = await _paymentRepository.GetOrderDepositByOrderIdAsync(orderId);
+                if (payment != null)
+                {
+                    payment.TxnRef = requestId;
+                    payment.TransactionNo = requestId;
+                    await _paymentRepository.UpdateAsync(payment);
+                }
+
+                return Result<string>.Success(paymentUrl, "Tạo link thanh toán MoMo thành công.");
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Failure($"Lỗi khi tạo thanh toán MoMo: {ex.Message}");
+            }
+        }
     }
 }

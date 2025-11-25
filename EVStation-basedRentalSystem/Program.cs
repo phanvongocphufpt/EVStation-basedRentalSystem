@@ -7,6 +7,7 @@ using Repository.Context;
 using Repository.IRepositories;
 using Repository.Repositories;
 using Service.Common.VNPay.VnPayServices;
+using Service.Common.Momo.MomoServices;
 using Service.EmailConfirmation;
 using Service.IServices;
 using Service.Mapper;
@@ -126,6 +127,7 @@ builder.Services.AddTransient<EmailService>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddScoped<IVnPayService, VnPayService>();
+builder.Services.AddHttpClient<IMoMoService, MoMoService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
