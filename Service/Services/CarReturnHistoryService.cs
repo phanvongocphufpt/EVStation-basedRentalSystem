@@ -45,26 +45,23 @@ namespace Service.Services
             return Result<CarReturnHistoryDTO?>.Success(_mapper.Map<CarReturnHistoryDTO>(entity));
         }
 
-        // 🔹 Thêm mới (Xử lý logic trả xe)
         public async Task<Result<string>> AddAsync(CarReturnHistoryCreateDTO dto)
         {
 
             try
             {
-                // Lấy order để xác định xe & chi nhánh
                 var order = await _rentalOrderRepo.GetByIdAsync(dto.OrderId);
                 if (order == null)
                     return Result<string>.Failure("Không tìm thấy đơn hàng để trả xe.");
                 if (order.Status != RentalOrderStatus.Renting)
                     return Result<string>.Failure("Đơn hàng không ở trạng thái 'Renting', không thể trả xe.");
 
-                order.ActualReturnTime = dto.ReturnDate;
+                order.ActualReturnTime = DateTime.Now;
                 await _rentalOrderRepo.UpdateAsync(order);
 
-                // Lưu lịch sử trả xe
                 var entity = new CarReturnHistory
                 {
-                    ReturnDate = dto.ReturnDate,
+                    ReturnDate = DateTime.Now,
                     OdometerEnd = dto.OdometerEnd,
                     BatteryLevelEnd = dto.BatteryLevelEnd,
                     VehicleConditionEnd = dto.VehicleConditionEnd,
@@ -74,11 +71,11 @@ namespace Service.Services
                 await _repo.AddAsync(entity);
                 order.Status = RentalOrderStatus.Returned;
                 await _rentalOrderRepo.UpdateAsync(order);
-                return Result<string>.Success("OK", "✅ Trả xe thành công, đơn hàng đã cập nhật sang trạng thái 'Returned'.");
+                return Result<string>.Success("OK", "Trả xe thành công, đơn hàng đã cập nhật sang trạng thái 'Returned'.");
             }
             catch (Exception ex)
             {
-                return Result<string>.Failure($"❌ Trả xe thất bại: {ex.Message}");
+                return Result<string>.Failure($"Trả xe thất bại: {ex.Message}");
             }
         }
 

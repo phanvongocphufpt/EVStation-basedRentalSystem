@@ -33,6 +33,7 @@ namespace Service.Mapper
                 .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
+                .ForMember(dest => dest.BillingImageUrl, opt => opt.MapFrom(src => src.BillingImageUrl))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.RentalOrder.User.Id))
                 .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.RentalOrder.Id))
                 .ForMember(dest => dest.OrderDate, otp => otp.MapFrom(src => src.RentalOrder.OrderDate));
@@ -144,6 +145,7 @@ namespace Service.Mapper
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.Now));
 
             CreateMap<Car, CarDTO>().ReverseMap();
+
         }
     }
 }

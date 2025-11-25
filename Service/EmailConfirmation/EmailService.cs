@@ -121,20 +121,22 @@ namespace Service.EmailConfirmation
             {
                 throw new ArgumentException("Địa chỉ email không hợp lệ.", nameof(email));
             }
-            var emailSubject = $"[EVRental] Đơn #{rentalOrder.Id} – Cập nhật GPLX & CCCD thành công!";
+            var emailSubject = $"[EVRental] Đơn #{rentalOrder.Id} – Thanh toán tiền giữ đơn thành công!";
             var emailBody = $@"
 <p><b>Kính gửi quý khách,</b></p>
 
-<p>Thông tin giấy phép lái xe (GPLX) và căn cước công dân (CCCD) của bạn đã được cập nhật thành công cho đơn hàng:</p>
+<p>Thanh toán tiền giữ đơn của bạn đã được cập nhật thành công cho đơn hàng:</p>
 <p><br/></p>
     <p><b>Mã đơn:</b> <strong>#{rentalOrder.Id}</strong></p>
+    <p><b>Số tiền giữ đơn:</b> {rentalOrder.DepositOrder}</p>
     <p><b>Xe:</b> {rentalOrder.Car.Name}</p>
     <p><b>Model:</b> {rentalOrder.Car.Model}</p>
     <p><b>Thời gian thuê:</b> {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} → {rentalOrder.ExpectedReturnTime:dd/MM/yyyy HH:mm}</p>
 <p><br/></p>
 <p>Hẹn gặp quý khách vào ngày {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} tại: {rentalOrder.RentalLocation.Address}</p>
 <p>Khi đến, quý khách vui lòng mang theo GPLX, CCCD vật lý để chúng tôi xác minh. </p>
-<p><b>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc là {rentalOrder.DepositCar} VNĐ. Tiền cọc này là 20% giá trị của đơn, sẽ được hoàn trả chung với hóa đơn cuối cùng sau khi đã khấu trừ phí vượt mức, phí phát sinh và hư hại nếu có.</b></p>
+<p><b>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc xe là {rentalOrder.DepositCar} VNĐ. Tiền cọc giữ đơn sẽ được hoàn trả chung với hóa đơn cuối cùng sau khi đã khấu trừ phí vượt mức, phí phát sinh và hư hại nếu có. Tiền cọc xe sẽ được hoàn trong vòng từ 2 - 3 ngày kể từ lúc trả xe.</b></p>
+<p><b>Lưu ý: Nếu bạn hủy đơn trong 2 giờ sẽ được hoàn lại 100% tiền giữ đơn. Sau 2 giờ hủy đơn sẽ mất toàn bộ tiền giữ đơn.</b></p>
 <p><br/></p>
 <p>Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email.</p>
 <p>Cảm ơn bạn đã sử dụng dịch vụ EVRental!</p>

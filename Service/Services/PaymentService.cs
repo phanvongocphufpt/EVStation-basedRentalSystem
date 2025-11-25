@@ -84,24 +84,48 @@ namespace Service.Services
             return Result<PaymentDTO>.Success(dto);
         }
 
-        public async Task<Result<bool>> ConfirmDepositPaymentAsync(int orderId)
+        public async Task<Result<bool>> ConfirmDepositPaymentAsync(ConfirmDepositPaymentDTO dto)
         {
-            var order = await _rentalOrderRepository.GetByIdAsync(orderId);
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.RentalOrderId);
             if (order == null)
             {
                 return Result<bool>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
             }
-            var depositPayment = await _paymentRepository.GetDepositByOrderIdAsync(orderId);
+            var depositPayment = await _paymentRepository.GetDepositByOrderIdAsync(dto.RentalOrderId);
             if (depositPayment == null)
             {
-                return Result<bool>.Failure("Thanh toán đặt cọc không tồn tại cho đơn hàng này.");
+                return Result<bool>.Failure("Thanh toán đặt cọc xe không tồn tại cho đơn hàng này.");
             }
             depositPayment.PaymentDate = DateTime.UtcNow;
             depositPayment.Status = PaymentStatus.Completed;
+            depositPayment.BillingImageUrl = dto.BillingImageUrl;
             await _paymentRepository.UpdateAsync(depositPayment);
             order.Status = RentalOrderStatus.CarDepositConfirmed;
             await _rentalOrderRepository.UpdateAsync(order);
-            return Result<bool>.Success(true, "Xác nhận thanh toán đặt cọc thành công.");
+            return Result<bool>.Success(true, "Xác nhận thanh toán đặt cọc xe thành công.");
+        }
+        public async Task<Result<bool>> ConfirmRefundDepositCarAsync(ConfirmRefundDepositCarPaymentDTO dto)
+        {
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.RentalOrderId);
+            if (order == null)
+            {
+                return Result<bool>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
+            }
+            if (order.Status != RentalOrderStatus.RefundDepositCar)
+            {
+                return Result<bool>.Failure("Chỉ có thể hoàn trả đặt cọc xe cho các đơn hàng đã trả xe và thanh toán đơn.");
+            }
+            var depositPayment = await _paymentRepository.GetDepositByOrderIdAsync(dto.RentalOrderId);
+            if (depositPayment == null)
+            {
+                return Result<bool>.Failure("Thanh toán đặt cọc xe không tồn tại cho đơn hàng này.");
+            }
+            depositPayment.Status = PaymentStatus.Refunded;
+            depositPayment.BillingImageUrl = dto.BillingImageUrl;
+            await _paymentRepository.UpdateAsync(depositPayment);
+            order.Status = RentalOrderStatus.Completed;
+            await _rentalOrderRepository.UpdateAsync(order);
+            return Result<bool>.Success(true, "Xác nhận hoàn trả đặt cọc xe thành công.");
         }
 
         public async Task<Result<UpdatePaymentStatusDTO>> UpdatePaymentStatusAsync(UpdatePaymentStatusDTO updatePaymentDTO)

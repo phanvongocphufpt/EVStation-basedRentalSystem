@@ -485,6 +485,9 @@ namespace Repository.Context.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
                     b.Property<int>("RentalOrderId")
                         .HasColumnType("int");
 

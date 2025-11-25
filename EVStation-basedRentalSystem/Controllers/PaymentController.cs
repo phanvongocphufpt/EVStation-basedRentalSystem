@@ -90,17 +90,17 @@ namespace EVStation_basedRentalSystem.Controllers
         }
         [HttpPut("ConfirmDepositPayment")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> ConfirmDepositPayment(int orderId)
+        public async Task<IActionResult> ConfirmDepositPayment([FromBody] ConfirmDepositPaymentDTO dto)
         {
-            var result = await _paymentService.ConfirmDepositPaymentAsync(orderId);
+            var result = await _paymentService.ConfirmDepositPaymentAsync(dto);
             return Ok(result);
         }
-        //public IActionResult CreatePaymentUrlVnpay(PaymentInformationModel model)
-        //{
-        //    var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
-
-        //    return Redirect(url);
-        //}
-
+        [HttpPut("ConfirmRefundDepositCarPayment")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> ConfirmRefundDepositCarPayment([FromBody] ConfirmRefundDepositCarPaymentDTO dto)
+        {
+            var result = await _paymentService.ConfirmRefundDepositCarAsync(dto);
+            return Ok(result);
+        }
     }
 }

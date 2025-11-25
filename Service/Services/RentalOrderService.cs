@@ -153,7 +153,18 @@ namespace Service.Services
             };
 
             await _paymentRepository.AddAsync(payment);
-
+            var carDepositPayment = new Payment
+            {
+                PaymentType = PaymentType.Deposit,
+                Amount = car.DepositCarAmount,
+                PaymentMethod = "Direct",
+                Status = PaymentStatus.Pending,
+                UserId = order.UserId,
+                RentalOrderId = order.Id,
+                RentalOrder = order,
+                User = user,
+            };
+            await _paymentRepository.AddAsync(carDepositPayment);
             var response = new CreateRentalOrderResponseDTO
             {
                 OrderId = order.Id,
@@ -191,9 +202,9 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
             }
-            if (order.Status != RentalOrderStatus.PaymentPending)
+            if (order.Status != RentalOrderStatus.Returned)
             {
-                return Result<bool>.Failure("Đơn đặt thuê không ở trạng thái chờ thanh toán. Không thể xác nhận thanh toán.");
+                return Result<bool>.Failure("Chưa trả xe. Không thể xác nhận thanh toán.");
             }
             var total = order.Total;
             if (total.HasValue && total.Value < 0)
@@ -235,9 +246,9 @@ namespace Service.Services
             await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận tổng tiền cần thanh toán thành công!");
         }
-        public async Task<Result<bool>> ConfirmPaymentAsync(int orderId)
+        public async Task<Result<bool>> ConfirmOrderPaymentAsync(ConfirmOrderPaymentDTO dto)
         {
-            var order = await _rentalOrderRepository.GetByIdAsync(orderId);
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.RentalOrderId);
             if (order == null)
             {
                 return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
@@ -253,9 +264,9 @@ namespace Service.Services
             }
             payments.PaymentDate = DateTime.Now;
             payments.Status = PaymentStatus.Completed;
+            payments.BillingImageUrl = dto.BillingImageUrl;
             await _paymentRepository.UpdateAsync(payments);
-            // Chuyển sang Completed khi thanh toán thành công
-            order.Status = RentalOrderStatus.Completed;
+            order.Status = RentalOrderStatus.RefundDepositCar;
             order.UpdatedAt = DateTime.Now;
             await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận đơn đã thanh toán thành công!");
@@ -488,6 +499,7 @@ namespace Service.Services
 
                 result.IsSuccess = true;
                 result.Message = "Thanh toán thành công!";
+                await _emailService.SendRemindEmail(order.User.Email, order);
             }
             catch (Exception ex)
             {

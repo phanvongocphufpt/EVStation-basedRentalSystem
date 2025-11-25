@@ -21,19 +21,20 @@ namespace Service.DTOs
         public int LocationId { get; set; }
     }
 
-    // 🔹 DTO tạo mới (chỉ cần thông tin thực tế khi trả xe)
     public class CarReturnHistoryCreateDTO
     {
-        public DateTime ReturnDate { get; set; }
         public int OdometerEnd { get; set; }
         public int BatteryLevelEnd { get; set; }
-        public string VehicleConditionEnd { get; set; } = string.Empty;
-
-        // 🔗 chỉ cần OrderId là đủ
+        public string VehicleConditionEnd { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? ImageUrl2 { get; set; }
+        public string? ImageUrl3 { get; set; }
+        public string? ImageUrl4 { get; set; }
+        public string? ImageUrl5 { get; set; }
+        public string? ImageUrl6 { get; set; }
         public int OrderId { get; set; }
     }
 
-    // 🔹 DTO cập nhật
     public class CarReturnHistoryUpdateDTO : CarReturnHistoryCreateDTO
     {
         public int Id { get; set; }

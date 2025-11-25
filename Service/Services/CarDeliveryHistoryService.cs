@@ -12,19 +12,21 @@ namespace Service.Services
     {
         private readonly ICarDeliveryHistoryRepository _repo;
         private readonly IRentalOrderRepository _rentalOrderRepo;
+        private readonly IUserRepository _userRepo;
         private readonly IMapper _mapper;
 
         public CarDeliveryHistoryService(
             ICarDeliveryHistoryRepository repo,
             IRentalOrderRepository rentalOrderRepo,
-            IMapper mapper)
+            IMapper mapper,
+            IUserRepository userRepo)
         {
             _repo = repo;
             _rentalOrderRepo = rentalOrderRepo;
             _mapper = mapper;
+            _userRepo = userRepo;
         }
 
-        // 🔹 Lấy tất cả lịch sử giao xe (có phân trang)
         public async Task<Result<(IEnumerable<CarDeliveryHistoryDTO> Data, int Total)>> GetAllAsync(int pageIndex, int pageSize)
         {
             try
@@ -58,44 +60,50 @@ namespace Service.Services
             }
         }
 
-        // 🔹 Thêm lịch sử giao xe
         public async Task<Result<string>> AddAsync(CarDeliveryHistoryCreateDTO dto)
         {
             try
             {
-                // 🔍 Lấy thông tin đơn thuê
                 var order = await _rentalOrderRepo.GetByIdAsync(dto.OrderId);
                 if (order == null)
                     return Result<string>.Failure("Không tìm thấy đơn thuê.");
+                var user = await _userRepo.GetByIdAsync(order.UserId);
+                if (user.DriverLicense == null)
+                {
+                    return Result<string>.Failure("Người dùng chưa có thông tin giấy phép lái xe.");
+                }
                 if (order.Status != RentalOrderStatus.CarDepositConfirmed)
-                    return Result<string>.Failure("Chỉ có thể giao xe cho các đơn thuê ở trạng thái 'Confirmed'.");
+                    return Result<string>.Failure("Chỉ có thể giao xe cho các đơn thuê ở trạng thái 'CarDepositConfirmed'.");
 
-                // 📝 Tạo bản ghi giao xe
                 var history = new CarDeliveryHistory
                 {
-                    DeliveryDate = dto.DeliveryDate,
+                    DeliveryDate = DateTime.Now,
                     OdometerStart = dto.OdometerStart,
                     BatteryLevelStart = dto.BatteryLevelStart,
                     VehicleConditionStart = dto.VehicleConditionStart,
+                    ImageUrl = dto.ImageUrl,
+                    ImageUrl2 = dto.ImageUrl2,
+                    ImageUrl3 = dto.ImageUrl3,
+                    ImageUrl4 = dto.ImageUrl4,
+                    ImageUrl5 = dto.ImageUrl5,
+                    ImageUrl6 = dto.ImageUrl6,
                     OrderId = order.Id,
                     CarId = order.CarId,
                 };
 
                 await _repo.AddAsync(history);
 
-                // 🔁 Cập nhật trạng thái đơn hàng sang "Renting"
                 order.Status = RentalOrderStatus.Renting;
                 await _rentalOrderRepo.UpdateAsync(order);
 
-                return Result<string>.Success("✅ Giao xe thành công. Trạng thái đơn đã chuyển sang 'Renting'.");
+                return Result<string>.Success("Giao xe thành công. Trạng thái đơn đã chuyển sang 'Renting'.");
             }
             catch (Exception ex)
             {
-                return Result<string>.Failure($"❌ Giao xe thất bại: {ex.Message}");
+                return Result<string>.Failure($"Giao xe thất bại: {ex.Message}");
             }
         }
 
-        // 🔹 Cập nhật lịch sử giao xe
         public async Task<Result<string>> UpdateAsync(int id, CarDeliveryHistoryCreateDTO dto)
         {
             try
@@ -115,7 +123,6 @@ namespace Service.Services
             }
         }
 
-        // 🔹 Xóa lịch sử giao xe
         public async Task<Result<string>> DeleteAsync(int id)
         {
             try

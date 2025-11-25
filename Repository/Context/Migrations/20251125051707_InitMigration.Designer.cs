@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251124115111_InitMigration")]
+    [Migration("20251125051707_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -487,6 +487,9 @@ namespace Repository.Context.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
 
                     b.Property<int>("RentalOrderId")
                         .HasColumnType("int");

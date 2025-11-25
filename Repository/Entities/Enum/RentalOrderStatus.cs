@@ -10,11 +10,11 @@ namespace Repository.Entities.Enum
     {
         Pending,
         OrderDepositConfirmed,
-        DocumentConfirmed,
         CarDepositConfirmed,
         Renting,
         Returned,
         PaymentPending,
+        RefundDepositCar,
         Cancelled,
         RefundDepositOrder,
         Completed

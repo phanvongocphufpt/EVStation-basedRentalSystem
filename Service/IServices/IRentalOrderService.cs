@@ -19,9 +19,8 @@ namespace Service.IServices
         Task<Result<CreateRentalOrderResponseDTO>> CreateAsync(CreateRentalOrderDTO createRentalOrderDTO, HttpContext httpContext);
         Task<Result<bool>> CancelOrderAsync(int orderId);
         Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO);
-        Task<Result<bool>> ConfirmPaymentAsync(int orderId);
+        Task<Result<bool>> ConfirmOrderPaymentAsync(ConfirmOrderPaymentDTO dto);
         Task<Result<bool>> ConfirmTotalAsync(int orderId);
-        //Task<Result<bool>> ConfirmDocumentAsync(int orderId);
         Task<PaymentCallbackResult> ProcessVnpayIpnAsync(IQueryCollection queryParams);
         Task<PaymentCallbackResult> ProcessVnpayCallbackAsync(IQueryCollection queryParams);
         Task<PaymentCallbackResult> ProcessVnpayCallbackManualAsync(string txnRef, string responseCode);

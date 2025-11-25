@@ -33,6 +33,7 @@ namespace Service.Services
             {
                 Title = dto.Title,
                 Content = dto.Content,
+                Rating = dto.Rating,
                 UserId = dto.UserId,
                 RentalOrderId = dto.RentalOrderId,
                 CreatedAt = DateTime.Now
@@ -45,6 +46,7 @@ namespace Service.Services
                 Id = feedback.Id,
                 Title = feedback.Title,
                 Content = feedback.Content,
+                Rating = feedback.Rating,
                 CreatedAt = feedback.CreatedAt,
                 UserFullName = user.FullName,
                 RentalOrderId = feedback.RentalOrderId
@@ -75,6 +77,7 @@ namespace Service.Services
                 Id = f.Id,
                 Title = f.Title,
                 Content = f.Content,
+                Rating = f.Rating,
                 CreatedAt = f.CreatedAt,
                 UserFullName = f.User?.FullName ?? "",
                 RentalOrderId = f.RentalOrderId
@@ -94,6 +97,7 @@ namespace Service.Services
                 Id = feedback.Id,
                 Title = feedback.Title,
                 Content = feedback.Content,
+                Rating = feedback.Rating,
                 CreatedAt = feedback.CreatedAt,
                 UserFullName = feedback.User?.FullName ?? "",
                 RentalOrderId = feedback.RentalOrderId
@@ -119,6 +123,7 @@ namespace Service.Services
                 Id = feedback.Id,
                 Title = feedback.Title,
                 Content = feedback.Content,
+                Rating = feedback.Rating,
                 CreatedAt = feedback.CreatedAt,
                 UserFullName = feedback.User?.FullName ?? "",
                 RentalOrderId = feedback.RentalOrderId

@@ -14,6 +14,7 @@ namespace Service.DTOs
         public DateTime PaymentDate { get; set; }
         public double Amount { get; set; }
         public string PaymentMethod { get; set; }
+        public string? BillingImageUrl { get; set; }
         public string Status { get; set; }
         public string UserId { get; set; }
         public string OrderId { get; set; }
@@ -36,7 +37,18 @@ namespace Service.DTOs
     }
     public class ConfirmDepositPaymentDTO
     {
-        public int OrderId { get; set; }
+        public int RentalOrderId { get; set; }
+        public string? BillingImageUrl { get; set; }
+    }
+    public class ConfirmOrderPaymentDTO
+    {
+        public int RentalOrderId { get; set; }
+        public string? BillingImageUrl { get; set; }
+    }
+    public class ConfirmRefundDepositCarPaymentDTO
+    {
+        public int RentalOrderId { get; set; }
+        public string? BillingImageUrl { get; set; }
     }
     public class PaymentCallbackResult
     {
