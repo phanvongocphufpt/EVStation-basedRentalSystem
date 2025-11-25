@@ -50,6 +50,12 @@ namespace Service.Services
             var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(rentalOrders);
             return Result<IEnumerable<RentalOrderDTO>>.Success(dtos);
         }
+        public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByPhoneNumber(string phoneNumber)
+        {
+            var rentalOrders = await _rentalOrderRepository.GetOrdersByPhoneNumberAsync(phoneNumber);
+            var dtos = _mapper.Map<IEnumerable<RentalOrderDTO>>(rentalOrders);
+            return Result<IEnumerable<RentalOrderDTO>>.Success(dtos);
+        }
         public async Task<Result<RentalOrderDTO>> GetByIdAsync(int id)
         {
             var rentalOrder = await _rentalOrderRepository.GetByIdAsync(id);
@@ -286,42 +292,34 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Không thể hủy đơn đặt thuê đang trong quá trình thuê hoặc đã trả xe.");
             }
-            existingOrder.Status = RentalOrderStatus.Cancelled;
-            existingOrder.UpdatedAt = DateTime.Now;
-            await _rentalOrderRepository.UpdateAsync(existingOrder);
+            var user = await _userRepository.GetByIdAsync(existingOrder.UserId);
+            if (user.BankAccountName == null || user.BankNumber == null || user.BankName == null)
+            {
+                return Result<bool>.Failure("Vui lòng cập nhật thông tin tài khoản ngân hàng trong hồ sơ cá nhân để tiến hành hủy đơn thuê hoàn tiền giữ đơn.");
+            }
+            var timeSinceCreated = DateTime.Now - existingOrder.CreatedAt;
+            var canRefund = timeSinceCreated <= TimeSpan.FromHours(1);
+            if (canRefund)
+            {
+                var depositOrderPayment = await _paymentRepository.GetOrderDepositByOrderIdAsync(existingOrder.Id);
+                if (depositOrderPayment == null)
+                {
+                    return Result<bool>.Failure("Không tìm thấy thông tin thanh toán tiền cọc đơn đặt thuê.");
+                }
+                depositOrderPayment.Status = PaymentStatus.RefundPending;
+                await _paymentRepository.UpdateAsync(depositOrderPayment);
+                existingOrder.Status = RentalOrderStatus.RefundDepositOrder;
+                existingOrder.UpdatedAt = DateTime.Now;
+                await _rentalOrderRepository.UpdateAsync(existingOrder);
+            } 
+            else
+            {
+                existingOrder.Status = RentalOrderStatus.Cancelled;
+                existingOrder.UpdatedAt = DateTime.Now;
+                await _rentalOrderRepository.UpdateAsync(existingOrder);
+            }
             return Result<bool>.Success(true, "Hủy đơn thuê thành công!");
         }
-        //public async Task<Result<bool>> ConfirmDocumentAsync(int orderId)
-        //{
-        //    var order = await _rentalOrderRepository.GetByIdAsync(orderId);
-        //    if (order == null)
-        //    {
-        //        return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
-        //    }
-        //    if (order.WithDriver == false)
-        //    {
-        //        if (!order.CitizenId.HasValue || !order.DriverLicenseId.HasValue)
-        //        {
-        //            return Result<bool>.Failure("Chưa có đủ thông tin giấy tờ cần thiết để xác nhận giấy tờ đơn đặt thuê này.");
-        //        }
-        //        if (order.CitizenIdNavigation.Status != DocumentStatus.Approved)
-        //        {
-        //            return Result<bool>.Failure("Giấy CMND/CCCD chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
-        //        }
-        //        if (order.DriverLicense.Status != DocumentStatus.Approved)
-        //        {
-        //            return Result<bool>.Failure("Giấy phép lái xe chưa được duyệt. Không thể xác nhận giấy tờ đơn đặt thuê.");
-        //        }
-        //    }
-        //    else if (order.WithDriver == true)
-        //    {
-        //            return Result<bool>.Failure("Đơn thuê cùng tài xế nên không cần xác nhận giấy tờ.");
-        //    }
-        //    order.Status = RentalOrderStatus.DepositPending;
-        //    order.UpdatedAt = DateTime.Now;
-        //    await _rentalOrderRepository.UpdateAsync(order);
-        //    return Result<bool>.Success(true, "Xác nhận giấy tờ thành công!");
-        //}
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id)
         {
             var rentalOrders = await _rentalOrderRepository.GetByUserIdAsync(id);

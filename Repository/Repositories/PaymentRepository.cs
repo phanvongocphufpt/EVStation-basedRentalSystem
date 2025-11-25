@@ -43,6 +43,10 @@ namespace Repository.Repositories
         {
             return await _context.Payments.Where(p => p.PaymentType == PaymentType.OrderPayment).FirstOrDefaultAsync(p => p.RentalOrderId == orderId);
         }
+        public async Task<Payment?> GetOrderDepositByOrderIdAsync(int orderId)
+        {
+            return await _context.Payments.Where(p => p.PaymentType == PaymentType.OrderDeposit).FirstOrDefaultAsync(p => p.RentalOrderId == orderId);
+        }
         public async Task<IEnumerable<Payment>> GetAllByUserIdAsync(int id)
         {
             return await _context.Payments.Where(p => p.UserId == id).ToListAsync();

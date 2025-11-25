@@ -56,5 +56,12 @@ namespace Service.DTOs
         public int UserId { get; set; }
         public int RentalLocationId { get; set; }
     }
+    public class UpdateBankInfoDTO
+    {
+        public int UserId { get; set; }
+        public string BankAccountName { get; set; }
+        public string BankNumber { get; set; }
+        public string BankName { get; set; }
+    }
 }
 //check

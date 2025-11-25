@@ -11,6 +11,7 @@ namespace Repository.Entities.Enum
         Pending,
         Completed,
         Failed,
+        RefundPending,
         Refunded
     }
 }

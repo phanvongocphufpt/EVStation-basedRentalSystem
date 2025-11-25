@@ -25,6 +25,7 @@ namespace Service.Mapper
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => src.UpdatedAt));
             CreateMap<CreateStaffUserDTO, User>();
+            CreateMap<User, UpdateBankInfoDTO>();
 
             //Payment Mappings
             CreateMap<Payment, PaymentDTO>()

@@ -735,6 +735,9 @@ namespace Repository.Context.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BankAccountName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("BankName")
                         .HasColumnType("nvarchar(max)");
 

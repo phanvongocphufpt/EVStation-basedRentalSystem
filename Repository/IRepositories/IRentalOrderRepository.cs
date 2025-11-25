@@ -10,6 +10,7 @@ namespace Repository.IRepositories
         Task<RentalOrder?> GetByIdAsync(int id);
         Task<IEnumerable<RentalOrder>> GetOrderByLocationAsync(int locationId);
         Task<IEnumerable<RentalOrder>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<RentalOrder>> GetOrdersByPhoneNumberAsync(string phoneNumber);
         Task AddAsync(RentalOrder order);
         Task UpdateAsync(RentalOrder order);
         Task SaveChangesAsync();

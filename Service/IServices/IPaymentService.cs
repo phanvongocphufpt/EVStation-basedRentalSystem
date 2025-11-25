@@ -18,6 +18,6 @@ namespace Service.IServices
         Task<Result<bool>> ConfirmDepositPaymentAsync(ConfirmDepositPaymentDTO dto);
         Task<Result<bool>> ConfirmRefundDepositCarAsync(ConfirmRefundDepositCarPaymentDTO dto);
         Task<Result<IEnumerable<RevenueByLocationDTO>>> GetRevenueByLocationAsync();
-        
+        Task<Result<bool>> ConfirmRefundDepositOrderAsync(ConfirmRefundDepositOrderPaymentDTO dto);
     }
 }

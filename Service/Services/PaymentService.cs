@@ -127,11 +127,28 @@ namespace Service.Services
             depositPayment.Status = PaymentStatus.Refunded;
             depositPayment.BillingImageUrl = dto.BillingImageUrl;
             await _paymentRepository.UpdateAsync(depositPayment);
+            order.ReportNote = dto.Note;
             order.Status = RentalOrderStatus.Completed;
             await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận hoàn trả đặt cọc xe thành công.");
         }
-
+        public async Task<Result<bool>> ConfirmRefundDepositOrderAsync(ConfirmRefundDepositOrderPaymentDTO dto)
+        {
+            var order = await _rentalOrderRepository.GetByIdAsync(dto.RentalOrderId);
+            if (order == null)
+            {
+                return Result<bool>.Failure("Đơn hàng không tồn tại! Kiểm tra lại Id.");
+            }
+            var depositPayment = await _paymentRepository.GetOrderDepositByOrderIdAsync(dto.RentalOrderId);
+            if (depositPayment == null)
+            {
+                return Result<bool>.Failure("Thanh toán đặt cọc đơn không tồn tại cho đơn hàng này.");
+            }
+            depositPayment.Status = PaymentStatus.Refunded;
+            depositPayment.BillingImageUrl = dto.BillingImageUrl;
+            await _paymentRepository.UpdateAsync(depositPayment);
+            return Result<bool>.Success(true, "Xác nhận hoàn trả đặt cọc đơn thành công.");
+        }
         public async Task<Result<UpdatePaymentStatusDTO>> UpdatePaymentStatusAsync(UpdatePaymentStatusDTO updatePaymentDTO)
         {
             var payment = await _paymentRepository.GetByIdAsync(updatePaymentDTO.Id);
