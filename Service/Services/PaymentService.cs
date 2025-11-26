@@ -231,7 +231,6 @@ namespace Service.Services
                     amountLong
                 );
 
-                // Update payment record with requestId if exists
                 var payment = await _paymentRepository.GetOrderDepositByOrderIdAsync(orderId);
                 if (payment != null)
                 {

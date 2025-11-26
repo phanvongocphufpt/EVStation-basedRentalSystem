@@ -92,6 +92,17 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
+        [HttpPost("CreateWithMomo")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> CreateWithMomo([FromBody] CreateRentalOrderDTO createRentalOrderDTO)
+        {
+            var result = await _rentalOrderService.CreateWithMomoAsync(createRentalOrderDTO);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
         [HttpPut("UpdateTotal")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> UpdateTotal([FromBody] UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO)
@@ -182,11 +193,25 @@ namespace EVStation_basedRentalSystem.Controllers
 
             return Ok(new { success = false, message = result.Message });
         }
-
+        [HttpPost("api/payment/confirm-orderdeposit-momo-manual")]
+        public async Task<IActionResult> ConfirmMomoPaymentManual([FromBody] ConfirmMomoPaymentDto dto)
+        {
+            var result = await _rentalOrderService.ProcessMomoCallbackManualAsync(dto.requestId, dto.ResultCode);
+            if (result.IsSuccess)
+            {
+                return Ok(new { success = true, message = "Thanh toán thành công!", orderId = result.OrderId });
+            }
+            return Ok(new { success = false, message = result.Message });
+        }
         public class ConfirmPaymentDto
         {
             public string TxnRef { get; set; } = string.Empty;
             public string ResponseCode { get; set; } = string.Empty;
+        }
+        public class ConfirmMomoPaymentDto
+        {
+            public string requestId { get; set; } = string.Empty;
+            public string ResultCode { get; set; } = string.Empty;
         }
         [HttpPost("AddContactToOrder")]
         [Authorize(Roles = "Admin,Staff,Customer")]

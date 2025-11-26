@@ -18,6 +18,8 @@ namespace Service.IServices
         Task<Result<RentalOrderWithDetailsDTO>> GetByIdWithDetailsAsync(int orderId);
         Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id);
         Task<Result<CreateRentalOrderResponseDTO>> CreateAsync(CreateRentalOrderDTO createRentalOrderDTO, HttpContext httpContext);
+        Task<Result<CreateRentalOrderResponseDTO>> CreateWithMomoAsync(
+    CreateRentalOrderDTO createRentalOrderDTO);
         Task<Result<bool>> CancelOrderAsync(int orderId);
         Task<Result<bool>> CancelOrderForStaffAsync(int orderId);
         Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO);
@@ -26,6 +28,7 @@ namespace Service.IServices
         Task<PaymentCallbackResult> ProcessVnpayIpnAsync(IQueryCollection queryParams);
         Task<PaymentCallbackResult> ProcessVnpayCallbackAsync(IQueryCollection queryParams);
         Task<PaymentCallbackResult> ProcessVnpayCallbackManualAsync(string txnRef, string responseCode);
+        Task<PaymentCallbackResult> ProcessMomoCallbackManualAsync(string requestId, string resultCode);
         Task<Result<bool>> AddContactToOrderAsync(AddContactToOrderDTO dto);
         Task<Result<GetContactFromOrderDTO>> GetContactFromOrderDTO(int orderId);
         Task<Result<bool>> UpdateContact(GetContactFromOrderDTO dto);

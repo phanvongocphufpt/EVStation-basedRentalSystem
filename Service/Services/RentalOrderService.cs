@@ -4,6 +4,7 @@ using Repository.Entities;
 using Repository.Entities.Enum;
 using Repository.IRepositories;
 using Service.Common;
+using Service.Common.Momo.MomoServices;
 using Service.Common.VNPay.Model;
 using Service.Common.VNPay.VnPayServices;
 using Service.DTOs;
@@ -27,13 +28,15 @@ namespace Service.Services
         private readonly IMapper _mapper;
         private readonly EmailService _emailService;
         private readonly IVnPayService _vnPayService;
+        private readonly IMoMoService _moMoService;
+        private readonly IPaymentService _paymentService;
         public RentalOrderService(
             IRentalOrderRepository rentalOrderRepository,
             IUserRepository userRepository,
             ICarRepository carRepository,
             IMapper mapper,
             IRentalLocationRepository rentalLocationRepository,
-            IPaymentRepository paymentRepository, EmailService emailService, IVnPayService vnPayService)
+            IPaymentRepository paymentRepository, EmailService emailService, IVnPayService vnPayService, IPaymentService paymentService, IMoMoService moMoService)
         {
             _rentalOrderRepository = rentalOrderRepository;
             _userRepository = userRepository;
@@ -43,6 +46,8 @@ namespace Service.Services
             _paymentRepository = paymentRepository;
             _emailService = emailService;
             _vnPayService = vnPayService;
+            _paymentService = paymentService;
+            _moMoService = moMoService;
         }
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetAllAsync()
         {
@@ -192,6 +197,134 @@ namespace Service.Services
                 SubTotal = subTotal,
                 DepositAmount = depositAmount,
                 VnpayPaymentUrl = vnpayUrl,
+                Message = "Tạo đơn thành công! Vui lòng thanh toán tiền cọc."
+            };
+
+            return Result<CreateRentalOrderResponseDTO>.Success(response);
+        }
+        public async Task<Result<CreateRentalOrderResponseDTO>> CreateWithMomoAsync(
+    CreateRentalOrderDTO createRentalOrderDTO)
+        {
+            var dto = _mapper.Map<RentalOrder>(createRentalOrderDTO);
+
+            var user = await _userRepository.GetByIdAsync(dto.UserId);
+            if (user == null)
+                return Result<CreateRentalOrderResponseDTO>.Failure("Người dùng không tồn tại!");
+
+            var car = await _carRepository.GetByIdAsync(dto.CarId);
+            if (car == null)
+                return Result<CreateRentalOrderResponseDTO>.Failure("Xe không tồn tại!");
+
+            var location = await _rentalLocationRepository.GetByIdAsync(car.RentalLocationId.Value);
+            if (location == null)
+                return Result<CreateRentalOrderResponseDTO>.Failure("Địa điểm thuê xe không tồn tại!");
+
+            //var subtotalDays = (dto.ExpectedReturnTime - dto.PickupTime).TotalDays;
+            //if (subtotalDays <= 0)
+            //    return Result<CreateRentalOrderResponseDTO>.Failure("Thời gian trả xe phải lớn hơn thời gian nhận xe.");
+
+            //var subTotal = 0.0;
+            //if (subtotalDays <= 0.4) 
+            //{
+            //    subTotal = dto.WithDriver ? car.RentPricePer4HourWithDriver : car.RentPricePer4Hour;
+            //}
+            //if (subtotalDays > 0.4 && subtotalDays <= 0.8)
+            //{
+            //    subTotal = dto.WithDriver ? car.RentPricePer8HourWithDriver : car.RentPricePer8Hour;
+            //}
+            //if (subtotalDays > 0.8)
+            //{
+            //    subTotal = subtotalDays * (dto.WithDriver ? car.RentPricePerDayWithDriver : car.RentPricePerDay);
+            //}
+            var timeSpan = dto.ExpectedReturnTime - dto.PickupTime;
+            if (timeSpan <= TimeSpan.Zero)
+                return Result<CreateRentalOrderResponseDTO>.Failure("Thời gian trả xe phải lớn hơn thời gian nhận xe.");
+
+            var totalHours = timeSpan.TotalHours;
+            double subTotal;
+
+            if (totalHours <= 4)
+                subTotal = dto.WithDriver ? car.RentPricePer4HourWithDriver : car.RentPricePer4Hour;
+            else if (totalHours <= 8)
+                subTotal = dto.WithDriver ? car.RentPricePer8HourWithDriver : car.RentPricePer8Hour;
+            else
+                subTotal = totalHours * (dto.WithDriver
+                    ? car.RentPricePerDayWithDriver / 24.0
+                    : car.RentPricePerDay / 24.0);
+            var depositAmount = car.DepositOrderAmount;
+
+            var order = new RentalOrder
+            {
+                OrderDate = DateTime.Now,
+                PickupTime = dto.PickupTime,
+                ExpectedReturnTime = dto.ExpectedReturnTime,
+                WithDriver = dto.WithDriver,
+                SubTotal = subTotal,
+                DepositCar = car.DepositCarAmount,
+                DepositOrder = car.DepositOrderAmount,
+                UserId = user.Id,
+                User = user,
+                CarId = car.Id,
+                Car = car,
+                RentalLocationId = location.Id,
+                RentalLocation = location,
+                CreatedAt = DateTime.Now,
+                Status = RentalOrderStatus.Pending
+            };
+
+            await _rentalOrderRepository.AddAsync(order);
+            await _rentalOrderRepository.SaveChangesAsync();
+
+            var momoModel = new CreateMomoPaymentDTO
+            {
+                OrderId = order.Id,
+                UserId = order.UserId,
+                Amount = (decimal)order.DepositOrder,
+                OrderInfo = "Thanh toan giu don!"
+            };
+
+            var amountLong = (long)order.DepositOrder; // Convert to long without multiplying by 100
+            var orderIdString = momoModel.OrderId.ToString();
+
+            var (paymentUrl, requestId) = await _moMoService.CreatePaymentUrlAsync(
+                orderIdString,
+                momoModel.OrderInfo,
+                amountLong
+            );
+
+            var payment = new Payment
+            {
+                PaymentType = PaymentType.OrderDeposit,
+                Amount = depositAmount,
+                PaymentMethod = "VNPAY",
+                Status = PaymentStatus.Pending,
+                UserId = order.UserId,
+                RentalOrderId = order.Id,
+                RentalOrder = order,
+                User = user,
+                TxnRef = requestId,
+                TransactionNo = requestId
+            };
+
+            await _paymentRepository.AddAsync(payment);
+            var carDepositPayment = new Payment
+            {
+                PaymentType = PaymentType.Deposit,
+                Amount = car.DepositCarAmount,
+                PaymentMethod = "Direct",
+                Status = PaymentStatus.Pending,
+                UserId = order.UserId,
+                RentalOrderId = order.Id,
+                RentalOrder = order,
+                User = user,
+            };
+            await _paymentRepository.AddAsync(carDepositPayment);
+            var response = new CreateRentalOrderResponseDTO
+            {
+                OrderId = order.Id,
+                SubTotal = subTotal,
+                DepositAmount = depositAmount,
+                VnpayPaymentUrl = paymentUrl,
                 Message = "Tạo đơn thành công! Vui lòng thanh toán tiền cọc."
             };
 
@@ -548,6 +681,78 @@ namespace Service.Services
             {
                 payment.Status = PaymentStatus.Completed;
                 payment.TransactionNo = "MANUAL_" + txnRef;
+                payment.PaymentDate = DateTime.UtcNow;
+                await _paymentRepository.UpdateAsync(payment);
+
+                order.Status = RentalOrderStatus.OrderDepositConfirmed;
+                await _rentalOrderRepository.UpdateAsync(order);
+
+                result.IsSuccess = true;
+                result.Message = "Thanh toán thành công!";
+                await _emailService.SendRemindEmail(order.User.Email, order);
+            }
+            catch (Exception ex)
+            {
+                result.Message = "Lỗi hệ thống";
+            }
+
+            return result;
+        }
+        public async Task<PaymentCallbackResult> ProcessMomoCallbackManualAsync(string requestId, string resultCode)
+        {
+            var result = new PaymentCallbackResult
+            {
+                IsSuccess = false,
+                OrderId = requestId,
+                Message = "Thanh toán thất bại"
+            };
+            if (string.IsNullOrEmpty(requestId))
+            {
+                result.Message = "Giao dịch không thành công";
+                return result;
+            }
+            var payment = await _paymentRepository.GetByTxnRefAsync(requestId);
+            if (payment == null)
+            {
+                result.Message = "Không tìm thấy giao dịch";
+                return result;
+            }
+            if (payment.Status == PaymentStatus.Completed)
+            {
+                result.IsSuccess = true;
+                result.Message = "Đã xử lý trước đó";
+                return result;
+            }
+
+            var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId!.Value);
+            if (order == null)
+            {
+                result.Message = "Không tìm thấy đơn đặt thuê";
+                return result;
+            }
+            var carDeposit = await _paymentRepository.GetDepositByOrderIdAsync(order.Id);
+            if (carDeposit == null)
+            {
+                result.Message = "Không tìm thấy giao dịch đặt cọc xe";
+                return result;
+            }
+            if (resultCode != "0")
+            {
+                payment.Status = PaymentStatus.Failed;
+                payment.TransactionNo = "MANUAL_" + requestId;
+                await _paymentRepository.UpdateAsync(payment);
+                order.Status = RentalOrderStatus.Cancelled;
+                await _rentalOrderRepository.UpdateAsync(order);
+                carDeposit.Status = PaymentStatus.Failed;
+                await _paymentRepository.UpdateAsync(carDeposit);
+                result.Message = "Giao dịch không thành công, đơn bị hủy!";
+                return result;
+            }
+
+            try
+            {
+                payment.Status = PaymentStatus.Completed;
+                payment.TransactionNo = "MANUAL_" + requestId;
                 payment.PaymentDate = DateTime.UtcNow;
                 await _paymentRepository.UpdateAsync(payment);
 
