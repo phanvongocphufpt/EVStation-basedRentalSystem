@@ -296,7 +296,7 @@ namespace Service.Services
             {
                 PaymentType = PaymentType.OrderDeposit,
                 Amount = depositAmount,
-                PaymentMethod = "VNPAY",
+                PaymentMethod = "Momo",
                 Status = PaymentStatus.Pending,
                 UserId = order.UserId,
                 RentalOrderId = order.Id,
