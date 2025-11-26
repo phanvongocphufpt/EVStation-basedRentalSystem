@@ -503,12 +503,20 @@ namespace Service.Services
                 return result;
             }
 
+            var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId!.Value);
+            if (order == null) 
+            {
+                result.Message = "Không tìm thấy đơn đặt thuê";
+                return result;
+            }
             if (responseCode != "00")
             {
                 payment.Status = PaymentStatus.Failed;
                 payment.TransactionNo = "MANUAL_" + txnRef;
                 await _paymentRepository.UpdateAsync(payment);
-                result.Message = "Giao dịch không thành công";
+                order.Status = RentalOrderStatus.Cancelled;
+                await _rentalOrderRepository.UpdateAsync(order);
+                result.Message = "Giao dịch không thành công, đơn bị hủy!";
                 return result;
             }
 
@@ -519,12 +527,8 @@ namespace Service.Services
                 payment.PaymentDate = DateTime.UtcNow;
                 await _paymentRepository.UpdateAsync(payment);
 
-                var order = await _rentalOrderRepository.GetByIdAsync(payment.RentalOrderId!.Value);
-                if (order != null)
-                {
-                    order.Status = RentalOrderStatus.OrderDepositConfirmed;
-                    await _rentalOrderRepository.UpdateAsync(order);
-                }
+                order.Status = RentalOrderStatus.OrderDepositConfirmed;
+                await _rentalOrderRepository.UpdateAsync(order);
 
                 result.IsSuccess = true;
                 result.Message = "Thanh toán thành công!";
