@@ -14,10 +14,12 @@ namespace Service.Services
     public class CarService : ICarService
     {
         private readonly ICarRepository _carRepository;
+        private readonly IRentalLocationRepository _rentalLocationRepository;
         private readonly IMapper _mapper;
-        public CarService(ICarRepository carRepository, IMapper mapper)
+        public CarService(ICarRepository carRepository, IRentalLocationRepository rentalLocationRepository, IMapper mapper)
         {
             _carRepository = carRepository;
+            _rentalLocationRepository = rentalLocationRepository;
             _mapper = mapper;
         }
 
@@ -154,6 +156,30 @@ namespace Service.Services
             var cars = await _carRepository.GetCarsByLocationAsync(locationId);
             var dtos = _mapper.Map<IEnumerable<CarDTO>>(cars);
             return Result<IEnumerable<CarDTO>>.Success(dtos);
+        }
+
+        public async Task<Result<Car>> UpdateCarRentalLocationAsync(UpdateCarRentalLocationDTO dto)
+        {
+            // Kiểm tra xe có tồn tại không
+            var car = await _carRepository.GetByIdAsync(dto.CarId);
+            if (car == null || car.IsDeleted)
+            {
+                return Result<Car>.Failure("Xe không tồn tại hoặc đã bị xóa.");
+            }
+
+            // Kiểm tra địa điểm mới có tồn tại không
+            var newLocation = await _rentalLocationRepository.GetByIdAsync(dto.NewLocationId);
+            if (newLocation == null || newLocation.IsDeleted)
+            {
+                return Result<Car>.Failure("Địa điểm thuê xe không tồn tại hoặc đã bị xóa.");
+            }
+
+            // Cập nhật vị trí xe
+            car.RentalLocationId = dto.NewLocationId;
+            car.UpdatedAt = DateTime.UtcNow;
+
+            await _carRepository.UpdateAsync(car);
+            return Result<Car>.Success(car, $"Điều phối xe thành công đến địa điểm: {newLocation.Name}.");
         }
     }
 }

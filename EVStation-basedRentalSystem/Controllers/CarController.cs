@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
+using Service.DTOs;
 using Service.IServices;
 using System;
 using System.Threading.Tasks;
@@ -133,6 +134,21 @@ namespace EVStation_basedRentalSystem.Controllers
             var result = await _carService.GetTopRentedAsync(topCount);
             if (!result.IsSuccess)
                 return NotFound(new { message = result.Message });
+
+            return Ok(new { message = result.Message, data = result.Data });
+        }
+
+        // ✅ PUT: api/Car/UpdateRentalLocation - Điều phối xe
+        [Authorize(Roles = "Staff,Admin")]
+        [HttpPut("UpdateRentalLocation")]
+        public async Task<IActionResult> UpdateCarRentalLocation([FromBody] UpdateCarRentalLocationDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _carService.UpdateCarRentalLocationAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
 
             return Ok(new { message = result.Message, data = result.Data });
         }

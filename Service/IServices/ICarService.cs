@@ -29,5 +29,8 @@ namespace Service.IServices
         // 🔹 Lấy top xe được thuê nhiều nhất
         Task<Result<IEnumerable<TopRentCarDto>>> GetTopRentedAsync(int topCount);
         Task<Result<IEnumerable<CarDTO>>> GetCarsByLocationAsync(int locationId);
+
+        // 🔹 Điều phối xe (cập nhật vị trí xe)
+        Task<Result<Car>> UpdateCarRentalLocationAsync(UpdateCarRentalLocationDTO dto);
     }
 }

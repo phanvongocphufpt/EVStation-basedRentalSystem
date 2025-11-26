@@ -21,7 +21,7 @@ namespace Service.DTOs
     }
     public class UpdateCarRentalLocationDTO
     {
-        public int Id { get; set; }
-        public int Quantity { get; set; }
+        public int CarId { get; set; }
+        public int NewLocationId { get; set; }
     }
 }
