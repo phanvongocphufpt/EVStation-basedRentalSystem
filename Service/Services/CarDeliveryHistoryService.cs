@@ -60,6 +60,23 @@ namespace Service.Services
             }
         }
 
+        // 🔹 Lấy thông tin đầy đủ theo OrderId
+        public async Task<Result<CarDeliveryHistoryDTO?>> GetByOrderIdAsync(int orderId)
+        {
+            try
+            {
+                var entity = await _repo.GetByOrderIdAsync(orderId);
+                if (entity == null)
+                    return Result<CarDeliveryHistoryDTO?>.Failure("Không tìm thấy lịch sử giao xe với OrderId này.");
+
+                return Result<CarDeliveryHistoryDTO?>.Success(_mapper.Map<CarDeliveryHistoryDTO>(entity), "Lấy thông tin lịch sử giao xe theo OrderId thành công.");
+            }
+            catch (Exception ex)
+            {
+                return Result<CarDeliveryHistoryDTO?>.Failure($"Lỗi khi lấy dữ liệu: {ex.Message}");
+            }
+        }
+
         public async Task<Result<string>> AddAsync(CarDeliveryHistoryCreateDTO dto)
         {
             try

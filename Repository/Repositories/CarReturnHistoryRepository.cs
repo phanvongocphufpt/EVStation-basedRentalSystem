@@ -36,6 +36,14 @@
                     .FirstOrDefaultAsync(x => x.Id == id);
             }
 
+            public async Task<CarReturnHistory?> GetByOrderIdAsync(int orderId)
+            {
+                return await _context.CarReturnHistories
+                    .Include(x => x.Order)
+                    .Include(x => x.Car)
+                    .FirstOrDefaultAsync(x => x.OrderId == orderId);
+            }
+
             public async Task AddAsync(CarReturnHistory entity)
             {
                 await _context.CarReturnHistories.AddAsync(entity);

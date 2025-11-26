@@ -48,6 +48,21 @@ namespace EVStation_basedRentalSystem.Controllers
             });
         }
 
+        [HttpGet("ByOrderId/{orderId}")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
+        public async Task<IActionResult> GetByOrderId(int orderId)
+        {
+            var result = await _service.GetByOrderIdAsync(orderId);
+            if (!result.IsSuccess)
+                return NotFound(new { result.Message });
+
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+
         [HttpPost]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] CarReturnHistoryCreateDTO dto)

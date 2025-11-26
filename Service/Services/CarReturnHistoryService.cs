@@ -45,6 +45,23 @@ namespace Service.Services
             return Result<CarReturnHistoryDTO?>.Success(_mapper.Map<CarReturnHistoryDTO>(entity));
         }
 
+        // 🔹 Lấy thông tin đầy đủ theo OrderId
+        public async Task<Result<CarReturnHistoryDTO?>> GetByOrderIdAsync(int orderId)
+        {
+            try
+            {
+                var entity = await _repo.GetByOrderIdAsync(orderId);
+                if (entity == null)
+                    return Result<CarReturnHistoryDTO?>.Failure("Không tìm thấy lịch sử trả xe với OrderId này.");
+
+                return Result<CarReturnHistoryDTO?>.Success(_mapper.Map<CarReturnHistoryDTO>(entity), "Lấy thông tin lịch sử trả xe theo OrderId thành công.");
+            }
+            catch (Exception ex)
+            {
+                return Result<CarReturnHistoryDTO?>.Failure($"Lỗi khi lấy dữ liệu: {ex.Message}");
+            }
+        }
+
         public async Task<Result<string>> AddAsync(CarReturnHistoryCreateDTO dto)
         {
 

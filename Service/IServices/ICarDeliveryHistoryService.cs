@@ -9,6 +9,7 @@ namespace Service.IServices
     {
         Task<Result<(IEnumerable<CarDeliveryHistoryDTO> Data, int Total)>> GetAllAsync(int pageIndex, int pageSize);
         Task<Result<CarDeliveryHistoryDTO?>> GetByIdAsync(int id);
+        Task<Result<CarDeliveryHistoryDTO?>> GetByOrderIdAsync(int orderId);
         Task<Result<string>> AddAsync(CarDeliveryHistoryCreateDTO dto);
         Task<Result<string>> UpdateAsync(int id, CarDeliveryHistoryCreateDTO dto);
         Task<Result<string>> DeleteAsync(int id);

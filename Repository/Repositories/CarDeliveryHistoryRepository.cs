@@ -39,6 +39,14 @@ namespace Repository.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<CarDeliveryHistory?> GetByOrderIdAsync(int orderId)
+        {
+            return await _context.CarDeliveryHistories
+                .Include(x => x.Car)
+                .Include(x => x.Order)
+                .FirstOrDefaultAsync(x => x.OrderId == orderId);
+        }
+
         public async Task AddAsync(CarDeliveryHistory entity)
         {
             await _context.CarDeliveryHistories.AddAsync(entity);

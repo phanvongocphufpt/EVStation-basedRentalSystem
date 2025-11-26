@@ -11,6 +11,7 @@ namespace Repository.IRepositories
         Task<IEnumerable<CarDeliveryHistory>> GetAllAsync(int pageIndex, int pageSize);
         Task<int> CountAsync();
         Task<CarDeliveryHistory?> GetByIdAsync(int id);
+        Task<CarDeliveryHistory?> GetByOrderIdAsync(int orderId);
         Task AddAsync(CarDeliveryHistory entity);
         Task UpdateAsync(CarDeliveryHistory entity);
         Task DeleteAsync(int id);
