@@ -16,7 +16,7 @@ namespace EVStation_basedRentalSystem.Controllers
             _driverLicenseService = driverLicenseService;
         }
         [HttpGet("GetAll")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetAllDriverLicenses()
         {
             var driverLicenses = await _driverLicenseService.GetAllAsync();
@@ -31,14 +31,14 @@ namespace EVStation_basedRentalSystem.Controllers
                 return NotFound();
             return Ok(driverLicense);
         }
-        [HttpGet("GetByUserId")]
+        [HttpGet("GetByUserId/{userId}")]
         [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
-            var driverLicense = await _driverLicenseService.GetByUserIdAsync(userId);
-            if (driverLicense == null)
-                return NotFound();
-            return Ok(driverLicense);
+            var result = await _driverLicenseService.GetByUserIdAsync(userId);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message });
+            return Ok(new { message = result.Message, data = result.Data });
         }
         [HttpPost("Create")]
         [Authorize(Roles = "Admin,Staff,Customer")]

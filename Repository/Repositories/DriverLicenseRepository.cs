@@ -1,4 +1,5 @@
-﻿using Repository.Context;
+﻿using Microsoft.EntityFrameworkCore;
+using Repository.Context;
 using Repository.Entities;
 using Repository.IRepositories;
 using System;
@@ -26,7 +27,7 @@ namespace Repository.Repositories
         }
         public async Task<DriverLicense?> GetByUserIdAsync(int id)
         {
-            return await Task.FromResult(_context.DriverLicenses.FirstOrDefault(dl => dl.UserId == id));
+            return await _context.DriverLicenses.FirstOrDefaultAsync(dl => dl.UserId == id);
         }
         public async Task AddAsync(DriverLicense driverLicense)
         {
