@@ -33,4 +33,23 @@ namespace Service.DTOs
         public bool IsActive { get; set; }
         public int? RentalLocationId { get; set; }
     }
+
+    public class UpdateCarRentalLocationDTO
+    {
+        public int CarId { get; set; }
+        public int NewLocationId { get; set; }
+    }
+
+    public class UpdateCarRentalLocationResponseDTO
+    {
+        public int CarId { get; set; }
+        public string CarName { get; set; }
+        public int? OldLocationId { get; set; }
+        public string? OldLocationName { get; set; }
+        public string? OldLocationAddress { get; set; }
+        public int NewLocationId { get; set; }
+        public string NewLocationName { get; set; }
+        public string NewLocationAddress { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
 }

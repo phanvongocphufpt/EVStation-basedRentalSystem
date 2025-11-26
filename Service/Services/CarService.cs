@@ -158,28 +158,54 @@ namespace Service.Services
             return Result<IEnumerable<CarDTO>>.Success(dtos);
         }
 
-        public async Task<Result<Car>> UpdateCarRentalLocationAsync(UpdateCarRentalLocationDTO dto)
+        public async Task<Result<UpdateCarRentalLocationResponseDTO>> UpdateCarRentalLocationAsync(UpdateCarRentalLocationDTO dto)
         {
             // Kiểm tra xe có tồn tại không
             var car = await _carRepository.GetByIdAsync(dto.CarId);
             if (car == null || car.IsDeleted)
             {
-                return Result<Car>.Failure("Xe không tồn tại hoặc đã bị xóa.");
+                return Result<UpdateCarRentalLocationResponseDTO>.Failure("Xe không tồn tại hoặc đã bị xóa.");
+            }
+
+            // Lấy vị trí hiện tại (cũ) của xe
+            RentalLocation? oldLocation = null;
+            if (car.RentalLocationId.HasValue)
+            {
+                oldLocation = await _rentalLocationRepository.GetByIdAsync(car.RentalLocationId.Value);
             }
 
             // Kiểm tra địa điểm mới có tồn tại không
             var newLocation = await _rentalLocationRepository.GetByIdAsync(dto.NewLocationId);
             if (newLocation == null || newLocation.IsDeleted)
             {
-                return Result<Car>.Failure("Địa điểm thuê xe không tồn tại hoặc đã bị xóa.");
+                return Result<UpdateCarRentalLocationResponseDTO>.Failure("Địa điểm thuê xe không tồn tại hoặc đã bị xóa.");
             }
+
+            // Tạo response DTO với thông tin vị trí cũ
+            var response = new UpdateCarRentalLocationResponseDTO
+            {
+                CarId = car.Id,
+                CarName = car.Name,
+                OldLocationId = car.RentalLocationId,
+                OldLocationName = oldLocation?.Name,
+                OldLocationAddress = oldLocation?.Address,
+                NewLocationId = dto.NewLocationId,
+                NewLocationName = newLocation.Name,
+                NewLocationAddress = newLocation.Address,
+                UpdatedAt = DateTime.UtcNow
+            };
 
             // Cập nhật vị trí xe
             car.RentalLocationId = dto.NewLocationId;
             car.UpdatedAt = DateTime.UtcNow;
 
             await _carRepository.UpdateAsync(car);
-            return Result<Car>.Success(car, $"Điều phối xe thành công đến địa điểm: {newLocation.Name}.");
+            
+            var message = oldLocation != null 
+                ? $"Điều phối xe thành công từ '{oldLocation.Name}' đến '{newLocation.Name}'."
+                : $"Điều phối xe thành công đến địa điểm: {newLocation.Name}.";
+            
+            return Result<UpdateCarRentalLocationResponseDTO>.Success(response, message);
         }
     }
 }

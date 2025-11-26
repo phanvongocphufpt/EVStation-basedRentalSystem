@@ -31,6 +31,6 @@ namespace Service.IServices
         Task<Result<IEnumerable<CarDTO>>> GetCarsByLocationAsync(int locationId);
 
         // 🔹 Điều phối xe (cập nhật vị trí xe)
-        Task<Result<Car>> UpdateCarRentalLocationAsync(UpdateCarRentalLocationDTO dto);
+        Task<Result<UpdateCarRentalLocationResponseDTO>> UpdateCarRentalLocationAsync(UpdateCarRentalLocationDTO dto);
     }
 }
