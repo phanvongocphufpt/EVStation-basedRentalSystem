@@ -89,7 +89,13 @@ namespace Service.Services
             // KHÔNG cập nhật navigation properties (CarRentalLocations, RentalOrders)
             existing.Name = car.Name;
             existing.Model = car.Model;
-           
+            existing.DepositCarAmount = car.DepositCarAmount;
+            existing.DepositOrderAmount = car.DepositOrderAmount;
+            existing.RentPricePer4Hour = car.RentPricePer4Hour;
+            existing.RentPricePer4HourWithDriver = car.RentPricePer4HourWithDriver;
+            existing.RentPricePer8HourWithDriver = car.RentPricePer8HourWithDriver;
+            existing.RentPricePer8Hour = car.RentPricePer8Hour;
+            existing.RentalLocationId = car.RentalLocationId;
             existing.Seats = car.Seats;
             existing.SizeType = car.SizeType;
             existing.TrunkCapacity = car.TrunkCapacity;
