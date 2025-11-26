@@ -174,6 +174,7 @@ namespace Service.Services
             var response = new CreateRentalOrderResponseDTO
             {
                 OrderId = order.Id,
+                SubTotal = subTotal,
                 DepositAmount = depositAmount,
                 VnpayPaymentUrl = vnpayUrl,
                 Message = "Tạo đơn thành công! Vui lòng thanh toán tiền cọc."
@@ -509,6 +510,12 @@ namespace Service.Services
                 result.Message = "Không tìm thấy đơn đặt thuê";
                 return result;
             }
+            var carDeposit = await _paymentRepository.GetDepositByOrderIdAsync(order.Id);
+            if (carDeposit == null)
+            {
+                result.Message = "Không tìm thấy giao dịch đặt cọc xe";
+                return result;
+            }
             if (responseCode != "00")
             {
                 payment.Status = PaymentStatus.Failed;
@@ -516,6 +523,8 @@ namespace Service.Services
                 await _paymentRepository.UpdateAsync(payment);
                 order.Status = RentalOrderStatus.Cancelled;
                 await _rentalOrderRepository.UpdateAsync(order);
+                carDeposit.Status = PaymentStatus.Failed;
+                await _paymentRepository.UpdateAsync(carDeposit);
                 result.Message = "Giao dịch không thành công, đơn bị hủy!";
                 return result;
             }
