@@ -24,7 +24,6 @@ namespace Service.Common.VNPay.VnPayServices
             var tick = DateTime.Now.ToString("yyMMddHHmmss") + new Random().Next(1000, 9999);
             var pay = new VnPayLibrary();
             var urlCallBack = _configuration["Vnpay:PaymentBackReturnUrl"];
-            var ipnUrl = _configuration["Vnpay:IpnUrl"];
 
             pay.AddRequestData("vnp_Version", "2.1.0");
             pay.AddRequestData("vnp_Command", "pay");
@@ -37,7 +36,6 @@ namespace Service.Common.VNPay.VnPayServices
             pay.AddRequestData("vnp_OrderInfo", $"{model.Name} {model.OrderDescription} {model.Amount}");
             pay.AddRequestData("vnp_OrderType", model.OrderType ?? "250001");
             pay.AddRequestData("vnp_ReturnUrl", urlCallBack);
-            //pay.AddRequestData("vnp_IpnUrl", ipnUrl);
             pay.AddRequestData("vnp_TxnRef", tick);
 
             var paymentUrl =
