@@ -128,7 +128,7 @@ namespace Service.Services
                 return Result<bool>.Failure("Thanh toán đặt cọc xe không tồn tại cho đơn hàng này.");
             }
             depositPayment.Status = PaymentStatus.Refunded;
-            depositPayment.BillingImageUrl = dto.BillingImageUrl;
+            depositPayment.BillingRefundImageUrl = dto.BillingImageUrl;
             await _paymentRepository.UpdateAsync(depositPayment);
             order.ReportNote = dto.Note;
             order.Status = RentalOrderStatus.Completed;
@@ -154,9 +154,10 @@ namespace Service.Services
                 return Result<bool>.Failure("Thanh toán đặt cọc đơn không tồn tại cho đơn hàng này.");
             }
             depositPayment.Status = PaymentStatus.Refunded;
-            depositPayment.BillingImageUrl = dto.BillingImageUrl;
+            depositPayment.BillingRefundImageUrl = dto.BillingImageUrl;
             await _paymentRepository.UpdateAsync(depositPayment);
             order.Status = RentalOrderStatus.Cancelled;
+            order.ReportNote = dto.Note;
             await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận hoàn trả đặt cọc đơn thành công.");
         }

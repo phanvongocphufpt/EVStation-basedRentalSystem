@@ -339,6 +339,7 @@ namespace Repository.Context.Migrations
                     Amount = table.Column<double>(type: "float", nullable: false),
                     PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BillingImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BillingRefundImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     TxnRef = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TransactionNo = table.Column<string>(type: "nvarchar(max)", nullable: true),

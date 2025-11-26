@@ -524,6 +524,9 @@ namespace Repository.Context.Migrations
                     b.Property<string>("BillingImageUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BillingRefundImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("PaymentDate")
                         .HasColumnType("datetime2");
 

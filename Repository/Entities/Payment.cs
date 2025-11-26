@@ -17,6 +17,7 @@ namespace Repository.Entities
         public double Amount { get; set; }
         public string? PaymentMethod { get; set; }
         public string? BillingImageUrl { get; set; }
+        public string? BillingRefundImageUrl { get; set; }
         public PaymentStatus Status { get; set; }
         public string? TxnRef { get; set; }
         public string? TransactionNo { get; set; }

@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251126044434_InitMigration")]
+    [Migration("20251126051316_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -525,6 +525,9 @@ namespace Repository.Context.Migrations
                         .HasColumnType("float");
 
                     b.Property<string>("BillingImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BillingRefundImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("PaymentDate")

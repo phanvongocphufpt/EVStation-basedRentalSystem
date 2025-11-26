@@ -15,6 +15,7 @@ namespace Service.DTOs
         public double Amount { get; set; }
         public string PaymentMethod { get; set; }
         public string? BillingImageUrl { get; set; }
+        public string? BillingRefundImageUrl { get; set; }
         public string Status { get; set; }
         public string UserId { get; set; }
         public string OrderId { get; set; }
@@ -55,6 +56,7 @@ namespace Service.DTOs
     {
         public int RentalOrderId { get; set; }
         public string? BillingImageUrl { get; set; }
+        public string? Note { get; set; }
     }
     public class CreateMomoPaymentDTO
     {
