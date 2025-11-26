@@ -102,16 +102,52 @@ namespace Service.Services
             }
         }
 
-        // 🔹 Cập nhật
+        // 🔹 Cập nhật (bổ sung, không xóa dữ liệu cũ)
         public async Task<Result<string>> UpdateAsync(int id, CarReturnHistoryCreateDTO dto)
         {
-            var existing = await _repo.GetByIdAsync(id);
-            if (existing == null)
-                return Result<string>.Failure("Không tìm thấy lịch sử trả xe.");
+            try
+            {
+                var existing = await _repo.GetByIdAsync(id);
+                if (existing == null)
+                    return Result<string>.Failure("Không tìm thấy lịch sử trả xe.");
 
-            _mapper.Map(dto, existing);
-            await _repo.UpdateAsync(existing);
-            return Result<string>.Success("OK", "Cập nhật lịch sử trả xe thành công.");
+                // Chỉ cập nhật các trường được cung cấp, không xóa dữ liệu cũ
+                if (dto.OdometerEnd > 0)
+                    existing.OdometerEnd = dto.OdometerEnd;
+                
+                if (dto.BatteryLevelEnd >= 0)
+                    existing.BatteryLevelEnd = dto.BatteryLevelEnd;
+                
+                if (!string.IsNullOrWhiteSpace(dto.VehicleConditionEnd))
+                    existing.VehicleConditionEnd = dto.VehicleConditionEnd;
+
+                // Bổ sung ImageUrl nếu có, không ghi đè nếu đã có giá trị
+                if (!string.IsNullOrWhiteSpace(dto.ImageUrl))
+                    existing.ImageUrl = dto.ImageUrl;
+                
+                if (!string.IsNullOrWhiteSpace(dto.ImageUrl2))
+                    existing.ImageUrl2 = dto.ImageUrl2;
+                
+                if (!string.IsNullOrWhiteSpace(dto.ImageUrl3))
+                    existing.ImageUrl3 = dto.ImageUrl3;
+                
+                if (!string.IsNullOrWhiteSpace(dto.ImageUrl4))
+                    existing.ImageUrl4 = dto.ImageUrl4;
+                
+                if (!string.IsNullOrWhiteSpace(dto.ImageUrl5))
+                    existing.ImageUrl5 = dto.ImageUrl5;
+                
+                if (!string.IsNullOrWhiteSpace(dto.ImageUrl6))
+                    existing.ImageUrl6 = dto.ImageUrl6;
+
+                existing.UpdateAt = DateTime.Now;
+                await _repo.UpdateAsync(existing);
+                return Result<string>.Success("OK", "Cập nhật lịch sử trả xe thành công.");
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Failure($"Lỗi khi cập nhật: {ex.Message}");
+            }
         }
 
         // 🔹 Xóa
