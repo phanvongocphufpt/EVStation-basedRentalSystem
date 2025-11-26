@@ -136,7 +136,7 @@ namespace Service.EmailConfirmation
 <p>Hẹn gặp quý khách vào ngày {rentalOrder.PickupTime:dd/MM/yyyy HH:mm} tại: {rentalOrder.RentalLocation.Address}</p>
 <p>Khi đến, quý khách vui lòng mang theo GPLX, CCCD vật lý để chúng tôi xác minh. </p>
 <p><b>Bây giờ, quý khách vui lòng vào xem đơn để đọc trước hợp đồng thuê xe cũng như chuẩn bị trước số tiền cọc xe là {rentalOrder.DepositCar} VNĐ. Tiền cọc giữ đơn sẽ được hoàn trả chung với hóa đơn cuối cùng sau khi đã khấu trừ phí vượt mức, phí phát sinh và hư hại nếu có. Tiền cọc xe sẽ được hoàn trong vòng từ 2 - 3 ngày kể từ lúc trả xe.</b></p>
-<p><b>Lưu ý: Nếu bạn hủy đơn trong 2 giờ sẽ được hoàn lại 100% tiền giữ đơn. Sau 2 giờ hủy đơn sẽ mất toàn bộ tiền giữ đơn.</b></p>
+<p><b>Lưu ý: Nếu bạn hủy đơn trong 1 giờ sẽ được hoàn lại 100% tiền giữ đơn. Sau 1 giờ hủy đơn sẽ mất toàn bộ tiền giữ đơn.</b></p>
 <p><br/></p>
 <p>Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email.</p>
 <p>Cảm ơn bạn đã sử dụng dịch vụ EVRental!</p>
