@@ -27,6 +27,7 @@
             public DateTime? ResetPasswordTokenExpiry { get; set; }
             public DateTime CreatedAt { get; set; }
             public DateTime? UpdatedAt { get; set; }
+            public int? Point { get; set; }
             public bool IsActive { get; set; }
             public int? RentalLocationId { get; set; }
             public RentalLocation? RentalLocation { get; set; }

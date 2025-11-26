@@ -136,6 +136,17 @@ namespace EVStation_basedRentalSystem.Controllers
             }
             return BadRequest(result);
         }
+        [HttpDelete("CancelOrderForStaff")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> CancelOrderForStaff([FromForm] int orderId)
+        {
+            var result = await _rentalOrderService.CancelOrderForStaffAsync(orderId);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
         //[HttpGet("Checkout/PaymentCallbackVnpay")]
         //[HttpPost("Checkout/PaymentCallbackVnpay")]
         //public async Task<IActionResult> PaymentCallbackVnpay()

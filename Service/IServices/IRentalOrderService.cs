@@ -19,6 +19,7 @@ namespace Service.IServices
         Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id);
         Task<Result<CreateRentalOrderResponseDTO>> CreateAsync(CreateRentalOrderDTO createRentalOrderDTO, HttpContext httpContext);
         Task<Result<bool>> CancelOrderAsync(int orderId);
+        Task<Result<bool>> CancelOrderForStaffAsync(int orderId);
         Task<Result<UpdateRentalOrderTotalDTO>> UpdateTotalAsync(UpdateRentalOrderTotalDTO updateRentalOrderTotalDTO);
         Task<Result<bool>> ConfirmOrderPaymentAsync(ConfirmOrderPaymentDTO dto);
         Task<Result<bool>> ConfirmTotalAsync(int orderId);

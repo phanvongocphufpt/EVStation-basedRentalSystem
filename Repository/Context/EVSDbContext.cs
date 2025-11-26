@@ -416,7 +416,8 @@ namespace Repository.Context
                     CreatedAt = new DateTime(2025, 10, 11),
                     UpdatedAt = null,
                     IsActive = true,
-                    RentalLocationId = null
+                    RentalLocationId = null,
+                    Point = 100
                 },
                 new User
                 {
@@ -432,7 +433,8 @@ namespace Repository.Context
                     CreatedAt = new DateTime(2025, 10, 11),
                     UpdatedAt = null,
                     IsActive = true,
-                    RentalLocationId = 1
+                    RentalLocationId = 1,
+                    Point = 100
                 },
                 new User
                 {
@@ -448,7 +450,8 @@ namespace Repository.Context
                     CreatedAt = new DateTime(2025, 10, 11),
                     UpdatedAt = null,
                     IsActive = true,
-                    RentalLocationId = null
+                    RentalLocationId = null,
+                    Point = 100
                 },
                 new User
                 {
@@ -464,7 +467,8 @@ namespace Repository.Context
                     CreatedAt = new DateTime(2025, 10, 11),
                     UpdatedAt = null,
                     IsActive = true,
-                    RentalLocationId = 2
+                    RentalLocationId = 2,
+                    Point = 100
                 },
                 new User
                 {
@@ -480,7 +484,8 @@ namespace Repository.Context
                     CreatedAt = new DateTime(2025, 10, 11),
                     UpdatedAt = null,
                     IsActive = true,
-                    RentalLocationId = 3
+                    RentalLocationId = 3,
+                    Point = 100
                 },
                 new User
                 {
@@ -496,7 +501,8 @@ namespace Repository.Context
                     CreatedAt = new DateTime(2025, 10, 11),
                     UpdatedAt = null,
                     IsActive = true,
-                    RentalLocationId = 4
+                    RentalLocationId = 4,
+                    Point = 100
                 }
                     );
                 });

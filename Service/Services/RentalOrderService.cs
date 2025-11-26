@@ -312,13 +312,37 @@ namespace Service.Services
                 existingOrder.Status = RentalOrderStatus.RefundDepositOrder;
                 existingOrder.UpdatedAt = DateTime.Now;
                 await _rentalOrderRepository.UpdateAsync(existingOrder);
+                user.Point -= 5;
+                await _userRepository.UpdateAsync(user);
             } 
             else
             {
                 existingOrder.Status = RentalOrderStatus.Cancelled;
                 existingOrder.UpdatedAt = DateTime.Now;
                 await _rentalOrderRepository.UpdateAsync(existingOrder);
+                var user = await _userRepository.GetByIdAsync(existingOrder.UserId);
+                user.Point -= 10;
+                await _userRepository.UpdateAsync(user);
             }
+            return Result<bool>.Success(true, "Hủy đơn thuê thành công!");
+        }
+        public async Task<Result<bool>> CancelOrderForStaffAsync(int orderId)
+        {
+            var existingOrder = await _rentalOrderRepository.GetByIdAsync(orderId);
+            if (existingOrder == null)
+            {
+                return Result<bool>.Failure("Đơn đặt thuê không tồn tại! Kiểm tra lại Id.");
+            }
+            if (existingOrder.Status == RentalOrderStatus.Completed || existingOrder.Status == RentalOrderStatus.Cancelled)
+            {
+                return Result<bool>.Failure("Không thể hủy đơn đặt thuê đã hoàn thành hoặc đã bị hủy.");
+            }
+            existingOrder.Status = RentalOrderStatus.Cancelled;
+            existingOrder.UpdatedAt = DateTime.Now;
+            await _rentalOrderRepository.UpdateAsync(existingOrder);
+            var user = await _userRepository.GetByIdAsync(existingOrder.UserId);
+            user.Point -= 10;
+            await _userRepository.UpdateAsync(user);
             return Result<bool>.Success(true, "Hủy đơn thuê thành công!");
         }
         public async Task<Result<IEnumerable<RentalOrderDTO>>> GetByUserIdAsync(int id)
