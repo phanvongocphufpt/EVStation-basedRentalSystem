@@ -312,12 +312,17 @@ namespace Service.Services
                 existingOrder.Status = RentalOrderStatus.RefundDepositOrder;
                 existingOrder.UpdatedAt = DateTime.Now;
                 await _rentalOrderRepository.UpdateAsync(existingOrder);
+                user.Point -= 5;
+                await _userRepository.UpdateAsync(user);
             } 
             else
             {
                 existingOrder.Status = RentalOrderStatus.Cancelled;
                 existingOrder.UpdatedAt = DateTime.Now;
                 await _rentalOrderRepository.UpdateAsync(existingOrder);
+                var user = await _userRepository.GetByIdAsync(existingOrder.UserId);
+                user.Point -= 10;
+                await _userRepository.UpdateAsync(user);
             }
             return Result<bool>.Success(true, "Hủy đơn thuê thành công!");
         }

@@ -75,6 +75,7 @@ namespace EVStation_basedRentalSystem.Controllers
                 Password = model.Password,
                 FullName = model.FullName,
                 PhoneNumber = model.PhoneNumber,
+                Point = 100,
             };
             await _authService.Register(user, model.Password);
 
