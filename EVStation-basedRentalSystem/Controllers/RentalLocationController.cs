@@ -24,15 +24,15 @@
                 return Ok(Users);
             }
             [HttpGet("GetAllStaffByLocationId")]
-
-            public async Task<IActionResult> GetAllStaffByLocationId(int locationId)
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetAllStaffByLocationId(int locationId)
             {
                 var Users = await _rentalLocationService.GetAllStaffByLocationIdAsync(locationId);
                 return Ok(Users);
             }
             [HttpGet("GetById")]
-
-            public async Task<IActionResult> GetById(int id)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetById(int id)
             {
                 var user = await _rentalLocationService.GetByIdAsync(id);
                 if (user == null)
