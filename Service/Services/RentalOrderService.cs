@@ -485,24 +485,30 @@ namespace Service.Services
                 OrderId = txnRef,
                 Message = "Thanh toán thất bại"
             };
-
-            if (string.IsNullOrEmpty(txnRef) || responseCode != "00")
+            if (string.IsNullOrEmpty(txnRef))
             {
                 result.Message = "Giao dịch không thành công";
                 return result;
             }
-
             var payment = await _paymentRepository.GetByTxnRefAsync(txnRef);
             if (payment == null)
             {
                 result.Message = "Không tìm thấy giao dịch";
                 return result;
             }
-
             if (payment.Status == PaymentStatus.Completed)
             {
                 result.IsSuccess = true;
                 result.Message = "Đã xử lý trước đó";
+                return result;
+            }
+
+            if (responseCode != "00")
+            {
+                payment.Status = PaymentStatus.Failed;
+                payment.TransactionNo = "MANUAL_" + txnRef;
+                await _paymentRepository.UpdateAsync(payment);
+                result.Message = "Giao dịch không thành công";
                 return result;
             }
 
