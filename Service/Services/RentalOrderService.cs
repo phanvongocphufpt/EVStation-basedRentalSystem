@@ -94,23 +94,38 @@ namespace Service.Services
             if (location == null)
                 return Result<CreateRentalOrderResponseDTO>.Failure("Địa điểm thuê xe không tồn tại!");
 
-            var subtotalDays = (dto.ExpectedReturnTime - dto.PickupTime).TotalDays;
-            if (subtotalDays <= 0)
+            //var subtotalDays = (dto.ExpectedReturnTime - dto.PickupTime).TotalDays;
+            //if (subtotalDays <= 0)
+            //    return Result<CreateRentalOrderResponseDTO>.Failure("Thời gian trả xe phải lớn hơn thời gian nhận xe.");
+
+            //var subTotal = 0.0;
+            //if (subtotalDays <= 0.4) 
+            //{
+            //    subTotal = dto.WithDriver ? car.RentPricePer4HourWithDriver : car.RentPricePer4Hour;
+            //}
+            //if (subtotalDays > 0.4 && subtotalDays <= 0.8)
+            //{
+            //    subTotal = dto.WithDriver ? car.RentPricePer8HourWithDriver : car.RentPricePer8Hour;
+            //}
+            //if (subtotalDays > 0.8)
+            //{
+            //    subTotal = subtotalDays * (dto.WithDriver ? car.RentPricePerDayWithDriver : car.RentPricePerDay);
+            //}
+            var timeSpan = dto.ExpectedReturnTime - dto.PickupTime;
+            if (timeSpan <= TimeSpan.Zero)
                 return Result<CreateRentalOrderResponseDTO>.Failure("Thời gian trả xe phải lớn hơn thời gian nhận xe.");
 
-            var subTotal = 0.0;
-            if (subtotalDays <= 0.4) 
-            {
+            var totalHours = timeSpan.TotalHours;
+            double subTotal;
+
+            if (totalHours <= 4)
                 subTotal = dto.WithDriver ? car.RentPricePer4HourWithDriver : car.RentPricePer4Hour;
-            }
-            if (subtotalDays > 0.4 && subtotalDays <= 0.8)
-            {
+            else if (totalHours <= 8)
                 subTotal = dto.WithDriver ? car.RentPricePer8HourWithDriver : car.RentPricePer8Hour;
-            }
-            if (subtotalDays > 0.8)
-            {
-                subTotal = subtotalDays * (dto.WithDriver ? car.RentPricePerDayWithDriver : car.RentPricePerDay);
-            }
+            else
+                subTotal = totalHours * (dto.WithDriver
+                    ? car.RentPricePerDayWithDriver / 24.0
+                    : car.RentPricePerDay / 24.0);
             var depositAmount = car.DepositOrderAmount;
 
             var order = new RentalOrder
