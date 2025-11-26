@@ -133,6 +133,12 @@ namespace Service.Services
             order.ReportNote = dto.Note;
             order.Status = RentalOrderStatus.Completed;
             await _rentalOrderRepository.UpdateAsync(order);
+            var user = await _userRepository.GetByIdAsync(order.UserId);
+            if (user != null && user.Point < 100)
+            {
+                user.Point = Math.Min((user.Point ?? 0) + 20, 100);
+                await _userRepository.UpdateAsync(user);
+            }
             return Result<bool>.Success(true, "Xác nhận hoàn trả đặt cọc xe thành công.");
         }
         public async Task<Result<bool>> ConfirmRefundDepositOrderAsync(ConfirmRefundDepositOrderPaymentDTO dto)

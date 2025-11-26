@@ -782,6 +782,9 @@ namespace Repository.Context.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("Point")
+                        .HasColumnType("int");
+
                     b.Property<int?>("RentalLocationId")
                         .HasColumnType("int");
 
@@ -824,6 +827,7 @@ namespace Repository.Context.Migrations
                             Password = "1",
                             PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
                             PhoneNumber = "0123456789",
+                            Point = 100,
                             Role = "Admin"
                         },
                         new
@@ -837,6 +841,7 @@ namespace Repository.Context.Migrations
                             Password = "1",
                             PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
                             PhoneNumber = "0123456789",
+                            Point = 100,
                             RentalLocationId = 1,
                             Role = "Staff"
                         },
@@ -851,6 +856,7 @@ namespace Repository.Context.Migrations
                             Password = "1",
                             PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
                             PhoneNumber = "0123456789",
+                            Point = 100,
                             Role = "Customer"
                         },
                         new
@@ -864,6 +870,7 @@ namespace Repository.Context.Migrations
                             Password = "1",
                             PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
                             PhoneNumber = "0123456789",
+                            Point = 100,
                             RentalLocationId = 2,
                             Role = "Staff"
                         },
@@ -878,6 +885,7 @@ namespace Repository.Context.Migrations
                             Password = "1",
                             PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
                             PhoneNumber = "0123456789",
+                            Point = 100,
                             RentalLocationId = 3,
                             Role = "Staff"
                         },
@@ -892,6 +900,7 @@ namespace Repository.Context.Migrations
                             Password = "1",
                             PasswordHash = "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm",
                             PhoneNumber = "0123456789",
+                            Point = 100,
                             RentalLocationId = 4,
                             Role = "Staff"
                         });

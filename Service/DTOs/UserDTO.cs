@@ -16,6 +16,7 @@ namespace Service.DTOs
             public int? RentalLocationId { get; set; }
             public string Role { get; set; } // 1. Customer, 2. Staff, 3. Admin
             public bool IsActive { get; set; }
+        public int? Point { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdateAt { get; set; }
     }

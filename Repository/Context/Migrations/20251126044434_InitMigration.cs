@@ -134,6 +134,7 @@ namespace Repository.Context.Migrations
                     ResetPasswordTokenExpiry = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Point = table.Column<int>(type: "int", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     RentalLocationId = table.Column<int>(type: "int", nullable: true),
                     CitizenId = table.Column<int>(type: "int", nullable: true),
@@ -374,11 +375,11 @@ namespace Repository.Context.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "Address", "BankAccountName", "BankName", "BankNumber", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "PhoneNumber", "RentalLocationId", "ResetPasswordToken", "ResetPasswordTokenExpiry", "Role", "UpdatedAt" },
+                columns: new[] { "Id", "Address", "BankAccountName", "BankName", "BankNumber", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "PhoneNumber", "Point", "RentalLocationId", "ResetPasswordToken", "ResetPasswordTokenExpiry", "Role", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "admin@gmail.com", "Admin User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", null, null, null, "Admin", null },
-                    { 3, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "customer@gmail.com", "Customer User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", null, null, null, "Customer", null }
+                    { 1, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "admin@gmail.com", "Admin User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 100, null, null, null, "Admin", null },
+                    { 3, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "customer@gmail.com", "Customer User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 100, null, null, null, "Customer", null }
                 });
 
             migrationBuilder.InsertData(
@@ -396,13 +397,13 @@ namespace Repository.Context.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "Address", "BankAccountName", "BankName", "BankNumber", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "PhoneNumber", "RentalLocationId", "ResetPasswordToken", "ResetPasswordTokenExpiry", "Role", "UpdatedAt" },
+                columns: new[] { "Id", "Address", "BankAccountName", "BankName", "BankNumber", "CitizenId", "ConfirmEmailToken", "CreatedAt", "DriverLicenseId", "Email", "FullName", "IsActive", "IsEmailConfirmed", "Password", "PasswordHash", "PhoneNumber", "Point", "RentalLocationId", "ResetPasswordToken", "ResetPasswordTokenExpiry", "Role", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 2, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 1, null, null, "Staff", null },
-                    { 4, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff2@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 2, null, null, "Staff", null },
-                    { 5, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff3@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 3, null, null, "Staff", null },
-                    { 6, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff4@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 4, null, null, "Staff", null }
+                    { 2, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 100, 1, null, null, "Staff", null },
+                    { 4, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff2@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 100, 2, null, null, "Staff", null },
+                    { 5, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff3@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 100, 3, null, null, "Staff", null },
+                    { 6, null, null, null, null, null, null, new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "staff4@gmail.com", "Staff User", true, true, "1", "$2a$12$z.y2vdQFkt/drkj6yzAXm.6v/rirvWIaw1tXyIgvR7dki1roEfLXm", "0123456789", 100, 4, null, null, "Staff", null }
                 });
 
             migrationBuilder.CreateIndex(
