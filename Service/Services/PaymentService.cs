@@ -156,6 +156,8 @@ namespace Service.Services
             depositPayment.Status = PaymentStatus.Refunded;
             depositPayment.BillingImageUrl = dto.BillingImageUrl;
             await _paymentRepository.UpdateAsync(depositPayment);
+            order.Status = RentalOrderStatus.Cancelled;
+            await _rentalOrderRepository.UpdateAsync(order);
             return Result<bool>.Success(true, "Xác nhận hoàn trả đặt cọc đơn thành công.");
         }
         public async Task<Result<UpdatePaymentStatusDTO>> UpdatePaymentStatusAsync(UpdatePaymentStatusDTO updatePaymentDTO)
