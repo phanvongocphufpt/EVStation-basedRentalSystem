@@ -441,7 +441,19 @@ namespace Service.Services
             {
                 return Result<bool>.Failure("Không thể hủy đơn đặt thuê đang trong quá trình thuê hoặc đã trả xe.");
             }
-
+            var payment = await _paymentRepository.GetOrderPaymentByOrderIdAsync(existingOrder.Id);
+            if (payment != null && payment.Status == PaymentStatus.Pending)
+            {
+                payment.Status = PaymentStatus.Failed;
+                await _paymentRepository.UpdateAsync(payment);
+                existingOrder.Status = RentalOrderStatus.Cancelled;
+                existingOrder.UpdatedAt = DateTime.Now;
+                await _rentalOrderRepository.UpdateAsync(existingOrder);
+                var user = await _userRepository.GetByIdAsync(existingOrder.UserId);
+                user.Point -= 10;
+                await _userRepository.UpdateAsync(user);
+                return Result<bool>.Success(true, "Chưa thanh toán tiền cọc đơn, hủy đơn thuê thành công!");
+            }
             var timeSinceCreated = DateTime.Now - existingOrder.CreatedAt;
             var canRefund = timeSinceCreated <= TimeSpan.FromHours(1);
             if (canRefund)
