@@ -82,6 +82,12 @@ namespace Service.Services
                     OdometerEnd = dto.OdometerEnd,
                     BatteryLevelEnd = dto.BatteryLevelEnd,
                     VehicleConditionEnd = dto.VehicleConditionEnd,
+                    ImageUrl = dto.ImageUrl,
+                    ImageUrl2 = dto.ImageUrl2,
+                    ImageUrl3 = dto.ImageUrl3,
+                    ImageUrl4 = dto.ImageUrl4,
+                    ImageUrl5 = dto.ImageUrl5,
+                    ImageUrl6 = dto.ImageUrl6,
                     OrderId = dto.OrderId,
                     CarId = order.CarId       
                 };
