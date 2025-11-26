@@ -38,6 +38,7 @@ namespace EVStation_basedRentalSystem.Controllers
                 UserId = user.Id,
                 Role = user.Role,
                 FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
                 isActive=user.IsActive
                 
             });
