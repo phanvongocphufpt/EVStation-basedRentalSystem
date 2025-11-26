@@ -34,6 +34,7 @@ namespace Repository.Entities
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; } = false;
         public int? RentalLocationId { get; set; }
+        public string? ReportNote { get; set; }
         public RentalLocation? RentalLocation { get; set; }
         public ICollection<RentalOrder> RentalOrders { get; set; }
     }   

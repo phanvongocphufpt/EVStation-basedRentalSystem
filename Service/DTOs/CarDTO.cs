@@ -52,4 +52,9 @@ namespace Service.DTOs
         public string NewLocationAddress { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
+    public class ReportCarDTO
+    {
+        public int CarId { get; set; }
+        public string ReportNote { get; set; }
+    }
 }

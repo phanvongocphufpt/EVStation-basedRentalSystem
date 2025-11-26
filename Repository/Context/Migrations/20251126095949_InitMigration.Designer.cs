@@ -12,7 +12,7 @@ using Repository.Context;
 namespace Repository.Context.Migrations
 {
     [DbContext(typeof(EVSDbContext))]
-    [Migration("20251126051316_InitMigration")]
+    [Migration("20251126095949_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -95,6 +95,9 @@ namespace Repository.Context.Migrations
 
                     b.Property<int?>("RentalLocationId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ReportNote")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Seats")
                         .HasColumnType("int");

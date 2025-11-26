@@ -99,7 +99,8 @@ namespace Repository.Context.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    RentalLocationId = table.Column<int>(type: "int", nullable: true)
+                    RentalLocationId = table.Column<int>(type: "int", nullable: true),
+                    ReportNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -385,15 +386,15 @@ namespace Repository.Context.Migrations
 
             migrationBuilder.InsertData(
                 table: "Cars",
-                columns: new[] { "Id", "BatteryDuration", "BatteryType", "CreatedAt", "DepositCarAmount", "DepositOrderAmount", "ImageUrl", "ImageUrl2", "ImageUrl3", "IsActive", "IsDeleted", "Model", "Name", "RentPricePer4Hour", "RentPricePer4HourWithDriver", "RentPricePer8Hour", "RentPricePer8HourWithDriver", "RentPricePerDay", "RentPricePerDayWithDriver", "RentalLocationId", "Seats", "SizeType", "TrunkCapacity", "UpdatedAt" },
+                columns: new[] { "Id", "BatteryDuration", "BatteryType", "CreatedAt", "DepositCarAmount", "DepositOrderAmount", "ImageUrl", "ImageUrl2", "ImageUrl3", "IsActive", "IsDeleted", "Model", "Name", "RentPricePer4Hour", "RentPricePer4HourWithDriver", "RentPricePer8Hour", "RentPricePer8HourWithDriver", "RentPricePerDay", "RentPricePerDayWithDriver", "RentalLocationId", "ReportNote", "Seats", "SizeType", "TrunkCapacity", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 2000000.0, 200000.0, "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 300000.0, 400000.0, 500000.0, 700000.0, 1000000.0, 1400000.0, 1, 5, "Sedan", 425, null },
-                    { 2, 240, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 4500000.0, 160000.0, "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", true, false, "Nissan Leaf", "Leaf", 250000.0, 350000.0, 450000.0, 600000.0, 800000.0, 1200000.0, 2, 5, "Hatchback", 435, null },
-                    { 3, 259, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 3400000.0, 180000.0, "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", true, false, "Chevrolet Bolt EV", "Bolt EV", 280000.0, 380000.0, 480000.0, 650000.0, 900000.0, 1300000.0, 3, 5, "Hatchback", 478, null },
-                    { 4, 153, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 20000000.0, 110000.0, "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", true, false, "BMW i3", "i3", 350000.0, 450000.0, 550000.0, 750000.0, 1100000.0, 1500000.0, 3, 4, "Hatchback", 260, null },
-                    { 5, 222, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 17000000.0, 225000.0, "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", true, false, "Audi e-tron", "e-tron", 450000.0, 600000.0, 750000.0, 900000.0, 1500000.0, 2000000.0, 4, 5, "SUV", 660, null },
-                    { 6, 258, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 6000000.0, 175000.0, "https://example.com/hyundai_kona_electric.jpg", "https://example.com/hyundai_kona_electric.jpg", "https://example.com/hyundai_kona_electric.jpg", true, false, "Hyundai Kona Electric", "Kona Electric", 290000.0, 390000.0, 490000.0, 640000.0, 950000.0, 1350000.0, 2, 5, "SUV", 332, null }
+                    { 1, 350, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 2000000.0, 200000.0, "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", "https://example.com/tesla_model_3.jpg", true, false, "Tesla Model 3", "Model 3", 300000.0, 400000.0, 500000.0, 700000.0, 1000000.0, 1400000.0, 1, null, 5, "Sedan", 425, null },
+                    { 2, 240, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 4500000.0, 160000.0, "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", "https://example.com/nissan_leaf.jpg", true, false, "Nissan Leaf", "Leaf", 250000.0, 350000.0, 450000.0, 600000.0, 800000.0, 1200000.0, 2, null, 5, "Hatchback", 435, null },
+                    { 3, 259, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 3400000.0, 180000.0, "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", "https://example.com/chevrolet_bolt_ev.jpg", true, false, "Chevrolet Bolt EV", "Bolt EV", 280000.0, 380000.0, 480000.0, 650000.0, 900000.0, 1300000.0, 3, null, 5, "Hatchback", 478, null },
+                    { 4, 153, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 20000000.0, 110000.0, "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", "https://example.com/bmw_i3.jpg", true, false, "BMW i3", "i3", 350000.0, 450000.0, 550000.0, 750000.0, 1100000.0, 1500000.0, 3, null, 4, "Hatchback", 260, null },
+                    { 5, 222, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 17000000.0, 225000.0, "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", "https://example.com/audi_e_tron.jpg", true, false, "Audi e-tron", "e-tron", 450000.0, 600000.0, 750000.0, 900000.0, 1500000.0, 2000000.0, 4, null, 5, "SUV", 660, null },
+                    { 6, 258, "Lithium-Ion", new DateTime(2025, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 6000000.0, 175000.0, "https://example.com/hyundai_kona_electric.jpg", "https://example.com/hyundai_kona_electric.jpg", "https://example.com/hyundai_kona_electric.jpg", true, false, "Hyundai Kona Electric", "Kona Electric", 290000.0, 390000.0, 490000.0, 640000.0, 950000.0, 1350000.0, 2, null, 5, "SUV", 332, null }
                 });
 
             migrationBuilder.InsertData(

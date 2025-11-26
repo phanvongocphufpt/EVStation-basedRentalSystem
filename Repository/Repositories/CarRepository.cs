@@ -46,37 +46,38 @@ namespace Repository.Repositories
 
         public async Task UpdateAsync(Car car)
         {
-            // Kiểm tra xem entity đã được track chưa
             var tracked = _context.Cars.Local.FirstOrDefault(c => c.Id == car.Id);
             
             if (tracked != null)
             {
-                // Entity đã được track (từ GetByIdAsync), chỉ cần SaveChanges
-                // Properties đã được update ở Service layer
                 await _context.SaveChangesAsync();
             }
             else
             {
-                // Entity chưa được track, load và update properties
                 var existing = await _context.Cars.FindAsync(car.Id);
                 if (existing != null)
                 {
-                    // Cập nhật properties từ car vào existing entity (không bao gồm navigation properties)
                     existing.Name = car.Name;
                     existing.Model = car.Model;
                     existing.Seats = car.Seats;
                     existing.SizeType = car.SizeType;
                     existing.TrunkCapacity = car.TrunkCapacity;
                     existing.BatteryType = car.BatteryType;
+                    existing.DepositOrderAmount = car.DepositOrderAmount;
+                    existing.DepositCarAmount = car.DepositCarAmount;
                     existing.BatteryDuration = car.BatteryDuration;
                     existing.RentPricePerDay = car.RentPricePerDay;
+                    existing.RentPricePer4Hour = car.RentPricePer4Hour;
+                    existing.RentPricePer8Hour = car.RentPricePer8Hour;
                     existing.RentPricePerDayWithDriver = car.RentPricePerDayWithDriver;
+                    existing.RentPricePer4HourWithDriver = car.RentPricePer4HourWithDriver;
+                    existing.RentPricePer8HourWithDriver = car.RentPricePer8HourWithDriver;
                     existing.ImageUrl = car.ImageUrl;
                     existing.ImageUrl2 = car.ImageUrl2;
                     existing.ImageUrl3 = car.ImageUrl3;
                     existing.IsActive = car.IsActive;
+                    existing.ReportNote = car.ReportNote;
                     existing.UpdatedAt = car.UpdatedAt ?? DateTime.UtcNow;
-                    // KHÔNG cập nhật: CarRentalLocations, RentalOrders, CreatedAt, IsDeleted
                     await _context.SaveChangesAsync();
                 }
             }

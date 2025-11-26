@@ -29,7 +29,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
         // ✅ GET: api/Car
         [HttpGet]
-       
+
         public async Task<IActionResult> GetAll()
         {
             var result = await _carService.GetAllAsync();
@@ -40,7 +40,7 @@ namespace EVStation_basedRentalSystem.Controllers
         }
 
         [HttpGet("byName/{name}")]
-      
+
         public async Task<IActionResult> GetByName(string name)
         {
             var result = await _carService.GetByNameAsync(name);
@@ -52,7 +52,7 @@ namespace EVStation_basedRentalSystem.Controllers
 
         // ✅ GET: api/Car/paged?pageIndex=0&pageSize=10&keyword=...
         [HttpGet("paged")]
-   
+
         public async Task<IActionResult> GetPaged(
             [FromQuery] int pageIndex = 0,
             [FromQuery] int pageSize = 10,
@@ -128,7 +128,7 @@ namespace EVStation_basedRentalSystem.Controllers
 
         // ✅ GET: api/Car/TopRented?topCount=3
         [HttpGet("TopRented")]
-    
+
         public async Task<IActionResult> GetTopRentedCars([FromQuery] int topCount = 3)
         {
             var result = await _carService.GetTopRentedAsync(topCount);
@@ -151,6 +151,17 @@ namespace EVStation_basedRentalSystem.Controllers
                 return BadRequest(new { message = result.Message });
 
             return Ok(new { message = result.Message, data = result.Data });
+        }
+        // ✅ PUT: api/Car/ReportCar?carId=1
+
+        [HttpPut("ReportCar")]
+        [Authorize(Roles = "Staff,Admin")]
+        public async Task<IActionResult> ReportCar([FromBody] ReportCarDTO dto)
+        {
+            var result = await _carService.ReportCar(dto);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+            return Ok(new { message = result.Message });
         }
     }
 }

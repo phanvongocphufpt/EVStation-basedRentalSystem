@@ -32,5 +32,6 @@ namespace Service.IServices
 
         // 🔹 Điều phối xe (cập nhật vị trí xe)
         Task<Result<UpdateCarRentalLocationResponseDTO>> UpdateCarRentalLocationAsync(UpdateCarRentalLocationDTO dto);
+        Task<Result<bool>> ReportCar(ReportCarDTO dto);
     }
 }

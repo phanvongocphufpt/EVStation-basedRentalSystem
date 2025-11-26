@@ -93,6 +93,9 @@ namespace Repository.Context.Migrations
                     b.Property<int?>("RentalLocationId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ReportNote")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Seats")
                         .HasColumnType("int");
 

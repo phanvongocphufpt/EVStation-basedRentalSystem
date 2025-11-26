@@ -207,5 +207,17 @@ namespace Service.Services
             
             return Result<UpdateCarRentalLocationResponseDTO>.Success(response, message);
         }
+        public async Task<Result<bool>> ReportCar(ReportCarDTO dto)
+        {
+            var car = await _carRepository.GetByIdAsync(dto.CarId);
+            if (car == null)
+            {
+                return Result<bool>.Failure("Xe không tồn tại hoặc đã bị xóa.");
+            }
+            car.ReportNote = dto.ReportNote;
+            car.UpdatedAt = DateTime.UtcNow;
+            await _carRepository.UpdateAsync(car);
+            return Result<bool>.Success(true, "Báo cáo xe thành công.");
+        }
     }
 }
